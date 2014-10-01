@@ -134,6 +134,7 @@ function createExpressApplication() {
 
     app.use('/api', require('./rest/mongoService'));
     app.use('/atrium/profiles', require('./rest/contactService'));
+    app.use('/atrium/conversations', require('./rest/conversationService'));
 
     return app;
 }
