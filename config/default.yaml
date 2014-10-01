@@ -1,0 +1,43 @@
+deviceGateway:
+  listenPort : 19690
+
+logs:
+  logFileName: 'cp.log'
+
+mongo:
+  host: 'localhost'
+  port: 27017
+  dbName: 'test'
+
+socketio:
+  origin: 'localhost:*'
+  port: 20142
+  securePort: 20143
+  isSecurePortEnabled : false
+  isUnSecurePortEnabled : true
+  ssl:
+    privateKeyFile  : './bin/ssl/privatekey.pem'
+    certificateFile : './bin/ssl/certificate.pem'
+    caCertsFile     : './bin/ssl/privatekey.pem'   # this is not needed when self-signed so we jsut assign to privatekey for dev
+
+rabbitmq:
+  host: '127.0.0.1'
+  login: 'guest'
+  password: 'guest'
+  authMechanism: 'AMQPLAIN'
+  vhost: '/'
+  reconnect: true
+  reconnectBackoffStrategy: 'linear'
+  reconnectExponentialLimit: 120000
+  reconnectBackoffTime: 1000
+
+# This is the development configuration
+restServer:
+  isSecurePortEnabled : true
+  isUnSecurePortEnabled : true
+  port: 19690
+  securePort: 3001
+  ssl:
+    privateKeyFile  : './bin/ssl/privatekey.pem'
+    certificateFile : './bin/ssl/certificate.pem'
+    caCertsFile     : './bin/ssl/privatekey.pem'   # this is not needed when self-signed so we jsut assign to privatekey for dev
