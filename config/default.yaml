@@ -7,7 +7,7 @@ logs:
 mongo:
   host: 'localhost'
   port: 27017
-  dbName: 'test'
+  dbName: 'cp'
 
 socketio:
   origin: 'localhost:*'

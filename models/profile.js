@@ -2,7 +2,7 @@
  * Created by randy on 9/29/14.
  */
 var mongoose                = require('mongoose');
-
+var conversation            = require('./conversation');
 
 var Schema  = mongoose.Schema;
 
@@ -14,32 +14,29 @@ var entitySchema = new Schema({
     role:   String
 });
 
-var personSchema = new Schema({
-    entity: {
-        id:     Schema.Types.ObjectId,
-        name:   String,
-        label:  String,
-        avatar: String,
-        role:   String,
-        presence: {type: String, default: "OFFLINE"}
-    },
-    type: String,
-    memberOf:  [groupSchema],
-    friends: [ {type: Schema.Types.ObjectId, ref: '_Person'}]
+var groupSchema = new Schema({
+
+    name:   String,
+    label:  String,
+    avatar: {type: String, default: "group.png"},
+
+    type:       { type: String, default: "GROUP" },
+    members:    [personSchema],
+    owner:      [personSchema]
 });
 
-var groupSchema = new Schema({
-    entity: {
-        id:     Schema.Types.ObjectId,
-        name:   String,
-        label:  String,
-        avatar: String,
-        role:   String,
-        presence: { type: String, default: "Unknown"}
-    },
-    type:       String,
-    members:    [entitySchema],
-    owner:      [entitySchema]
+var personSchema = new Schema({
+
+    name:   String,
+    label:  String,
+    avatar: {type: String, default: "default.png"},
+    role:   {type: String, default: "USER"},
+    presence: {type: String, default: "OFFLINE"},
+
+    type: { type: String, default: "PERSON" },
+    memberOf:  [groupSchema],
+    friends: [ {type: Schema.Types.ObjectId, ref: 'Person'}],
+    inbox: [ {type: Schema.Types.ObjectId, ref: 'Conversation'}]
 });
 
 var _Person = mongoose.model('Person', personSchema);

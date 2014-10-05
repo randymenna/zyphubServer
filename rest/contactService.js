@@ -10,6 +10,7 @@ module.exports = function() {
     var app = express();
 
     app.get('/', ContactController.getContacts);
+    app.get('/:id', ContactController.getOneContact);
     app.post('/', ContactController.newContact);
 
 

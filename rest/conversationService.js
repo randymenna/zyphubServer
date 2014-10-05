@@ -11,7 +11,7 @@ module.exports = function() {
 
     app.get('/', ConversationController.getConversations);
     app.post('/', ConversationController.newConversation);
-
+    app.post('/:id/:action', ConversationController.updateConversation);
 
     return app;
 }();

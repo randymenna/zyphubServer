@@ -54,6 +54,43 @@ exports.getContacts = function (req, res) {
     );
 };
 
+exports.getOneContact = function (req, res) {
+
+    console.log("getContacts(): entered");
+    async.waterfall(
+        [
+            function (callback) {
+                var context = {};
+                var accountId = genericMongoController.extractAccountId(req);
+                context.accountId = accountId;
+                context.id = req.params.id;
+                console.log("getContacts(): accountId=%s", accountId);
+                callback(null, context);
+            },
+            function (context, callback) {
+                profile.Person.find({_id:context.id}).exec(function( err, person){
+                    if ( err ) {
+                        callback(err, null);
+                    }
+                    else {
+                        context.person = person;
+                        callback(null, context);
+                    }
+                })
+            }
+        ],
+
+        function (err, context) {
+            console.log("getContacts(): exiting: err=%s,result=%s", err, context);
+            if (!err) {
+                res.json(200, context.person);
+            } else {
+                res.json(401, err);
+            }
+        }
+    );
+};
+
 exports.newContact = function (req, res) {
 
     console.log("newContact(): entered");
@@ -69,17 +106,16 @@ exports.newContact = function (req, res) {
 
             function (context, callback) {
                 var p = new profile.Person({
-                                            entity:req.body.entity,
-                                            type:req.body.type,
-                                            presence:req.body.presence,
-                                            memberOf: req.body.memberOf });
-                context.profile = p;
+                                            name:req.body.name,
+                                            label:req.body.label
+                });
 
-                context.profile.save(function( err, profile){
+                p.save(function( err, profile){
                     if ( err ) {
                         callback(err, null);
                     }
                     else {
+                        context.profile = profile;
                         callback(null, context);
                     }
                 })
@@ -91,7 +127,7 @@ exports.newContact = function (req, res) {
             if (!err) {
                 res.json(200, context.profile);
             } else {
-                res.json(401, err);
+                res.json(400, err.message);
             }
         }
     );
