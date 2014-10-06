@@ -39,9 +39,9 @@ exports.getConversations = function (req, res) {
             },
             function(context,callback) {
                 model.Conversation.find({'_id': { $in: context.inbox }})
-                    .populate('envelope.originator', 'label _id')
-                    .populate('envelope.recipients', 'label _id')
-                    .populate('stats.view.participant', 'label')
+                    .populate('envelope.origin', 'label _id')
+                    .populate('envelope.members', 'label _id')
+                    .populate('stats.members.member', 'label')
                     .exec(function( err, conversations){
                         if ( err ) {
                             callback(err, null);
@@ -80,12 +80,12 @@ exports.getOneConversation = function(req, res) {
                 callback(null, context);
             },
 
-            // find one conversation and fill in the name and id only of the participants
+            // find one conversation and fill in the name and id only of the members
             function(context,callback) {
                 model.Conversation.findOne({_id: context.conversationId})
-                    .populate('envelope.originator', 'label _id')
-                    .populate('envelope.recipients', 'label _id')
-                    .populate('stats.view.participant', 'label')
+                    .populate('envelope.origin', 'label _id')
+                    .populate('envelope.members', 'label _id')
+                    .populate('stats.members.member', 'label')
                     .exec(function( err, conversation){
                         if ( err ) {
                             callback(err, null);
@@ -111,37 +111,38 @@ exports.getOneConversation = function(req, res) {
 
 exports.newConversation = function (req, res) {
 
+    var context = {};
+
     console.log("newConversation(): entered");
     async.waterfall(
         [
             function (callback) {
                 var context = {};
-                var accountId = genericMongoController.extractAccountId(req);
-                context.accountId = accountId;
+                
+                var c = new model.Conversation({
+                    envelope:req.body.envelope,
+                    time:req.body.time,
+                    content:req.body.content
+                });
 
+                c.state.startMemberCount = c.envelope.members.length;
+                c.state.curMemberCount = c.envelope.members.length;
+
+                for (var i=0; i< c.envelope.members.length; i++) {
+                    var tmp = {
+                        member : mongoose.Types.ObjectId(c.envelope.members[i]),
+                        state: "UNOPENED"
+                    };
+
+                    c.state.members.push(tmp);
+                }
+                
+                context.conversation = c;
+                
                 callback(null, context);
             },
 
             function (context, callback) {
-                var c = new model.Conversation({
-                                            envelope:req.body.envelope,
-                                            time:req.body.time,
-                                            content:req.body.content
-                                            });
-
-                c.stats.originalParticipantCount = c.envelope.recipients.length;
-                c.stats.currentParticipantCount = c.envelope.recipients.length;
-
-                for (var i=0; i< c.envelope.recipients.length; i++) {
-                    var tmp = {
-                            participant : mongoose.Types.ObjectId(c.envelope.recipients[i]),
-                            state: "UNOPENED"
-                    };
-
-                    c.stats.view.push(tmp);
-                }
-
-                context.conversation = c;
 
                 context.conversation.save(function( err, conversation){
                     if ( err ) {
@@ -153,9 +154,9 @@ exports.newConversation = function (req, res) {
                 })
             },
 
-            // add a conversation to all the recipients in-boxes
+            // add a conversation to all the members in-boxes
             function(context,callback) {
-                model.Person.update({'_id': { $in: context.conversation.envelope.recipients }},{$push: {inbox: context.conversation._id}}, {multi:true}, function(err, profiles){
+                model.Person.update({'_id': { $in: context.conversation.envelope.members }},{$push: {inbox: context.conversation._id}}, {multi:true}, function(err, profiles){
 
                     context.profiles = profiles;
 
@@ -163,12 +164,12 @@ exports.newConversation = function (req, res) {
                 });
             },
 
-            // find one conversation and fill in the name and id only of the participants
+            // find one conversation and fill in the name and id only of the members
             function(context,callback) {
                 model.Conversation.findOne({_id: context.conversation._id})
-                    .populate('envelope.originator', 'label _id')
-                    .populate('envelope.recipients', 'label _id')
-                    .populate('stats.view.participant', 'label')
+                    .populate('envelope.origin', 'label _id')
+                    .populate('envelope.members', 'label _id')
+                    .populate('state.members.member', 'label')
                     .exec(function( err, conversation){
                         if ( err ) {
                             callback(err, null);
@@ -204,7 +205,7 @@ exports.updateConversation = function (req, res) {
                 context.accountId = accountId;
                 context.conversationId = req.params.id;
                 context.action = req.params.action;
-                context.profileId = req.body.originator;
+                context.profileId = req.body.origin;
                 context.forward = req.body.forward;
                 context.delegate = req.body.delegate;
                 context.escalate = req.body.escalate;
@@ -286,7 +287,7 @@ exports.updateConversation = function (req, res) {
                 }
             },
 
-            // add a conversation to all the recipients in-boxes
+            // add a conversation to all the members in-boxes
             function(context,callback) {
                 context.conversation.save(function( err, conversation){
                     if ( err ) {
@@ -298,12 +299,12 @@ exports.updateConversation = function (req, res) {
                 })
             },
 
-            // find the updated conversation and fill in the name and id only of the participants
+            // find the updated conversation and fill in the name and id only of the members
             function(context,callback) {
                 model.Conversation.findOne({_id: context.conversation._id})
-                    .populate('envelope.originator', 'label _id')
-                    .populate('envelope.recipients', 'label _id')
-                    .populate('stats.view.participant', 'label')
+                    .populate('envelope.origin', 'label _id')
+                    .populate('envelope.members', 'label _id')
+                    .populate('state.members.member', 'label')
                     .exec(function( err, conversation){
                         if ( err ) {
                             callback(err, null);

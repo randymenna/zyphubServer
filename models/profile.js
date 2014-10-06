@@ -15,28 +15,29 @@ var entitySchema = new Schema({
 });
 
 var groupSchema = new Schema({
-
-    name:   String,
-    label:  String,
-    avatar: {type: String, default: "group.png"},
-
-    type:       { type: String, default: "GROUP" },
-    members:    [personSchema],
-    owner:      [personSchema]
+    name:           String,
+    label:          String,
+    description:    String,
+    avatar:         {type: String, default: "group.png"},
+    type:           {type: String, default: "GROUP"},
+    public:         {type: Boolean, default: false},
+    enterprise:     {type: String, default: "ConversePoint"},
+    members:        [personSchema],
+    owner:          [personSchema]
 });
 
 var personSchema = new Schema({
-
-    name:   String,
-    label:  String,
-    avatar: {type: String, default: "default.png"},
-    role:   {type: String, default: "USER"},
-    presence: {type: String, default: "OFFLINE"},
-
-    type: { type: String, default: "PERSON" },
-    memberOf:  [groupSchema],
-    friends: [ {type: Schema.Types.ObjectId, ref: 'Person'}],
-    inbox: [ {type: Schema.Types.ObjectId, ref: 'Conversation'}]
+    name:       String,
+    display:    String,
+    avatar:     {type: String, default: "default.png"},
+    role:       {type: String, default: "USER"},
+    presence:   {type: String, default: "OFFLINE"},
+    type:       {type: String, default: "PERSON"},
+    public:     {type: Boolean, default: false},
+    enterprise: {type: String, default: "ConversePoint"},
+    memberOf:   [groupSchema],
+    friends:    [{type: Schema.Types.ObjectId, ref: 'Person'}],
+    inbox:      [{type: Schema.Types.ObjectId, ref: 'Conversation'}]
 });
 
 var _Person = mongoose.model('Person', personSchema);

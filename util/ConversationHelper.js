@@ -21,23 +21,23 @@ var ConversationHelper = module.exports = function ConversationHelper () {
 
     this.updateState = function( profileId, state , conversation) {
 
-       for (var i=0; i < conversation.stats.view.length; i++ ) {
-           if ( conversation.stats.view[i].participant.id == (new ObjectId(profileId)).id ) {
-               conversation.stats.view[i].state = state;
+       for (var i=0; i < conversation.state.members.length; i++ ) {
+           if ( conversation.state.members[i].member.id == (new ObjectId(profileId)).id ) {
+               conversation.state.members[i].state = state;
                break;
            }
        }
     };
 
-    this.removeAllRecipientsNotInState = function( state, conversation ) {
+    this.removeAllMembersNotInState = function( state, conversation ) {
 
-        // update the stats
-        for (var i=0; i < conversation.stats.view.length; i++ ) {
+        // update the state
+        for (var i=0; i < conversation.state.members.length; i++ ) {
 
-            if ( conversation.stats.view[i].state != state ) {
-                conversation.stats.view[i].state = "REMOVED";
-                conversation.envelope.recipients.pull(new ObjectId(conversation.stats.view[i].participant));
-                --conversation.stats.currentParticipantCount;
+            if ( conversation.state.members[i].state != state ) {
+                conversation.state.members[i].state = "REMOVED";
+                conversation.envelope.members.pull(new ObjectId(conversation.state.members[i].member));
+                --conversation.state.curMemberCount;
             }
         }
     };
@@ -61,7 +61,7 @@ var ConversationHelper = module.exports = function ConversationHelper () {
     // remove conversation from Inbox
     this.removeFromAllInboxes = function(context,callback) {
 
-        model.Person.update({'_id': { $in: context.conversation.envelope.recipients }},{$pull: {inbox: context.conversation._id}}, {multi:true}, function(err, profiles){
+        model.Person.update({'_id': { $in: context.conversation.envelope.members }},{$pull: {inbox: context.conversation._id}}, {multi:true}, function(err, profiles){
             if ( err ) {
                 callback(err, null);
             }
@@ -72,15 +72,15 @@ var ConversationHelper = module.exports = function ConversationHelper () {
         });
     };
 
-    // remove participants from conversation
-    this.removeAllRecipients = function(context,callback) {
+    // remove members from conversation
+    this.removeAllMembers = function(context,callback) {
 
-        // update the stats
-        for (var i=0; i < context.conversation.stats.view.length; i++ ) {
+        // update the state
+        for (var i=0; i < context.conversation.state.members.length; i++ ) {
 
-            context.conversation.stats.view[i].state = "REMOVED";
-            context.conversation.envelope.recipients.pull(new ObjectId(context.conversation.stats.view[i].participant));
-            --context.conversation.stats.currentParticipantCount;
+            context.conversation.state.members[i].state = "REMOVED";
+            context.conversation.envelope.members.pull(new ObjectId(context.conversation.state.members[i].member));
+            --context.conversation.state.curMemberCount;
         }
         callback(null,context)
     };
@@ -98,16 +98,96 @@ var ConversationHelper = module.exports = function ConversationHelper () {
 
     this.addToConversation = function( context, callback ) {
         for (var i=0; i < context.toProfiles.length; i++) {
-            context.conversation.envelope.recipients.push( context.toProfiles[i] );
-            context.conversation.stats.view.push( {participant: context.toProfiles[i], state: "UNOPENED"} );
-            ++context.conversation.stats.currentParticipantCount;
+            context.conversation.envelope.members.push( context.toProfiles[i] );
+            context.conversation.state.members.push( {member: context.toProfiles[i], state: "UNOPENED"} );
+            ++context.conversation.state.curMemberCount;
         }
         callback(null, context);
     }
 };
 
 ConversationHelper.prototype.startConversation = function( event, callback ) {
+    var self = this;
+    
+    console.log("startConversation(): entered");
+    async.waterfall(
+        [
+            function (callback) {
+                var context = {};
+                var accountId = genericMongoController.extractAccountId(req);
+                context.accountId = accountId;
 
+                callback(null, context);
+            },
+
+            function (context, callback) {
+                var c = new model.Conversation({
+                    envelope:req.body.envelope,
+                    time:req.body.time,
+                    content:req.body.content
+                });
+
+                c.state.originalmemberCount = c.envelope.members.length;
+                c.state.currentmemberCount = c.envelope.members.length;
+
+                for (var i=0; i< c.envelope.members.length; i++) {
+                    var tmp = {
+                        member : mongoose.Types.ObjectId(c.envelope.members[i]),
+                        state: "UNOPENED"
+                    };
+
+                    c.state.members.push(tmp);
+                }
+
+                context.conversation = c;
+
+                context.conversation.save(function( err, conversation){
+                    if ( err ) {
+                        callback(err, null);
+                    }
+                    else {
+                        callback(null, context);
+                    }
+                })
+            },
+
+            // add a conversation to all the members in-boxes
+            function(context,callback) {
+                model.Person.update({'_id': { $in: context.conversation.envelope.members }},{$push: {inbox: context.conversation._id}}, {multi:true}, function(err, profiles){
+
+                    context.profiles = profiles;
+
+                    callback(err,context);
+                });
+            },
+
+            // find one conversation and fill in the name and id only of the members
+            function(context,callback) {
+                model.Conversation.findOne({_id: context.conversation._id})
+                    .populate('envelope.originator', 'label _id')
+                    .populate('envelope.members', 'label _id')
+                    .populate('state.members.member', 'label')
+                    .exec(function( err, conversation){
+                        if ( err ) {
+                            callback(err, null);
+                        }
+                        else {
+                            context.conversation = conversation;
+                            callback(null, context);
+                        }
+                    });
+            }
+        ],
+
+        function (err, context) {
+            console.log("newConversation(): exiting: err=%s,result=%s", err, context);
+            if (!err) {
+                res.json(200, context.conversation);
+            } else {
+                res.json(400, err.message);
+            }
+        }
+    );
 };
 
 ConversationHelper.prototype.leaveConversation = function( context, callback ) {
@@ -129,9 +209,10 @@ ConversationHelper.prototype.leaveConversation = function( context, callback ) {
             // remove profile from Conversation
             function(context,callback) {
 
-                // remove from active recipients
-                context.conversation.envelope.recipients.pull({_id: new ObjectId(context.profileId)});
-                --context.conversation.stats.currentParticipantCount;
+                // remove from active members
+                context.conversation.envelope.members.pull({_id: new ObjectId(context.profileId)});
+                --context.conversation.state.curMemberCount;
+                ++context.conversation.state.leaves;
                 self.updateState( context.profileId, "LEFT", context.conversation);
 
                 context.conversation.save(function( err, conversation ){
@@ -170,15 +251,15 @@ ConversationHelper.prototype.acceptConversation = function( context, callback ) 
             function(context,callback) {
 
                 // bump accepts
-                if ( context.conversation.stats.maxAccepts == context.conversation.stats.accepts ) {
+                if ( context.conversation.state.maxAccepts == context.conversation.state.accepts ) {
                     callback( new mongoose.Error("Max Accepts Reached"), null );
                 }
 
-                ++context.conversation.stats.accepts;
+                ++context.conversation.state.accepts;
                 self.updateState( context.profileId, "ACCEPTED", context.conversation);
 
-                if ( context.conversation.stats.accepts == context.conversation.stats.maxAccepts ) {
-                    self.removeAllRecipientsNotInState( "ACCEPTED", context.conversation );
+                if ( context.conversation.state.accepts == context.conversation.state.maxAccepts ) {
+                    self.removeAllMembersNotInState( "ACCEPTED", context.conversation );
                 }
 
                 context.conversation.save(function( err, conversation ){
@@ -216,10 +297,10 @@ ConversationHelper.prototype.rejectConversation = function( context, callback ) 
             // update Conversation
             function(context,callback) {
 
-                ++context.conversation.stats.rejects;
+                ++context.conversation.state.rejects;
                 self.updateState( context.profileId, "REJECTED", context.conversation );
-                context.conversation.envelope.recipients.pull( context.profileId );
-                --context.conversation.stats.currentParticipantCount;
+                context.conversation.envelope.members.pull( new ObjectId(context.profileId) );
+                --context.conversation.state.curMemberCount;
 
                 context.conversation.save(function( err, conversation ){
                     if ( err ) {
@@ -259,10 +340,10 @@ ConversationHelper.prototype.okConversation = function( context, callback ) {
 
             // remove profile from Conversation
             function(context,callback) {
-                // remove from active recipients
-                context.conversation.envelope.recipients.pull({_id: new ObjectId(context.profileId)});
-                --context.conversation.stats.currentParticipantCount;
-                ++context.conversation.stats.oks;
+                // remove from active members
+                context.conversation.envelope.members.pull({_id: new ObjectId(context.profileId)});
+                --context.conversation.state.curMemberCount;
+                ++context.conversation.state.oks;
                 self.updateState( context.profileId, "OK", context.conversation );
 
                 context.conversation.save(function( err, conversation ){
@@ -302,15 +383,15 @@ ConversationHelper.prototype.closeConversation = function( context, callback ) {
             },
 
             function(context,callback) {
-                self.removeAllRecipients(context, callback);
+                self.removeAllMembers(context, callback);
             },
 
             // remove profiles from Conversation
             function(context,callback) {
-                // remove from active recipients
+                // remove from active members
                 self.updateState( context.profileId, "CLOSED", context.conversation);
 
-                context.conversation.stats.currentParticipantCount = 0;
+                context.conversation.state.curMemberCount = 0;
 
                 context.conversation.save(function( err, conversation ){
                     if ( err ) {
@@ -363,7 +444,8 @@ ConversationHelper.prototype.forwardConversation = function( context, callback )
             // save Conversation
             function(context,callback) {
 
-
+                ++context.conversation.state.forwards;
+                
                 context.conversation.save(function (err, doc) {
                         if ( err ) {
                             callback(err, null);
@@ -396,33 +478,36 @@ ConversationHelper.prototype.delegateConversation = function( context, callback 
                 callback(null, context);
             },
 
-            // remove conversation from originator Inbox
+            // remove conversation from origin Inbox
             function(context, callback) {
                 self.removeFromInbox(context, callback);
             },
 
-            // remove originator from active recipients
+            // remove origin from active members
             function(context,callback) {
 
-                context.conversation.envelope.recipients.pull({_id: new ObjectId(context.profileId)});
-                --context.conversation.stats.currentParticipantCount;
+                context.conversation.envelope.members.pull({_id: new ObjectId(context.profileId)});
+                --context.conversation.state.curMemberCount;
                 self.updateState( context.profileId, "DELEGATED", context.conversation);
 
                 callback(null, context);
             },
 
-            // add conversation to new participants inbox
+            // add conversation to new members inbox
             function(context,callback) {
                 self.addToInboxes(context, callback);
             },
 
-            // add new participant to conversation
+            // add new member to conversation
             function(context,callback) {
                 self.addToConversation(context, callback);
             },
 
             // save Conversation
             function(context,callback) {
+                
+                ++context.conversation.state.delegates;
+                
                 context.conversation.save(function (err, doc) {
                     if ( err ) {
                         callback(err, null);
@@ -449,7 +534,7 @@ ConversationHelper.prototype.escalateConversation = function( context, callback 
     async.waterfall(
         [
             function (callback) {
-                if ( !context.escalate.isArray ) {
+                if ( !context.escalate.length ) {
                     context.toProfiles = [];
                     context.toProfiles.push(context.escalate);
                 }
@@ -464,7 +549,7 @@ ConversationHelper.prototype.escalateConversation = function( context, callback 
             },
 
             function(context,callback) {
-                self.removeAllRecipients(context, callback);
+                self.removeAllMembers(context, callback);
             },
 
             function(context,callback) {

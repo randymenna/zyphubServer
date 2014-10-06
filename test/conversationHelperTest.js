@@ -45,14 +45,14 @@ describe('Conversation Tests', function() {
                     },
                     function (context, callback) {
                         conversationAction("leave", context.conversation, function (err, conv) {
-                            context.conv = conv;
+                            context.conv = conv.body;
                             callback(null, context);
                         });
                     },
                     function (context, callback) {
-                        context.conv.body.envelope.recipients.length.should.equal(1);
+                        context.conv.envelope.members.length.should.equal(1);
 
-                        if (context.conv.body.envelope.recipients.length != 1) {
+                        if (context.conv.envelope.members.length != 1) {
                             callback("Error: Leave Failed");
                         }
                         else {
@@ -65,7 +65,7 @@ describe('Conversation Tests', function() {
                         console.log('Error:' + err + context);
                     }
                     else {
-                        console.log('entered the uber callback. Step ' + context + ' has completed');
+                        console.log('Leave Pass');
                     }
                     done();
                 }
@@ -100,14 +100,14 @@ describe('Conversation Tests', function() {
                     },
                     function (context, callback) {
                         conversationAction("accept", context.conversation, function (err, conv) {
-                            context.conv = conv;
+                            context.conv = conv.body;
                             callback(null, context);
                         });
                     },
                     function (context, callback) {
-                        context.conv.body.envelope.recipients.length.should.equal(1);
+                        context.conv.envelope.members.length.should.equal(1);
 
-                        if (context.conv.body.envelope.recipients.length != 1) {
+                        if (context.conv.envelope.members.length != 1) {
                             callback("Error: Accept Failed");
                         }
                         else {
@@ -120,7 +120,7 @@ describe('Conversation Tests', function() {
                         console.log('here with error' + err + context);
                     }
                     else {
-                        console.log('entered the uber callback. Step ' + context + ' has completed');
+                        console.log('Accept Pass');
                     }
                     done();
                 }
@@ -155,14 +155,14 @@ describe('Conversation Tests', function() {
                     },
                     function (context, callback) {
                         conversationAction("reject", context.conversation, function (err, conv) {
-                            context.conv = conv;
+                            context.conv = conv.body;
                             callback(null, context);
                         });
                     },
                     function (context, callback) {
-                        context.conv.body.envelope.recipients.length.should.equal(1);
+                        context.conv.envelope.members.length.should.equal(1);
 
-                        if (context.conv.body.envelope.recipients.length != 1) {
+                        if (context.conv.envelope.members.length != 1) {
                             callback("Error: Reject Failed");
                         }
                         else {
@@ -175,7 +175,7 @@ describe('Conversation Tests', function() {
                         console.log('here with error' + err + context);
                     }
                     else {
-                        console.log('entered the uber callback. Step ' + context + ' has completed');
+                        console.log('Reject Pass');
                     }
                     done();
                 }
@@ -210,14 +210,14 @@ describe('Conversation Tests', function() {
                     },
                     function (context, callback) {
                         conversationAction("ok", context.conversation, function (err, conv) {
-                            context.conv = conv;
+                            context.conv = conv.body;
                             callback(null, context);
                         });
                     },
                     function (context, callback) {
-                        context.conv.body.envelope.recipients.length.should.equal(1);
+                        context.conv.envelope.members.length.should.equal(1);
 
-                        if (context.conv.body.envelope.recipients.length != 1) {
+                        if (context.conv.envelope.members.length != 1) {
                             callback("Error: Ok Failed");
                         }
                         else {
@@ -230,7 +230,7 @@ describe('Conversation Tests', function() {
                         console.log('here with error' + err + context);
                     }
                     else {
-                        console.log('entered the uber callback. Step ' + context + ' has completed');
+                        console.log('Ok Pass');
                     }
                     done();
                 }
@@ -265,14 +265,14 @@ describe('Conversation Tests', function() {
                     },
                     function (context, callback) {
                         conversationAction("close", context.conversation, function (err, conv) {
-                            context.conv = conv;
+                            context.conv = conv.body;
                             callback(null, context);
                         });
                     },
                     function (context, callback) {
-                        context.conv.body.envelope.recipients.length.should.equal(0);
+                        context.conv.envelope.members.length.should.equal(0);
 
-                        if (context.conv.body.envelope.recipients.length != 0) {
+                        if (context.conv.envelope.members.length != 0) {
                             callback("Error: Close Failed");
                         }
                         else {
@@ -285,7 +285,7 @@ describe('Conversation Tests', function() {
                         console.log('here with error' + err + context);
                     }
                     else {
-                        console.log('entered the uber callback. Step ' + context + ' has completed');
+                        console.log('Close Pass');
                     }
                     done();
                 }
@@ -317,14 +317,14 @@ describe('Conversation Tests', function() {
                     },
                     function (context, callback) {
                         conversationAction("forward", context.conversation, function (err, conv) {
-                            context.conv = conv;
+                            context.conv = conv.body;
                             callback(null, context);
                         });
                     },
                     function (context, callback) {
-                        context.conv.body.envelope.recipients.length.should.equal(3);
+                        context.conv.envelope.members.length.should.equal(3);
 
-                        if (context.conv.body.envelope.recipients.length != 3) {
+                        if (context.conv.envelope.members.length != 3) {
                             callback("Error: Forward Failed");
                         }
                         else {
@@ -337,7 +337,7 @@ describe('Conversation Tests', function() {
                         console.log('here with error' + err + context);
                     }
                     else {
-                        console.log('entered the uber callback. Step ' + context + ' has completed');
+                        console.log('Forward Pass');
                     }
                     done();
                 }
@@ -369,14 +369,14 @@ describe('Conversation Tests', function() {
                     },
                     function (context, callback) {
                         conversationAction("delegate", context.conversation, function (err, conv) {
-                            context.conv = conv;
+                            context.conv = conv.body;
                             callback(null, context);
                         });
                     },
                     function (context, callback) {
-                        context.conv.body.envelope.recipients.length.should.equal(2);
+                        context.conv.envelope.members.length.should.equal(2);
 
-                        if (context.conv.body.envelope.recipients.length != 2) {
+                        if (context.conv.envelope.members.length != 2) {
                             callback("Error: Delegate Failed");
                         }
                         else {
@@ -389,7 +389,7 @@ describe('Conversation Tests', function() {
                         console.log('here with error' + err + context);
                     }
                     else {
-                        console.log('entered the uber callback. Step ' + context + ' has completed');
+                        console.log('Delegate Pass');
                     }
                     done();
                 }
@@ -421,14 +421,14 @@ describe('Conversation Tests', function() {
                     },
                     function (context, callback) {
                         conversationAction("escalate", context.conversation, function (err, conv) {
-                            context.conv = conv;
+                            context.conv = conv.body;
                             callback(null, context);
                         });
                     },
                     function (context, callback) {
-                        context.conv.body.envelope.recipients.length.should.equal(1);
+                        context.conv.envelope.members.length.should.equal(1);
 
-                        if (context.conv.body.envelope.recipients.length != 1) {
+                        if (context.conv.envelope.members.length != 1) {
                             callback("Error: Escalate Failed");
                         }
                         else {
@@ -441,7 +441,7 @@ describe('Conversation Tests', function() {
                         console.log('here with error' + err + context);
                     }
                     else {
-                        console.log('entered the uber callback. Step ' + context + ' has completed');
+                        console.log('Escalate Pass');
                     }
                     done();
                 }
@@ -487,15 +487,15 @@ describe('Conversation Tests', function() {
         var registration =
         {
             "envelope": {
-                "originator": "54306b26717638000040a7e7",
-                "recipients": [ "542e099f7c57130000d4128f", "54306ad3717638000040a7e6" ],
-                "messageType": type
+                "origin": "54306b26717638000040a7e7",
+                "members": [ "542e099f7c57130000d4128f", "54306ad3717638000040a7e6" ],
+                "pattern": type
             },
             "time": {
-                "ttl": 3600
+                "toLive": 3600
             },
             "content": {
-                "originalMessage": "This is a test of " + type + " message"
+                "message": "This is a test of " + type + " message"
             }
         }
 
@@ -505,7 +505,7 @@ describe('Conversation Tests', function() {
     function orginatorJSON(action) {
         var o =
         {
-            "originator": "54306ad3717638000040a7e6"
+            "origin": "54306ad3717638000040a7e6"
         };
 
         if (action) {

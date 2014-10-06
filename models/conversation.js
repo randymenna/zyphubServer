@@ -20,8 +20,8 @@ var timeSchema = new Schema({
     ttl: Date
 });
 
-var statSchema = new Schema({
-    state: [{ participant: {type: Schema.Types.ObjectId, ref: 'Person'}, state: String }],
+var stateSchema = new Schema({
+    events: [{ participant: {type: Schema.Types.ObjectId, ref: 'Person'}, event: String }],
     accepts: Number,
     rejects: Number,
     oks: Number,
@@ -39,38 +39,56 @@ var contentSchema = new Schema({
     replies: [{ originator: {type: Schema.Types.ObjectId, ref: 'Person'}, created: Date, content: String}]
 });
 
+var escalationSchema = new Schema({
+    name:           String,
+    description:    String,
+    public:         Boolean,
+    enterprise:     {type: String, default: "ConversePoint"},
+    currentStep:    {type: Number, default: 0},
+    steps:          [{
+        time:       {type: Number, default: 300},
+        targets:    [{type: Schema.Types.ObjectId, ref: 'Person'}],
+        trigger:    {type: String, default: "NO_READS"}
+    }],
+    owner:          [{type: Schema.Types.ObjectId, ref: 'Person'}]
+});
+
 var conversationSchema = new Schema({
-    envelope: { originator:   {type: Schema.Types.ObjectId, ref: 'Person'},
-                recipients:  [{type: Schema.Types.ObjectId, ref: 'Person'}],
-                messageType: String,
-                behaviors:   [String]
+    envelope: { origin:     {type: Schema.Types.ObjectId, ref: 'Person'},
+        members:    [{type: Schema.Types.ObjectId, ref: 'Person'}],
+        pattern:    String,
+        behaviors:  [String],
+        meta: {
+            enterprise: String
+        }
     },
-    time: { createDate: Date,
-            lastModified: Date,
-            ttl: Number
+    time: { created:     {type: Date, default: Date.now},
+            modified:     Date,
+            toLive:       {type: Number, default: -1}
     },
-    stats: {    view: [{participant: {type: Schema.Types.ObjectId, ref: 'Person'}, state: String}],
-                maxAccepts: {type: Number, default: 1},
-                accepts: {type: Number, default: 0},
-                rejects: {type: Number, default: 0},
-                oks: {type: Number, default: 0},
-                originalParticipantCount: Number,
-                currentParticipantCount: Number
+    state: {    members: [{
+        member: {type: Schema.Types.ObjectId, ref: 'Person'},
+        lastEvent: String
+    }],
+        maxAccepts: {type: Number, default: 1},
+        accepts:    {type: Number, default: 0},
+        rejects:    {type: Number, default: 0},
+        oks:        {type: Number, default: 0},
+        forwards:   {type: Number, default: 0},
+        delegates:  {type: Number, default: 0},
+        leaves:     {type: Number, default: 0},
+        startMemberCount:   Number,
+        curMemberCount:     Number
     },
-    escalation: {   currentStep: Number,
-                    steps: [{ recipients: [{type: Schema.Types.ObjectId, ref: 'Person'}], tte: Number, trigger: String }]
-    },
-    content: {  originalMessage: String,
-                replies: [{ originator: {type: Schema.Types.ObjectId, ref: 'Person'}, created: Date, content: String}]
+    escalation: [{type: Schema.Types.ObjectId, ref: 'Escalation'}],
+    content: {  message:    String,
+                replies:    [{ originator: {type: Schema.Types.ObjectId, ref: 'Person'}, created: Date, content: String}]
     }
 });
 
 conversationSchema.pre('save', function(next) {
-    now = new Date();
-    this.time.lastModified = now;
-    if (!this.time.createDate) {
-        this.time.createDate = now;
-    }
+
+    this.time.lastModified =  new Date();
     next();
 });
 
