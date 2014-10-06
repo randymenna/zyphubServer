@@ -82,7 +82,7 @@ var conversationSchema = new Schema({
     },
     escalation: [{type: Schema.Types.ObjectId, ref: 'Escalation'}],
     content: {  message:    String,
-                replies:    [{ originator: {type: Schema.Types.ObjectId, ref: 'Person'}, created: Date, content: String}]
+                replies:    [{ origin: {type: Schema.Types.ObjectId, ref: 'Person'}, created: {type: Date, default: Date.now}, content: String}]
     }
 });
 
