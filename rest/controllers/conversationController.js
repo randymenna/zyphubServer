@@ -209,6 +209,7 @@ exports.updateConversation = function (req, res) {
                 context.forward = req.body.forward;
                 context.delegate = req.body.delegate;
                 context.escalate = req.body.escalate;
+                context.reply = req.body.reply;
 
                 console.log(context.conversationId);
 
@@ -234,8 +235,9 @@ exports.updateConversation = function (req, res) {
                 switch( context.action ) {
 
                     case "reply":
-                        context.conversation.content.replies.push( data );
-                        break;
+                        conversationHelper.replyToConversation( context, function( err, conversation ){
+                            callback(null, context);
+                        });
 
                     case "leave":
                         conversationHelper.leaveConversation( context, function( err, conversation ){

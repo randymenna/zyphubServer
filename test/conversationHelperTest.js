@@ -451,6 +451,58 @@ describe('Conversation Tests', function() {
     });
 
 
+    describe('Reply to Conversation', function () {
+
+        it('should leave 2 participants', function (done) {
+
+            var context = {};
+            context.newConv = buildConversationJSON();
+
+            async.waterfall(
+                [
+                    function (callback) {
+                        var context = {};
+                        context.newConv = buildConversationJSON("STANDARD");
+                        console.log(context.newConv);
+                        callback(null, context);
+                    },
+                    function (context, callback) {
+                        startConversation(context.newConv, function (err, result) {
+                            context.conversation = result.body;
+                            callback(null, context);
+                        });
+                    },
+                    function (context, callback) {
+                        conversationAction("reply", context.conversation, function (err, conv) {
+                            context.conv = conv.body;
+                            callback(null, context);
+                        });
+                    },
+                    function (context, callback) {
+                        context.conv.envelope.members.length.should.equal(2);
+
+                        if (context.conv.envelope.members.length != 2) {
+                            callback("Error: Reply Failed");
+                        }
+                        else {
+                            callback(null, context);
+                        }
+                    }
+                ],
+                function (err, context) {
+                    if (err) {
+                        console.log('here with error' + err + context);
+                    }
+                    else {
+                        console.log('Reply Pass');
+                    }
+                    done();
+                }
+            );
+
+        });
+    });
+
     function startConversation(payload, callback) {
         var c = payload;
         request(url)
@@ -516,6 +568,9 @@ describe('Conversation Tests', function() {
             else if (action == "escalate") {
                 o.escalate = [];
                 o.escalate.push("54306b26717638000040a7e7");
+            }
+            else if (action == "reply") {
+                o.reply = "This is a reply";
             }
         }
         return o;

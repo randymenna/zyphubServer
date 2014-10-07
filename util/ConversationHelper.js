@@ -581,3 +581,41 @@ ConversationHelper.prototype.escalateConversation = function( context, callback 
         }
     );
 };
+
+ConversationHelper.prototype.replyToConversation = function( context, callback ) {
+    var self = this;
+
+    console.log("replyToConversation(): entered");
+    async.waterfall(
+        [
+            function (callback) {
+                callback(null, context);
+            },
+
+            // save Conversation
+            function(context,callback) {
+
+                var reply = {};
+                reply.origin = context.profileId;
+                reply.content = context.reply;
+
+                context.conversation.content.replies.push(reply);
+
+                context.conversation.save(function (err, doc) {
+                    if ( err ) {
+                        callback(err, null);
+                    }
+                    else {
+                        context.conversation  = doc;
+                        callback(null, context);
+                    }
+                });
+            }
+        ],
+
+        function (err, context) {
+            console.log("replyToConversation(): exit: error %s", err);
+            callback( err, context );
+        }
+    );
+};
