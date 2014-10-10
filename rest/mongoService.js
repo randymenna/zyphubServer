@@ -6,7 +6,7 @@ var ObjectID = require('bson').BSONPure.ObjectID;
 
 var genericMongoController  = require('./controllers/genericMongoController');
 
-var gibibus                          = require('../bus');
+var cpbus                          = require('../bus');
 var ExchangePublisherFactory         = require('../util/bus/ExchangePublisherFactory');
 var EventPublisher                   = require('../util/bus/EventPublisher');
 
@@ -26,14 +26,14 @@ module.exports = function(){
     app.delete('/:collection/:id'           , genericMongoController.deleteEntity);
 
 
-    gibibus.connection.on('error',function(err) {
-        console.error("MongoService: Unable to connect to gibi bus:" + err);
+    cpbus.connection.on('error',function(err) {
+        console.error("MongoService: Unable to connect to cp bus:" + err);
     });
 
-    gibibus.connection.on('ready',function() {
+    cpbus.connection.on('ready',function() {
 
-        console.log("MongoService: Connected to gibi bus");
-        exchangePublisherFactory = new ExchangePublisherFactory(gibibus.connection);
+        console.log("MongoService: Connected to cp bus");
+        exchangePublisherFactory = new ExchangePublisherFactory(cpbus.connection);
 
         exchangePublisherFactory.createNotificationEngineExchangePublisher(function(notificationEngineExchangePublisher) {
             eventPublisher = new EventPublisher( notificationEngineExchangePublisher );

@@ -39,7 +39,7 @@ EmailHelper.prototype.deviceRemoved = function( userEmail, device, devicePlan ) 
 
     // send the email
     var mailOptions = {
-        from: "noreply@gibitechnologies.com",
+        from: "noreply@cptechnologies.com",
         to: sendToAddress,
         subject: subject,
         html: html
@@ -63,7 +63,7 @@ EmailHelper.prototype.sendAccountDisableEmail = function( userEmail ) {
 
     // send the email
     var mailOptions = {
-        from: "noreply@gibitechnologies.com",
+        from: "noreply@cptechnologies.com",
         to: sendToAddress,
         subject: subject,
         html: html

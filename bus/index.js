@@ -51,14 +51,14 @@ module.exports.connection=connection;
 
 
 // SAMPLE USAGE
-// var gibibus = require('../gibi-bus');
-// gibibus.connection.on('ready',function() {
+// var cpbus = require('../cp-bus');
+// cpbus.connection.on('ready',function() {
 //   console.log('xxxxxConnected to Gibi Bus using amqp...');
-//    gibibus.createSubscriberWithCallback('PositionGatewayQueue',handleReceivedData);
+//    cpbus.createSubscriberWithCallback('PositionGatewayQueue',handleReceivedData);
 // });
 //
-//gibibus.connection.on('error',function() {
-//    console.log('error event fired for gibibus');
+//cpbus.connection.on('error',function() {
+//    console.log('error event fired for cpbus');
 //});
 
 

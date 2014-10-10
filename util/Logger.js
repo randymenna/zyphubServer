@@ -7,7 +7,7 @@ var fs              = require('fs-extra');
 var config          = require('config');
 
 var Logger = module.exports = function Logger() {
-    return log4js.getLogger('gibi');
+    return log4js.getLogger('cp');
 };
 
 module.exports.getLogger = function(categoryName) {

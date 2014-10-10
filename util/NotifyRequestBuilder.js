@@ -2,7 +2,7 @@
  * Created by al on 1/6/14.
  */
 
-var gibiConstants = require('../constants');
+var cpConstants = require('../constants');
 
 
 var NotifyRequestBuilder = module.exports = function NotifyRequestBuilder() {};
@@ -16,15 +16,15 @@ NotifyRequestBuilder.prototype.buildBaseEvent = function (originalMessage, petDe
     var notificationMediumContactMap = {};
 
     // loop thru all notification medium types
-    for (var notificationMediumKey in gibiConstants.NOTIFICATION_MEDIUM_TYPES) {
+    for (var notificationMediumKey in cpConstants.NOTIFICATION_MEDIUM_TYPES) {
 
         var contactsForNotificationMedium = [];
 
-        var notificationMedium              = gibiConstants.NOTIFICATION_MEDIUM_TYPES[notificationMediumKey];
+        var notificationMedium              = cpConstants.NOTIFICATION_MEDIUM_TYPES[notificationMediumKey];
 
         // if the event is a user's request to share pet's location, use the contacts
         // specified in the actual event object
-        if (gibiConstants.isSharePetLocationEvent(eventType)) {
+        if (cpConstants.isSharePetLocationEvent(eventType)) {
             if (originalMessage.contacts != null) {
                 for (var j=0;j<originalMessage.contacts.length;j++) {
                     contactsForNotificationMedium.push(originalMessage.contacts[j]);
@@ -67,13 +67,13 @@ NotifyRequestBuilder.prototype.buildBaseEvent = function (originalMessage, petDe
         notifyRequest.mdn = petDevice.device.mdn;
     }
 
-    if ( eventType.value == gibiConstants.EVENT_TYPES.CHANGE_REPORTING_FREQUENCY.value ) {
+    if ( eventType.value == cpConstants.EVENT_TYPES.CHANGE_REPORTING_FREQUENCY.value ) {
         notifyRequest.requestId = guid();
         notifyRequest.currentLocation               = null;
         notifyRequest.previousLocation              = null;
     }
 
-    if ( eventType.value == gibiConstants.EVENT_TYPES.CHANGE_REPORTING_FREQUENCY_FAIL.value ) {
+    if ( eventType.value == cpConstants.EVENT_TYPES.CHANGE_REPORTING_FREQUENCY_FAIL.value ) {
         notifyRequest.reporting = originalMessage.reporting;
     }
 

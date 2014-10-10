@@ -37,7 +37,7 @@ var LoggerFactory = module.exports = function LoggerFactory(logFileBaseName) {
                     filename: logFile,
                     pattern: "-MM-dd-yy",
                     alwaysIncludePattern: false,
-                    category: "gibi"
+                    category: "cp"
                 }
             ],
             replaceConsole: true

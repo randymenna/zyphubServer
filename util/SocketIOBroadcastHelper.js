@@ -1,7 +1,7 @@
 /**
  * Created by al on 2/25/14.
  */
-var gibiconstants = require('../constants');
+var cpconstants = require('../constants');
 
 var SocketIOBroadcastHelper = module.exports = function SocketIOBroadcastHelper() {
 
@@ -16,7 +16,7 @@ SocketIOBroadcastHelper.prototype.broadcastNewPosition = function(pet,locationRe
     newPosition.userId         = pet.owner.email;
     newPosition.data           = locationReport;
 
-    if (!gibiconstants.isValidFix(locationReport)) {
+    if (!cpconstants.isValidFix(locationReport)) {
         newPosition.topic = "noFixReported";
     }
     else {
@@ -40,9 +40,9 @@ SocketIOBroadcastHelper.prototype.broadcastEvent = function(message,pet) {
     evt.userId         = pet.owner.email;
 
     switch( message.type.value ) {
-        case gibiconstants.EVENT_TYPES.NEW_POSITION.value:
+        case cpconstants.EVENT_TYPES.NEW_POSITION.value:
 
-            if (!gibiconstants.isValidFix(message.currentLocation)) {
+            if (!cpconstants.isValidFix(message.currentLocation)) {
                 evt.topic = "noFixReported";
             }
             else {
@@ -52,13 +52,13 @@ SocketIOBroadcastHelper.prototype.broadcastEvent = function(message,pet) {
             evt.data = message.currentLocation;
             break;
 
-        case gibiconstants.EVENT_TYPES.LOW_BATTERY.value:
+        case cpconstants.EVENT_TYPES.LOW_BATTERY.value:
             evt.topic = "batteryAlert";
             evt.data = message.currentLocation;
             break;
 
-        case gibiconstants.EVENT_TYPES.VIRTUAL_FENCE_BREACH.value:
-        case gibiconstants.EVENT_TYPES.VIRTUAL_FENCE_ENTER.value:
+        case cpconstants.EVENT_TYPES.VIRTUAL_FENCE_BREACH.value:
+        case cpconstants.EVENT_TYPES.VIRTUAL_FENCE_ENTER.value:
             evt.topic = "zoneEvent";
 
             var status = pet.petStatus;
@@ -68,10 +68,10 @@ SocketIOBroadcastHelper.prototype.broadcastEvent = function(message,pet) {
             evt.data  = status;
             break;
 
-        case gibiconstants.EVENT_TYPES.LOCATE_PET.value:
-        case gibiconstants.EVENT_TYPES.LOCATE_PET_RESULT_SUCCESS.value:
-        case gibiconstants.EVENT_TYPES.LOCATE_PET_RESULT_FAIL.value:
-        case gibiconstants.EVENT_TYPES.LOCATE_PET_TIMEOUT.value:
+        case cpconstants.EVENT_TYPES.LOCATE_PET.value:
+        case cpconstants.EVENT_TYPES.LOCATE_PET_RESULT_SUCCESS.value:
+        case cpconstants.EVENT_TYPES.LOCATE_PET_RESULT_FAIL.value:
+        case cpconstants.EVENT_TYPES.LOCATE_PET_TIMEOUT.value:
 
             evt.topic = "locatePet";
 
@@ -83,10 +83,10 @@ SocketIOBroadcastHelper.prototype.broadcastEvent = function(message,pet) {
             evt.data  = status;
             break;
 
-        case gibiconstants.EVENT_TYPES.SHARE_PET_LOCATION.value:
-        case gibiconstants.EVENT_TYPES.SHARE_PET_LOCATION_RESULT_SUCCESS.value:
-        case gibiconstants.EVENT_TYPES.SHARE_PET_LOCATION_RESULT_FAIL.value:
-        case gibiconstants.EVENT_TYPES.SHARE_PET_LOCATION_TIMEOUT.value:
+        case cpconstants.EVENT_TYPES.SHARE_PET_LOCATION.value:
+        case cpconstants.EVENT_TYPES.SHARE_PET_LOCATION_RESULT_SUCCESS.value:
+        case cpconstants.EVENT_TYPES.SHARE_PET_LOCATION_RESULT_FAIL.value:
+        case cpconstants.EVENT_TYPES.SHARE_PET_LOCATION_TIMEOUT.value:
 
             evt.topic = "sharePetLocation";
 
@@ -97,7 +97,7 @@ SocketIOBroadcastHelper.prototype.broadcastEvent = function(message,pet) {
             evt.data  = status;
             break;
 
-        case gibiconstants.EVENT_TYPES.POWER_UP.value:
+        case cpconstants.EVENT_TYPES.POWER_UP.value:
             evt.topic       = "powerUp";
             var status      = pet.petStatus;
             status.petId    = pet._id;
@@ -106,7 +106,7 @@ SocketIOBroadcastHelper.prototype.broadcastEvent = function(message,pet) {
 
             break;
 
-        case gibiconstants.EVENT_TYPES.POWER_DOWN.value:
+        case cpconstants.EVENT_TYPES.POWER_DOWN.value:
             evt.topic       = "powerDown";
             var status      = pet.petStatus;
             status.petId    = pet._id;
@@ -115,9 +115,9 @@ SocketIOBroadcastHelper.prototype.broadcastEvent = function(message,pet) {
 
             break;
 
-        case gibiconstants.EVENT_TYPES.CHANGE_REPORTING_FREQUENCY.value:
-        case gibiconstants.EVENT_TYPES.CHANGE_REPORTING_FREQUENCY_SUCCESS.value:
-        case gibiconstants.EVENT_TYPES.CHANGE_REPORTING_FREQUENCY_FAIL.value:
+        case cpconstants.EVENT_TYPES.CHANGE_REPORTING_FREQUENCY.value:
+        case cpconstants.EVENT_TYPES.CHANGE_REPORTING_FREQUENCY_SUCCESS.value:
+        case cpconstants.EVENT_TYPES.CHANGE_REPORTING_FREQUENCY_FAIL.value:
             evt.topic       = "changeReportingFrequency";
             var status      = pet.petStatus;
             status.petId    = pet._id;
@@ -127,7 +127,7 @@ SocketIOBroadcastHelper.prototype.broadcastEvent = function(message,pet) {
 
             break;
 
-        case gibiconstants.EVENT_TYPES.FULLY_CHARGED.value:
+        case cpconstants.EVENT_TYPES.FULLY_CHARGED.value:
             evt.topic       = "fullyCharged";
             var status      = pet.petStatus;
             status.petId    = pet._id;
@@ -136,7 +136,7 @@ SocketIOBroadcastHelper.prototype.broadcastEvent = function(message,pet) {
 
             break;
 
-        case gibiconstants.EVENT_TYPES.TRACKING_SESSION_TIMEOUT.value:
+        case cpconstants.EVENT_TYPES.TRACKING_SESSION_TIMEOUT.value:
             evt.topic = "trackingSession";
             var status = pet.petStatus;
             status.petId = pet._id;

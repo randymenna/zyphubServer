@@ -52,7 +52,7 @@ exports.getSubset = function(req, res) {
     var collectionName = req.params.collection;
     var skip           = parseInt(req.params.skip);
     var limit          = parseInt(req.params.limit);
-    var gibiToken      = req.headers.gibitoken;
+    var cpToken      = req.headers.cptoken;
 
     async.waterfall(
         [
@@ -100,7 +100,7 @@ exports.findById = function(req, res) {
 
     var id             = req.params.id;
     var collectionName = req.params.collection;
-    var gibiToken      = req.headers.gibitoken;
+    var cpToken      = req.headers.cptoken;
 
     console.log('findById(): entered. retrieving from ' + collectionName + 'with id: ' + id);
 
@@ -145,7 +145,7 @@ exports.findById = function(req, res) {
 exports.findAll = function(req, res) {
 
     var collectionName = req.params.collection;
-    var gibiToken      = req.headers.gibitoken;
+    var cpToken      = req.headers.cptoken;
 
     async.waterfall(
         [
@@ -187,7 +187,7 @@ exports.findByQuery = function(req, res) {
 
     var collectionName = req.params.collection;
     var queryCriteria  = req.params.query;
-    var gibiToken      = req.headers.gibitoken;
+    var cpToken      = req.headers.cptoken;
 
     console.log('findByQuery(): entered. retrieving from ' + collectionName + 'with query: ' + queryCriteria);
 
@@ -227,7 +227,7 @@ exports.addEntity = function(req, res) {
 
 
     var collectionName = req.params.collection;
-    var gibiToken      = req.headers.gibitoken;
+    var cpToken      = req.headers.cptoken;
     var entity         = req.body;
 
     console.log('addEntity(): entered. adding entity to ' + collectionName + ": " + JSON.stringify(entity));
@@ -430,10 +430,10 @@ exports.deleteEntity = function(req, res) {
 }
 
 exports.extractAccountId = function(req) {
-    var gibiToken      = req.headers.gibitoken;
+    var cpToken      = req.headers.cptoken;
     var accountId      = null;
-    if (gibiToken != null) {
-        var decodedToken   = jwt.decode(gibiToken, config.jwt.secret);
+    if (cpToken != null) {
+        var decodedToken   = jwt.decode(cpToken, config.jwt.secret);
         var accountId      = decodedToken.accountId;
     }
     if ( accountId == null )

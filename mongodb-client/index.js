@@ -4,7 +4,7 @@
 var config          = require('config');
 var async           = require('async');
 var mongo           = require('mongodb');
-var gibiConstants   = require('../constants');
+var cpConstants   = require('../constants');
 
 module.exports.init = function (callback) {
     var Server  = mongo.Server;

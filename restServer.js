@@ -113,9 +113,9 @@ function createExpressApplication() {
         }
         else {
             // validate token from http header
-            if ( req.headers.gibitoken !== undefined ) {
+            if ( req.headers.cptoken !== undefined ) {
 
-                if ( Login.validateToken( req.headers.gibitoken ) ) {
+                if ( Login.validateToken( req.headers.cptoken ) ) {
                     next();
                 }
                 else {
