@@ -29,11 +29,6 @@ var stateSchema = new Schema({
     currentParticipantCount: Number
 });
 
-var escalationSchema = new Schema({
-    currentStep: Number,
-    steps: [{ recipients: [{type: Schema.Types.ObjectId, ref:'Person'}], tte: Number, trigger: String }]
-});
-
 var contentSchema = new Schema({
     originalMessage: String,
     replies: [{ originator: {type: Schema.Types.ObjectId, ref: 'Person'}, created: Date, content: String}]
