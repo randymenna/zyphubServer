@@ -54,7 +54,8 @@ var escalationSchema = new Schema({
 });
 
 var conversationSchema = new Schema({
-    envelope: { origin:     {type: Schema.Types.ObjectId, ref: 'Person'},
+    envelope: {
+        origin:     {type: Schema.Types.ObjectId, ref: 'Person'},
         members:    [{type: Schema.Types.ObjectId, ref: 'Person'}],
         pattern:    String,
         behaviors:  [String],
