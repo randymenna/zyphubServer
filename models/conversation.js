@@ -1,17 +1,19 @@
 /**
  * Created by randy on 9/29/14.
  */
-var mongoose                = require('mongoose');
-var profile                 = require('./profile');
+var mongoose = require('mongoose');
+var profile = require('./profile');
 
 
-var Schema  = mongoose.Schema;
+var Schema = mongoose.Schema;
 
 var envelopeSchema = new Schema({
-    originator:   {type: Schema.Types.ObjectId, ref: 'Person'},
-    recipients:  [{type: Schema.Types.ObjectId, ref: 'Person'}],
+    originator: {type: Schema.Types.ObjectId, ref: 'Person'},
+    recipients: [
+        {type: Schema.Types.ObjectId, ref: 'Person'}
+    ],
     messageType: String,
-    behaviors:   [String]
+    behaviors: [String]
 });
 
 var timeSchema = new Schema({
@@ -21,7 +23,9 @@ var timeSchema = new Schema({
 });
 
 var stateSchema = new Schema({
-    events: [{ participant: {type: Schema.Types.ObjectId, ref: 'Person'}, event: String }],
+    events: [
+        { participant: {type: Schema.Types.ObjectId, ref: 'Person'}, event: String }
+    ],
     accepts: Number,
     rejects: Number,
     oks: Number,
@@ -31,67 +35,83 @@ var stateSchema = new Schema({
 
 var contentSchema = new Schema({
     originalMessage: String,
-    replies: [{ originator: {type: Schema.Types.ObjectId, ref: 'Person'}, created: Date, content: String}]
+    replies: [
+        { originator: {type: Schema.Types.ObjectId, ref: 'Person'}, created: Date, content: String}
+    ]
 });
 
 var escalationSchema = new Schema({
-    name:           String,
-    description:    String,
-    public:         Boolean,
-    enterprise:     {type: String, default: "ConversePoint"},
-    currentStep:    {type: Number, default: 0},
-    steps:          [{
-        time:       {type: Number, default: 300},
-        targets:    [{type: Schema.Types.ObjectId, ref: 'Person'}],
-        trigger:    {type: String, default: "NO_READS"}
-    }],
-    owner:          [{type: Schema.Types.ObjectId, ref: 'Person'}]
+    name: String,
+    description: String,
+    public: Boolean,
+    enterprise: {type: String, default: "ConversePoint"},
+    currentStep: {type: Number, default: 0},
+    steps: [
+        {
+            time: {type: Number, default: 300},
+            targets: [
+                {type: Schema.Types.ObjectId, ref: 'Person'}
+            ],
+            trigger: {type: String, default: "NO_READS"}
+        }
+    ],
+    owner: [
+        {type: Schema.Types.ObjectId, ref: 'Person'}
+    ]
 });
 
 var conversationSchema = new Schema({
     envelope: {
-        origin:     {type: Schema.Types.ObjectId, ref: 'Person'},
-        members:    [{type: Schema.Types.ObjectId, ref: 'Person'}],
-        pattern:    String,
-        behaviors:  [String],
+        origin: {type: Schema.Types.ObjectId, ref: 'Person'},
+        members: [
+            {type: Schema.Types.ObjectId, ref: 'Person'}
+        ],
+        pattern: String,
+        behaviors: [String],
         meta: {
             enterprise: String
         }
     },
-    time: { created:     {type: Date, default: Date.now},
-            modified:     Date,
-            toLive:       {type: Number, default: -1}
+    time: { created: {type: Date, default: Date.now},
+        modified: Date,
+        toLive: {type: Number, default: -1}
     },
-    state: {    members: [{
-        member: {type: Schema.Types.ObjectId, ref: 'Person'},
-        lastEvent: String
-    }],
+    state: {    members: [
+                    {
+                        member: {type: Schema.Types.ObjectId, ref: 'Person'},
+                        lastEvent: {type: String, default: "UNREAD" }
+                    }
+    ],
         maxAccepts: {type: Number, default: 1},
-        accepts:    {type: Number, default: 0},
-        rejects:    {type: Number, default: 0},
-        oks:        {type: Number, default: 0},
-        forwards:   {type: Number, default: 0},
-        delegates:  {type: Number, default: 0},
-        leaves:     {type: Number, default: 0},
-        startMemberCount:   Number,
-        curMemberCount:     Number
+        accepts: {type: Number, default: 0},
+        rejects: {type: Number, default: 0},
+        oks: {type: Number, default: 0},
+        forwards: {type: Number, default: 0},
+        delegates: {type: Number, default: 0},
+        leaves: {type: Number, default: 0},
+        startMemberCount: Number,
+        curMemberCount: Number
     },
-    escalation: [{type: Schema.Types.ObjectId, ref: 'Escalation'}],
-    content: {  message:    String,
-                replies:    [{ origin: {type: Schema.Types.ObjectId, ref: 'Person'}, created: {type: Date, default: Date.now}, content: String}]
+    escalation: [
+        {type: Schema.Types.ObjectId, ref: 'Escalation'}
+    ],
+    content: {  message: String,
+        replies: [
+            { origin: {type: Schema.Types.ObjectId, ref: 'Person'}, created: {type: Date, default: Date.now}, content: String}
+        ]
     }
 });
 
-conversationSchema.pre('save', function(next) {
+conversationSchema.pre('save', function (next) {
 
-    this.time.lastModified =  new Date();
+    this.time.lastModified = new Date();
     next();
 });
 
 var _Conversation = mongoose.model('Conversation', conversationSchema);
 
-module.exports =  {
-    Conversation : _Conversation
+module.exports = {
+    Conversation: _Conversation
 };
 
 

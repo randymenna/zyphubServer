@@ -19,23 +19,23 @@ var ConversationHelper = module.exports = function ConversationHelper () {
         }
     };
 
-    this.updateState = function( profileId, state , conversation) {
+    this.updateLastEvent = function( profileId, state , conversation) {
 
        for (var i=0; i < conversation.state.members.length; i++ ) {
            if ( conversation.state.members[i].member.id == (new ObjectId(profileId)).id ) {
-               conversation.state.members[i].state = state;
+               conversation.state.members[i].lastEvent = state;
                break;
            }
        }
     };
 
-    this.removeAllMembersNotInStateFromConversation = function( state, conversation ) {
+    this.removeAllMembersWhoDontHaveLastEventFromConversation = function( state, conversation ) {
 
         // update the state
         for (var i=0; i < conversation.state.members.length; i++ ) {
 
-            if ( conversation.state.members[i].state != state ) {
-                conversation.state.members[i].state = "REMOVED";
+            if ( conversation.state.members[i].lastEvent != state ) {
+                conversation.state.members[i].lastEvent = "REMOVED";
                 conversation.envelope.members.pull(new ObjectId(conversation.state.members[i].member));
                 --conversation.state.curMemberCount;
             }
@@ -129,7 +129,7 @@ ConversationHelper.prototype.leaveConversation = function( context, callback ) {
                 context.conversation.envelope.members.pull({_id: new ObjectId(context.profileId)});
                 --context.conversation.state.curMemberCount;
                 ++context.conversation.state.leaves;
-                self.updateState( context.profileId, "LEFT", context.conversation);
+                self.updateLastEvent( context.profileId, "LEFT", context.conversation);
 
                 context.conversation.save(function( err, conversation ){
                     if ( err ) {
@@ -172,10 +172,10 @@ ConversationHelper.prototype.acceptConversation = function( context, callback ) 
                 }
 
                 ++context.conversation.state.accepts;
-                self.updateState( context.profileId, "ACCEPTED", context.conversation);
+                self.updateLastEvent( context.profileId, "ACCEPTED", context.conversation);
 
                 if ( context.conversation.state.accepts == context.conversation.state.maxAccepts ) {
-                    self.removeAllMembersNotInStateFromConversation( "ACCEPTED", context.conversation );
+                    self.removeAllMembersWhoDontHaveLastEventFromConversation( "ACCEPTED", context.conversation );
                 }
 
                 context.conversation.save(function( err, conversation ){
@@ -214,7 +214,7 @@ ConversationHelper.prototype.rejectConversation = function( context, callback ) 
             function(context,callback) {
 
                 ++context.conversation.state.rejects;
-                self.updateState( context.profileId, "REJECTED", context.conversation );
+                self.updateLastEvent( context.profileId, "REJECTED", context.conversation );
                 context.conversation.envelope.members.pull( new ObjectId(context.profileId) );
                 --context.conversation.state.curMemberCount;
 
@@ -260,7 +260,7 @@ ConversationHelper.prototype.okConversation = function( context, callback ) {
                 context.conversation.envelope.members.pull({_id: new ObjectId(context.profileId)});
                 --context.conversation.state.curMemberCount;
                 ++context.conversation.state.oks;
-                self.updateState( context.profileId, "OK", context.conversation );
+                self.updateLastEvent( context.profileId, "OK", context.conversation );
 
                 context.conversation.save(function( err, conversation ){
                     if ( err ) {
@@ -305,7 +305,7 @@ ConversationHelper.prototype.closeConversation = function( context, callback ) {
             // remove profiles from Conversation
             function(context,callback) {
                 // remove from active members
-                self.updateState( context.profileId, "CLOSED", context.conversation);
+                self.updateLastEvent( context.profileId, "CLOSED", context.conversation);
 
                 context.conversation.state.curMemberCount = 0;
 
@@ -404,7 +404,7 @@ ConversationHelper.prototype.delegateConversation = function( context, callback 
 
                 context.conversation.envelope.members.pull({_id: new ObjectId(context.profileId)});
                 --context.conversation.state.curMemberCount;
-                self.updateState( context.profileId, "DELEGATED", context.conversation);
+                self.updateLastEvent( context.profileId, "DELEGATED", context.conversation);
 
                 callback(null, context);
             },
