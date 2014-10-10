@@ -29,7 +29,7 @@ var ConversationHelper = module.exports = function ConversationHelper () {
        }
     };
 
-    this.removeAllMembersNotInState = function( state, conversation ) {
+    this.removeAllMembersNotInStateFromConversation = function( state, conversation ) {
 
         // update the state
         for (var i=0; i < conversation.state.members.length; i++ ) {
@@ -43,7 +43,7 @@ var ConversationHelper = module.exports = function ConversationHelper () {
     };
 
     // remove conversation from Inbox
-    this.removeFromInbox = function(context, callback) {
+    this.removeConversationFromOneMembersInbox = function(context, callback) {
 
         console.log(context.profileId);
         console.log(context.conversation._id);
@@ -59,7 +59,7 @@ var ConversationHelper = module.exports = function ConversationHelper () {
     };
 
     // remove conversation from Inbox
-    this.removeFromAllInboxes = function(context,callback) {
+    this.removeConversationFromAllMembersInboxes = function(context,callback) {
 
         model.Person.update({'_id': { $in: context.conversation.envelope.members }},{$pull: {inbox: context.conversation._id}}, {multi:true}, function(err, profiles){
             if ( err ) {
@@ -73,7 +73,7 @@ var ConversationHelper = module.exports = function ConversationHelper () {
     };
 
     // remove members from conversation
-    this.removeAllMembers = function(context,callback) {
+    this.removeAllMembersFromConversation = function(context,callback) {
 
         // update the state
         for (var i=0; i < context.conversation.state.members.length; i++ ) {
@@ -85,7 +85,7 @@ var ConversationHelper = module.exports = function ConversationHelper () {
         callback(null,context)
     };
 
-    this.addToInboxes = function( context, callback ) {
+    this.addConversationToNewMembersInboxes = function( context, callback ) {
         model.Person.update({'_id': { $in: context.toProfiles }},{$push: {inbox: context.conversation._id }}, {multi:true}, function(err, profiles){
             if ( err ) {
                 callback(err, null);
@@ -96,7 +96,7 @@ var ConversationHelper = module.exports = function ConversationHelper () {
         });
     }
 
-    this.addToConversation = function( context, callback ) {
+    this.addNewMembersToConversation = function( context, callback ) {
         for (var i=0; i < context.toProfiles.length; i++) {
             context.conversation.envelope.members.push( context.toProfiles[i] );
             context.conversation.state.members.push( {member: context.toProfiles[i], state: "UNOPENED"} );
@@ -203,7 +203,7 @@ ConversationHelper.prototype.leaveConversation = function( context, callback ) {
 
             // remove conversation from Inbox
             function(context, callback) {
-                self.removeFromInbox(context, callback);
+                self.removeConversationFromOneMembersInbox(context, callback);
             },
 
             // remove profile from Conversation
@@ -259,7 +259,7 @@ ConversationHelper.prototype.acceptConversation = function( context, callback ) 
                 self.updateState( context.profileId, "ACCEPTED", context.conversation);
 
                 if ( context.conversation.state.accepts == context.conversation.state.maxAccepts ) {
-                    self.removeAllMembersNotInState( "ACCEPTED", context.conversation );
+                    self.removeAllMembersNotInStateFromConversation( "ACCEPTED", context.conversation );
                 }
 
                 context.conversation.save(function( err, conversation ){
@@ -335,7 +335,7 @@ ConversationHelper.prototype.okConversation = function( context, callback ) {
             },
 
             function(context,callback) {
-                self.removeFromInbox(context, callback);
+                self.removeConversationFromOneMembersInbox(context, callback);
             },
 
             // remove profile from Conversation
@@ -379,11 +379,11 @@ ConversationHelper.prototype.closeConversation = function( context, callback ) {
             },
 
             function(context,callback) {
-                self.removeFromAllInboxes(context, callback);
+                self.removeConversationFromAllMembersInboxes(context, callback);
             },
 
             function(context,callback) {
-                self.removeAllMembers(context, callback);
+                self.removeAllMembersFromConversation(context, callback);
             },
 
             // remove profiles from Conversation
@@ -434,11 +434,11 @@ ConversationHelper.prototype.forwardConversation = function( context, callback )
             },
 
             function(context,callback) {
-                self.addToInboxes(context, callback);
+                self.addConversationToNewMembersInboxes(context, callback);
             },
 
             function(context,callback) {
-                self.addToConversation(context, callback);
+                self.addNewMembersToConversation(context, callback);
             },
 
             // save Conversation
@@ -480,7 +480,7 @@ ConversationHelper.prototype.delegateConversation = function( context, callback 
 
             // remove conversation from origin Inbox
             function(context, callback) {
-                self.removeFromInbox(context, callback);
+                self.removeConversationFromOneMembersInbox(context, callback);
             },
 
             // remove origin from active members
@@ -495,12 +495,12 @@ ConversationHelper.prototype.delegateConversation = function( context, callback 
 
             // add conversation to new members inbox
             function(context,callback) {
-                self.addToInboxes(context, callback);
+                self.addConversationToNewMembersInboxes(context, callback);
             },
 
             // add new member to conversation
             function(context,callback) {
-                self.addToConversation(context, callback);
+                self.addNewMembersToConversation(context, callback);
             },
 
             // save Conversation
@@ -545,19 +545,19 @@ ConversationHelper.prototype.escalateConversation = function( context, callback 
             },
 
             function(context,callback) {
-                self.removeFromAllInboxes(context, callback);
+                self.removeConversationFromAllMembersInboxes(context, callback);
             },
 
             function(context,callback) {
-                self.removeAllMembers(context, callback);
+                self.removeAllMembersFromConversation(context, callback);
             },
 
             function(context,callback) {
-                self.addToInboxes(context, callback);
+                self.addConversationToNewMembersInboxes(context, callback);
             },
 
             function(context,callback) {
-                self.addToConversation(context, callback);
+                self.addNewMembersToConversation(context, callback);
             },
 
             // save Conversation
