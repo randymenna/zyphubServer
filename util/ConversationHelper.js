@@ -104,6 +104,29 @@ var ConversationHelper = module.exports = function ConversationHelper () {
         }
         callback(null, context);
     }
+
+    this.escalationConditionMet = function( context ) {
+        var condition = context.escalation.steps[context.currentStep].trigger;
+        var doNextStep = true;
+
+        switch( condition ) {
+            case "NO_READS":
+                for (var i=0; i < context.conversation.state.members.length; i++) {
+                    if (context.conversation.state.members[i].lastEvent != 'UNREAD') {
+                        doNextStep = false;
+                        break;
+                    }
+                }
+                break;
+
+            case "NO_REPLIES":
+                if (context.conversation.envelope.replies.length)
+                    doNextStep = false;
+                break;
+        }
+
+        return doNextStep;
+    }
 };
 
 ConversationHelper.prototype.leaveConversation = function( context, callback ) {
@@ -340,11 +363,11 @@ ConversationHelper.prototype.forwardConversation = function( context, callback )
             function (callback) {
 
                 if ( !context.forward.isArray ) {
-                    context.toProfiles = [];
-                    context.toProfiles.push(context.forward);
+                    context.newMembers = [];
+                    context.newMembers.push(context.forward);
                 }
                 else {
-                    context.toProfiles = context.forward;
+                    context.newMembers = context.forward;
                 }
                 callback(null, context);
             },
@@ -388,8 +411,8 @@ ConversationHelper.prototype.delegateConversation = function( context, callback 
     async.waterfall(
         [
             function (callback) {
-                context.toProfiles = [];
-                context.toProfiles.push(context.delegate);
+                context.newMembers = [];
+                context.newMembers.push(context.delegate);
 
                 callback(null, context);
             },
@@ -450,14 +473,16 @@ ConversationHelper.prototype.escalateConversation = function( context, callback 
     async.waterfall(
         [
             function (callback) {
-                if ( !context.escalate.length ) {
-                    context.toProfiles = [];
-                    context.toProfiles.push(context.escalate);
+
+                if ( self.escalationTriggerMet(context) ) {
+
+                    context.newMembers = context.escalate.steps[context.currentState].targets;
+
+                    callback( context, null );
                 }
                 else {
-                    context.toProfiles = context.escalate;
+                    callback( Error("Escalation Aborted"), null );
                 }
-                callback(null, context);
             },
 
             function(context,callback) {
@@ -488,6 +513,27 @@ ConversationHelper.prototype.escalateConversation = function( context, callback 
                         callback(null, context);
                     }
                 });
+            },
+
+            function(context, callback) {
+
+                ++context.currentStep;
+
+                if ( context.currentStep < context.conversation.escalation.steps.length ) {
+
+                    context.action = "escalationStep";
+
+                    _schedulerPublisher.publish('SchedulerQueue', context, function (error) {
+                        if (error)
+                            callback(Error("Scheduler Publish Failed: setEscalation"), null);
+                        else
+                            callback(null, context);
+                    });
+                }
+                else {
+                    // TODO : do something to indicate that escalation is exhausted
+                    callback(null, context);
+                }
             }
         ],
 

@@ -1,0 +1,18 @@
+{
+  "envelope": {
+    "origin": "542e099f7c57130000d4128f",
+    "members": [ "542e099f7c57130000d4128f" ],
+    "messageType": "STANDARD"
+  },
+  "time": {
+    "toLive" : 3600
+  },
+  "content": {
+    "message":"This is a standard message"
+  }
+}
+
+{
+  "name": "lady blue",
+  "label": "Queenie"
+}

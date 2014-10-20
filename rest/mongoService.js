@@ -35,8 +35,8 @@ module.exports = function(){
         console.log("MongoService: Connected to cp bus");
         exchangePublisherFactory = new ExchangePublisherFactory(cpbus.connection);
 
-        exchangePublisherFactory.createNotificationEngineExchangePublisher(function(notificationEngineExchangePublisher) {
-            eventPublisher = new EventPublisher( notificationEngineExchangePublisher );
+        exchangePublisherFactory.createConversationExchangePublisher(function(conversationEngineExchangePublisher) {
+            eventPublisher = new EventPublisher( conversationEngineExchangePublisher );
         });
     });
 

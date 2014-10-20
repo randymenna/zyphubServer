@@ -53,7 +53,7 @@ module.exports.connection=connection;
 // SAMPLE USAGE
 // var cpbus = require('../cp-bus');
 // cpbus.connection.on('ready',function() {
-//   console.log('xxxxxConnected to Gibi Bus using amqp...');
+//   console.log('xxxxxConnected to cp Bus using amqp...');
 //    cpbus.createSubscriberWithCallback('PositionGatewayQueue',handleReceivedData);
 // });
 //

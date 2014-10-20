@@ -2,14 +2,11 @@
  * Created by al on 1/30/14.
  */
 
-var MessageExchangePublisher = require('../MessageExchangePublisher');
+var MessageExchangePublisher = require('./MessageExchangePublisher');
 
-var POSITION_ANALYSIS_EXCHANGE  = 'PositionAnalysisExchange';
-var DEVICE_REPORT_EXCHANGE      = 'DeviceReportExchange';
-var NOTIFICATION_ENGINE_EXCHANGE = 'NotificationEngineExchange';
-var EMAIL_EXCHANGE = 'OutboundEmailExchange';
-var DEVICE_REPORT_ANALYSIS_EXCHANGE = 'DeviceReportAnalysisExchange';
-//var SOCKETIO_NOTIFICATION_EXCHANGE = 'SocketIONotificationExchange';
+var CONVERSATION_EXCHANGE           = 'ConversationEngineExchange';
+var SCHEDULER_EXCHANGE              = 'SchedulerExchange';
+var SOCKETIO_EXCHANGE               = 'SocketIOExchange';
 
 
 var ExchangePublisherFactory = module.exports = function ExchangePublisherFactory(connection) {
@@ -21,44 +18,26 @@ var ExchangePublisherFactory = module.exports = function ExchangePublisherFactor
  * @param connection
  * @param callback
  */
-ExchangePublisherFactory.prototype.createPositionAnalysisExchangePublisher = function(callback) {
-    this.createExchangePublisher(POSITION_ANALYSIS_EXCHANGE,function(newPublisher) {
-        callback(newPublisher);
-    });}
-
-ExchangePublisherFactory.prototype.createDeviceReportExchangePublisher = function(callback) {
-    this.createExchangePublisher(DEVICE_REPORT_EXCHANGE,function(newPublisher) {
+ExchangePublisherFactory.prototype.createConversationExchangePublisher = function(callback) {
+    this.createExchangePublisher(CONVERSATION_EXCHANGE,function(newPublisher) {
         callback(newPublisher);
     });
 }
 
-ExchangePublisherFactory.prototype.createDeviceReportAnalysisExchangePublisher = function(callback) {
-    this.createExchangePublisher(DEVICE_REPORT_ANALYSIS_EXCHANGE,function(newPublisher) {
-        callback(newPublisher);
-    });
-}
-
-ExchangePublisherFactory.prototype.createNotificationEngineExchangePublisher = function(callback) {
-    this.createExchangePublisher(NOTIFICATION_ENGINE_EXCHANGE,function(newPublisher) {
+ExchangePublisherFactory.prototype.createSchedulerExchangePublisher = function(callback) {
+    this.createExchangePublisher(SCHEDULER_EXCHANGE,function(newPublisher) {
         callback(newPublisher);
     });
 
 }
 
-ExchangePublisherFactory.prototype.createEmailExchangePublisher = function(callback) {
-    this.createExchangePublisher(EMAIL_EXCHANGE,function(newPublisher) {
+ExchangePublisherFactory.prototype.createSocketIOExchangePublisher = function(callback) {
+    this.createExchangePublisher(SOCKETIO_EXCHANGE,function(newPublisher) {
         callback(newPublisher);
     });
 
 }
-/*
-ExchangePublisherFactory.prototype.createSocketIONotificationExchangePublisher = function(callback) {
-    this.createExchangePublisher(SOCKETIO_NOTIFICATION_EXCHANGE,function(newPublisher) {
-        callback(newPublisher);
-    });
 
-}
-*/
 
 /**
  *

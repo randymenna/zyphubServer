@@ -40,26 +40,6 @@ var contentSchema = new Schema({
     ]
 });
 
-var escalationSchema = new Schema({
-    name: String,
-    description: String,
-    public: Boolean,
-    enterprise: {type: String, default: "ConversePoint"},
-    currentStep: {type: Number, default: 0},
-    steps: [
-        {
-            time: {type: Number, default: 300},
-            targets: [
-                {type: Schema.Types.ObjectId, ref: 'Person'}
-            ],
-            trigger: {type: String, default: "NO_READS"}
-        }
-    ],
-    owner: [
-        {type: Schema.Types.ObjectId, ref: 'Person'}
-    ]
-});
-
 var conversationSchema = new Schema({
     envelope: {
         origin: {type: Schema.Types.ObjectId, ref: 'Person'},
@@ -81,7 +61,7 @@ var conversationSchema = new Schema({
                         member: {type: Schema.Types.ObjectId, ref: 'Person'},
                         lastEvent: {type: String, default: "UNREAD" }
                     }
-    ],
+        ],
         maxAccepts: {type: Number, default: 1},
         accepts: {type: Number, default: 0},
         rejects: {type: Number, default: 0},
@@ -92,10 +72,12 @@ var conversationSchema = new Schema({
         startMemberCount: Number,
         curMemberCount: Number
     },
-    escalation: [
-        {type: Schema.Types.ObjectId, ref: 'Escalation'}
-    ],
-    content: {  message: String,
+    escalation: {
+        currentStep: {type: Number, default: 0},
+        id: [{   type: Schema.Types.ObjectId, ref: 'Escalation'}]
+    },
+    content: {
+        message: String,
         replies: [
             { origin: {type: Schema.Types.ObjectId, ref: 'Person'}, created: {type: Date, default: Date.now}, content: String}
         ]

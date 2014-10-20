@@ -1,7 +1,6 @@
 var mongo       = require('mongodb');
 var async       = require('async');
 var config      = require('config');
-var Logger      = require('../../util/Logger');
 var jwt         = require('jwt-simple');
 
 var Server = mongo.Server,

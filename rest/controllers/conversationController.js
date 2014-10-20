@@ -1,13 +1,26 @@
 /**
- * Created by al on 9/4/14.
+ * Created by Randy
  */
 var mongoose                = require('mongoose');
 var async                   = require('async');
 var genericMongoController  = require('./genericMongoController')
 var model                   = require('../../models/models');
-var ConversationHelper      = require('../../util/ConversationHelper');
 
-var conversationHelper = new ConversationHelper();
+var _conversationPublisher = null;
+var _schedulerPublisher = null;
+var _socketIOPublisher = null;
+
+exports.setConversationPublisher = function( conversationPublisher ) {
+    _conversationPublisher = conversationPublisher;
+}
+
+exports.setSchedulerPublisher = function( schedulerPublisher ) {
+    _schedulerPublisher = schedulerPublisher;
+}
+
+exports.setSocketIOPublisher = function( schedulerPublisher ) {
+    _socketIOPublisher = schedulerPublisher;
+}
 
 exports.getConversations = function (req, res) {
 
@@ -118,6 +131,7 @@ exports.newConversation = function (req, res) {
         [
             function (callback) {
                 var context = {};
+                context.action = "new";
                 
                 var c = new model.Conversation({
                     envelope:req.body.envelope,
@@ -162,6 +176,56 @@ exports.newConversation = function (req, res) {
 
                     callback(err,context);
                 });
+            },
+
+            // schedule time based events (ttl & escalation)
+            function(context, callback) {
+
+                if (context.conversation.time && context.conversation.time.toLive ) {
+
+                    context.action = "setTTL";
+                    _schedulerPublisher.publish('SchedulerQueue', context, function (error) {
+                        if (error)
+                            callback(Error("Scheduler Publish Failed: setTTL"), null);
+                        else
+                            callback(null, context);
+                    });
+                }
+                else {
+                    callback(null, context);
+                }
+
+            },
+
+            function(context, callback) {
+
+                if (context.conversation.escalation && context.conversation.escalation.id && context.conversation.escalation.id.length ) {
+
+                    context.action = "setEscalation";
+                    _schedulerPublisher.publish('SchedulerQueue', context, function (error) {
+                        if (error)
+                            callback(Error("Scheduler Publish Failed: setEscalation"), null);
+                        else
+                            callback(null, context);
+                    });
+                }
+                else {
+                    callback(null, context);
+                }
+
+            },
+
+            // notify socket io
+            function(context, callback) {
+
+                context.action = "new";
+                _socketIOPublisher.publish('SocketIOQueue',context, function( error ){
+                    if ( error )
+                        callback(Error("SocketIO Publish Failed"), null);
+                    else
+                        callback(null, context);
+                });
+
             },
 
             // find one conversation and fill in the name and id only of the members
@@ -218,111 +282,19 @@ exports.updateConversation = function (req, res) {
 
             function (context, callback) {
 
-                model.Conversation.findOne({_id: context.conversationId})
-                    .exec(function( err, conversation){
-                        if ( err ) {
-                            callback(err, null);
-                        }
-                        else {
-                            context.conversation = conversation;
-                            callback(null, context);
-                        }
-                    });
-            },
-
-            function (context, callback) {
-
-                switch( context.action ) {
-
-                    case "reply":
-                        conversationHelper.replyToConversation( context, function( err, conversation ){
-                            callback(null, context);
-                        });
-
-                    case "leave":
-                        conversationHelper.leaveConversation( context, function( err, conversation ){
-                            callback(null, context);
-                        });
-                        break;
-
-                    case "reject":
-                        conversationHelper.rejectConversation( context, function( err, conversation ){
-                            callback(null, context);
-                        });
-                        break;
-
-                    case "ok":
-                        conversationHelper.okConversation( context, function( err, conversation ){
-                            callback(null, context);
-                        });
-                        break;
-
-                    case "accept":
-                        conversationHelper.acceptConversation( context, function( err, conversation ){
-                            callback(null, context);
-                        });
-                        break;
-
-                    case "close":
-                        conversationHelper.closeConversation( context, function( err, conversation ){
-                            callback(null, context);
-                        });
-                        break;
-
-                    case "forward":
-                        conversationHelper.forwardConversation( context, function( err, conversation ){
-                            callback(null, context);
-                        });
-                        break;
-
-                    case "delegate":
-                        conversationHelper.delegateConversation( context, function( err, conversation ){
-                            callback(null, context);
-                        });
-                        break;
-
-                    case "escalate":
-                        conversationHelper.escalateConversation( context, function( err, conversation ){
-                            callback(null, context);
-                        });
-                        break;
-                }
-            },
-
-            // add a conversation to all the members in-boxes
-            function(context,callback) {
-                context.conversation.save(function( err, conversation){
-                    if ( err ) {
-                        callback(err, null);
-                    }
-                    else {
+                _conversationPublisher.publish('ConversationEngineQueue',context, function( error ){
+                    if ( error )
+                        callback(Error("Publish Failed"), null);
+                    else
                         callback(null, context);
-                    }
-                })
-            },
-
-            // find the updated conversation and fill in the name and id only of the members
-            function(context,callback) {
-                model.Conversation.findOne({_id: context.conversation._id})
-                    .populate('envelope.origin', 'label _id')
-                    .populate('envelope.members', 'label _id')
-                    .populate('state.members.member', 'label')
-                    .exec(function( err, conversation){
-                        if ( err ) {
-                            callback(err, null);
-                        }
-                        else {
-                            context.conversation = conversation;
-                            callback(null, context);
-                        }
-                    });
+                });
             }
         ],
 
         function (err, context) {
             console.log("updateConversation(): exiting: err=%s,result=%s", err, context);
             if (!err) {
-                res.json(200, context.conversation);
+                res.json(200, context.conversationId);
             } else {
                 res.json(400, err.message);
             }

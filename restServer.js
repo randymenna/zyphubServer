@@ -1,14 +1,10 @@
 var express                 = require('express');
 var url                     = require('url');
 var mongoDbClient           = require('./mongodb-client');
-var LoggerFactory           = require('./util/LoggerFactory');
 var https                   = require('https');
 var config                  = require('config');
 var fs                      = require('fs');
 var mongoose                = require('mongoose');
-
-var loggerFactory = new LoggerFactory('restServer');
-var logger        = loggerFactory.getLogger('restServer');
 
 mongoDbClient.init(function(error) {
     if ( error == null ) {
@@ -30,7 +26,7 @@ mongoDbClient.init(function(error) {
 
 function runRestServer(app) {
     app.listen(config.restServer.port);
-    logger.info('Listening on :' + config.restServer.port);
+    console.info('Listening on :' + config.restServer.port);
 }
 
 function runSecureRestServer(app) {
@@ -47,7 +43,7 @@ function runSecureRestServer(app) {
 
     var httpsServer = https.createServer(options,app);
     httpsServer.listen(config.restServer.securePort,function() {
-       logger.info("HTTPS Server listening on " + config.restServer.securePort);
+       console.info("HTTPS Server listening on " + config.restServer.securePort);
     });
 }
 
@@ -91,7 +87,7 @@ function createExpressApplication() {
     //
     app.use(function(req, res, next) {
         // Put rest call preprocessing here.
-        logger.debug("express interceptor");
+        console.log("express interceptor");
 
         // ignore token validation
         if ( req.url.indexOf('/') == 0) {
