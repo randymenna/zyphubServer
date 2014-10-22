@@ -51,6 +51,18 @@ function createExpressApplication() {
 
     var app = express();
 
+    var checkContentType = function(req, res, next) {
+        var requestType = req.get('Content-Type');
+        if (req.method == 'POST' || req.method == 'PUT') {
+            if (requestType == undefined) {
+                res.json(415, {error: 'Content-Type not defined'});
+            } else if (requestType != "application/json") {
+                res.json(415, {error: 'Unsupported Content-Type ' + "'" + requestType + "'"});
+            }
+        }
+        next();
+    }
+
     var allowCrossDomain = function(req, res, next) {
         var oneof = false;
         if(req.headers.origin) {
@@ -81,6 +93,7 @@ function createExpressApplication() {
     // we are using formidable for body parsing, don't use express's body parser
     app.use(express.json())
         .use(express.urlencoded())
+        .use(checkContentType)
         .use(allowCrossDomain);
 
     // IMPORTANT - this function must come before any routes
@@ -131,6 +144,7 @@ function createExpressApplication() {
     app.use('/api', require('./rest/mongoService'));
     app.use('/atrium/profiles', require('./rest/contactService'));
     app.use('/atrium/conversations', require('./rest/conversationService'));
+    app.use('/atrium/escalations', require('./rest/escalationService'));
 
     return app;
 }

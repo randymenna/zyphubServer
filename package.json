@@ -56,7 +56,6 @@
     "supertest": "^0.14.0",
     "twilio": "1.6.0",
     "underscore": "1.5.2",
-    "xml2json": "0.3.2",
     "xmldom": "0.1.19",
     "xpath": "0.0.6"
   }
