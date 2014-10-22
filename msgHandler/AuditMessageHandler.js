@@ -4,21 +4,10 @@ var cpConstants             = require('../constants');
 
 var publisher;
 
-var SchedulerMessageHandler = module.exports = function SchedulerMessageHandler( context ) {
-
-    this.setConversationPublisher = function( conversationPublisher ) {
-        this._conversationPublisher = conversationPublisher;
-        publisher = conversationPublisher;
-    }
-
-    this.setAgenda = function(agenda) {
-        this.agenda = agenda;
-    };
+var AuditMessageHandler = module.exports = function AuditMessageHandler( context ) {
 
     this.msgHandleSwitch                        = {};
-    this.msgHandleSwitch['SETTTL']              = this.setTTL.bind(this);
-    this.msgHandleSwitch['ESCALATION']          = this.setEscalation.bind(this);
-    this.msgHandleSwitch['ESCALATIONSTEP']      = this.handleEscalationStep.bind(this);
+    this.msgHandleSwitch['LOG']                 = this.log.bind(this);
 
 };
 
@@ -34,7 +23,7 @@ module.exports.publisher = publisher;
 // context.escalate
 // context.reply
 
-SchedulerMessageHandler.prototype.handleMessagePool = function (context, msgHandlerCallback) {
+AuditMessageHandler.prototype.handleMessagePool = function (context, msgHandlerCallback) {
     var self = this;
 
     console.log("SchedulerMessageHandler.handleMessage() entered: message: " + JSON.stringify(context));
@@ -44,7 +33,7 @@ SchedulerMessageHandler.prototype.handleMessagePool = function (context, msgHand
             // get from db
             function (callback) {
 
-                var msgHandlerFunction = self.msgHandleSwitch[context.action.toUpperCase()];
+                var msgHandlerFunction = self.msgHandleSwitch[context.auditAction.toUpperCase()];
 
                 if (msgHandlerFunction !== undefined) {
 
@@ -54,7 +43,7 @@ SchedulerMessageHandler.prototype.handleMessagePool = function (context, msgHand
                     });
                 }
                 else {
-                    callback(Error("No message handler for "+context.action), null);
+                    callback(Error("No message handler for "+context.auditAction), null);
                 }
             }
         ],
@@ -66,44 +55,40 @@ SchedulerMessageHandler.prototype.handleMessagePool = function (context, msgHand
     );
 };
 
-SchedulerMessageHandler.prototype.setTTL = function(context,doneCallback) {
-    var self = this;
+AuditMessageHandler.prototype.log = function(context,doneCallback) {
+    console.log("log(): entered");
 
-    var expirationTime = 'in ' + context.conversation.time.toLive + ' minutes';
-    self.agenda.schedule(expirationTime,'handle ttl',{context:context});
-    console.log("SchedulerMessageHandler.handleMessage() 'handle ttl' " + expirationTime);
-    doneCallback(null,context);
-};
+    var details = {};
 
-SchedulerMessageHandler.prototype.setEscalation = function(context,doneCallback) {
-    var escalationId = context.conversation.escalation[0];
+    switch( context.action ) {
+        case 'FORWARD':
+            details.forward = context.forward;
+            break;
+        case 'DELEGATE':
+            details.delegate = context.delegate;
+            break;
+        case 'ESCALATE':
+            details.escalate = context.escalation.targets;
+            details.trigger = context.escalation.trigger;
+            break;
+        case 'REPLY':
+            details.reply = context.reply;
+            break;
+        case 'NEW':
+            details.new = context;
+            break;
+    }
 
-    model.Escalation.findOne({_id: escalationId}, function (err, escalation) {
-        if (err) {
-            console.log("SchedulerMessageHandler.handleMessage() 'handle escalation' can't find esclation id: " + escalationId);
-            doneCallback(null,context);
-        }
-        else {
-            context.escalation = escalation;
-            context.currentStep = 0;
+    var a = new model.audit.({
+        conversationId: context.conversationId,
+        action: context.action,
+        origin: context.origin,
+        details: details
+    });
 
-            var time = escalation.steps[0].time;
+    a.save(function( err, action ){
 
-            var expirationTime = 'in ' + context.conversation.time.toLive + ' minutes';
-            self.agenda.schedule(expirationTime,'handle escalation',{context:context});
-
-            console.log("SchedulerMessageHandler.handleMessage() 'setEscalation' " + context.conversationId);
-            doneCallback(null,context);
-        }
+        doneCallback(err,context);
     });
 };
 
-SchedulerMessageHandler.prototype.handleEscalationStep = function(context,doneCallback) {
-    var time = context.escalation.steps[context.currentStep].time;
-
-    var expirationTime = 'in ' + time + ' minutes';
-    self.agenda.schedule(expirationTime,'handle escalation',{context:context});
-
-    console.log("SchedulerMessageHandler.handleMessage() 'handleEscalationStep' " + context.conversationId);
-    doneCallback(null,context);
-};

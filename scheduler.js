@@ -88,7 +88,7 @@ cpBus.connection.on('ready',function() {
                 console.error('Error Occurred while Initializing Scheduler MDB' + err + result);
                 throw err;
             } else {
-                console.info('Conversation MDB Successfully Initialized');
+                console.info('Scheduler MDB Successfully Initialized');
             }
         }
     )

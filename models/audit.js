@@ -5,35 +5,30 @@ var mongoose = require('mongoose');
 
 var Schema = mongoose.Schema;
 
-var escalationSchema = new Schema({
-    name: String,
-    description: String,
-    public: Boolean,
-    enterprise: {type: String, default: "ConversePoint"},
-    steps: [
-        {
-            time: {type: Number, default: 300},
-            targets: [
-                {type: Schema.Types.ObjectId, ref: 'Person'}
-            ],
-            trigger: {type: String, default: "NO_READS"}
-        }
-    ],
-    owner: [
-        {type: Schema.Types.ObjectId, ref: 'Person'}
-    ]
+var auditSchema = new Schema({
+    conversationId: {type: Schema.Types.ObjectId, ref: 'Conversation'},
+    origin: String,
+    action: String,
+    created: {type: Date, default: Date.now},
+    details: {
+        delegate: {type: Schema.Types.ObjectId, ref: 'Person'},
+        forward: [{type: Schema.Types.ObjectId, ref: 'Person'}],
+        escalate: [{type: Schema.Types.ObjectId, ref: 'Person'}],
+        trigger: String,
+        reply: String
+    }
 });
 
 escalationSchema.pre('save', function (next) {
 
-    this.lastModified = new Date();
+    this.created = new Date();
     next();
 });
 
-var _Escalation = mongoose.model('Escalation', escalationSchema);
+var _Audit = mongoose.model('Audit', auditSchema);
 
 module.exports = {
-    Escalation: _Escalation
+    Audit: _Audit
 };
 
 
