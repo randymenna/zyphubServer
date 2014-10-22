@@ -7,39 +7,6 @@ var profile = require('./profile');
 
 var Schema = mongoose.Schema;
 
-var envelopeSchema = new Schema({
-    originator: {type: Schema.Types.ObjectId, ref: 'Person'},
-    recipients: [
-        {type: Schema.Types.ObjectId, ref: 'Person'}
-    ],
-    messageType: String,
-    behaviors: [String]
-});
-
-var timeSchema = new Schema({
-    createDate: Date,
-    lastModified: Date,
-    ttl: Date
-});
-
-var stateSchema = new Schema({
-    events: [
-        { participant: {type: Schema.Types.ObjectId, ref: 'Person'}, event: String }
-    ],
-    accepts: Number,
-    rejects: Number,
-    oks: Number,
-    originalParticipantCount: Number,
-    currentParticipantCount: Number
-});
-
-var contentSchema = new Schema({
-    originalMessage: String,
-    replies: [
-        { originator: {type: Schema.Types.ObjectId, ref: 'Person'}, created: Date, content: String}
-    ]
-});
-
 var conversationSchema = new Schema({
     envelope: {
         origin: {type: Schema.Types.ObjectId, ref: 'Person'},
@@ -52,7 +19,8 @@ var conversationSchema = new Schema({
             enterprise: String
         }
     },
-    time: { created: {type: Date, default: Date.now},
+    time: {
+        created: {type: Date, default: Date.now},
         modified: Date,
         toLive: {type: Number, default: -1}
     },
