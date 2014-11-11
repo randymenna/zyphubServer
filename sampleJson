@@ -1,7 +1,7 @@
 {
   "envelope": {
-    "origin": "542e099f7c57130000d4128f",
-    "members": [ "542e099f7c57130000d4128f" ],
+    "origin": "a460c93136b880a0de62f55f",
+    "members": [ "b4614ccf36b880a0de62f563" ],
     "messageType": "STANDARD"
   },
   "time": {
@@ -13,6 +13,25 @@
 }
 
 {
-  "name": "lady blue",
-  "label": "Queenie"
+  "name": "mr blue",
+  "label": "blue blue"
 }
+
+{
+    "name":           "group 1",
+    "label":          "The Group",
+    "description":    "A test group",
+    "members":        ["a4614c5136b880a0de62f560","a4614c6736b880a0de62f561"],
+    "owner":          ["a460c93136b880a0de62f55f"]
+}
+
+group id b4614ccf36b880a0de62f563
+conversation in group 54614d0736b880a0de62f564
+
+new member for group a45e745729fc940000142c18
+
+mr blue: a460c93136b880a0de62f55f
+mr green: a4614c5136b880a0de62f560
+mr red: a4614c6736b880a0de62f561
+mr yellow: a4614c8236b880a0de62f562
+mr purple: a461650e88acd511fc7f87ee

@@ -50,6 +50,7 @@ exports.getConversations = function (req, res) {
                         }
                     });
             },
+
             function(context,callback) {
                 model.Conversation.find({'_id': { $in: context.inbox }})
                     .populate('envelope.origin', 'label _id')
@@ -129,15 +130,94 @@ exports.newConversation = function (req, res) {
     console.log("newConversation(): entered");
     async.waterfall(
         [
+            // members gets populated with the profiles from groups and/or contexts
             function (callback) {
                 var context = {};
                 context.action = "new";
-                
+
+                context.originalMembers = req.body.envelope.members.slice();
+                context.members = req.body.envelope.members;
+                context.groups = [];
+                context.contexts = [];
+
+                var i = context.members.length;
+                while (i--) {
+                    // is it a group?
+                    if (context.members[i].charAt(0) == 'b') {
+                        context.groups.push(context.members[i]);
+                        context.members.splice(i,1);
+                    }
+                    else
+                    if (context.members[i].charAt(0) == 'c') {
+                        context.contexts.push(context.members[i]);
+                        context.members.splice(i,1);
+                    }
+                }
+
+                callback(null, context);
+            },
+
+            function(context,callback) {
+
+
+                if ( context.groups.length > 0 ) {
+                    model.Group.find({'_id': {$in: context.groups}}, function (err, groups) {
+
+                        if (err) {
+                            callback(err, null);
+                        }
+                        else {
+                            for (var i=0; i < groups.length; i++) {
+                                context.members = context.members.concat(groups[i].members);
+                            }
+
+                            callback(null, context);
+                        }
+                    });
+                }
+                else {
+                    callback(null, context);
+                }
+            },
+
+            function(context,callback) {
+
+
+                if ( context.contexts.length > 0 ) {
+                    model.Context.find({'_id': {$in: context.contexts}}, function (err, ctxs) {
+
+                        if (err) {
+                            callback(err, null);
+                        }
+                        else {
+                            for (var i=0; i < ctxs.length; i++) {
+                                context.members.concat(ctxs[i].members);
+                            }
+
+                            callback(null, context);
+                        }
+                    });
+                }
+                else {
+                    callback(null, context);
+                }
+            },
+
+            function(context,callback) {
+
                 var c = new model.Conversation({
                     envelope:req.body.envelope,
                     time:req.body.time,
                     content:req.body.content
                 });
+
+                var meta = {};
+                meta.originalMembers = context.originalMembers;
+                meta.groups = context.groups;
+                meta.contexts = context.contexts;
+
+                c.envelope.members = context.members;
+                c.envelope.meta = meta;
 
                 c.state.startMemberCount = c.envelope.members.length;
                 c.state.curMemberCount = c.envelope.members.length;
@@ -231,8 +311,8 @@ exports.newConversation = function (req, res) {
             // find one conversation and fill in the name and id only of the members
             function(context,callback) {
                 model.Conversation.findOne({_id: context.conversation._id})
-                    .populate('envelope.origin', 'label _id')
-                    .populate('envelope.members', 'label _id')
+                    .populate('envelope.origin', 'label id')
+                    .populate('envelope.members', 'label id')
                     .populate('state.members.member', 'label')
                     .exec(function( err, conversation){
                         if ( err ) {

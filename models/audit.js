@@ -19,7 +19,7 @@ var auditSchema = new Schema({
     }
 });
 
-escalationSchema.pre('save', function (next) {
+auditSchema.pre('save', function (next) {
 
     this.created = new Date();
     next();

@@ -142,7 +142,8 @@ function createExpressApplication() {
     // Routes
 
     app.use('/api', require('./rest/mongoService'));
-    app.use('/atrium/profiles', require('./rest/contactService'));
+    app.use('/atrium/profiles', require('./rest/profileService'));
+    app.use('/atrium/groups', require('./rest/groupService'));
     app.use('/atrium/conversations', require('./rest/conversationService'));
     app.use('/atrium/escalations', require('./rest/escalationService'));
 

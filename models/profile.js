@@ -6,47 +6,26 @@ var conversation            = require('./conversation');
 
 var Schema  = mongoose.Schema;
 
-var entitySchema = new Schema({
-    id:     Schema.Types.ObjectId,
-    name:   String,
-    label:  String,
-    avatar: String,
-    role:   String
-});
-
-var groupSchema = new Schema({
-    name:           String,
-    label:          String,
-    description:    String,
-    avatar:         {type: String, default: "group.png"},
-    type:           {type: String, default: "GROUP"},
-    public:         {type: Boolean, default: false},
-    enterprise:     {type: String, default: "ConversePoint"},
-    members:        [personSchema],
-    owner:          [personSchema]
-});
-
-var personSchema = new Schema({
+var profileSchema = new Schema({
+    _id:        {type: Schema.Types.ObjectId},
     name:       String,
-    display:    String,
+    label:      String,
     avatar:     {type: String, default: "default.png"},
     role:       {type: String, default: "USER"},
     presence:   {type: String, default: "OFFLINE"},
     type:       {type: String, default: "PERSON"},
     public:     {type: Boolean, default: false},
     enterprise: {type: String, default: "ConversePoint"},
-    memberOf:   [groupSchema],
+    memberOf:   [{type: Schema.Types.ObjectId, ref: 'Group'}],
     friends:    [{type: Schema.Types.ObjectId, ref: 'Person'}],
     inbox:      [{type: Schema.Types.ObjectId, ref: 'Conversation'}]
-});
+},
+    {autoIndex: false});
 
-var _Person = mongoose.model('Person', personSchema);
-var _Group = mongoose.model('Group', groupSchema);
-
+var _Person = mongoose.model('Person', profileSchema);
 
 module.exports =  {
-    Person : _Person,
-    Group : _Group
+    Person : _Person
 };
 
 

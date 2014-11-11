@@ -16,7 +16,10 @@ var conversationSchema = new Schema({
         pattern: String,
         behaviors: [String],
         meta: {
-            enterprise: String
+            enterprise: {type: String, default: "ConversePoint"},
+            originalMembers: [ {type: Schema.Types.ObjectId} ],
+            groups: [ {type: Schema.Types.ObjectId, ref: 'Group'} ],
+            contexts: [ {type: Schema.Types.ObjectId, ref: 'Context'} ]
         }
     },
     time: {
