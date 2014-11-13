@@ -34,11 +34,6 @@ cpBus.connection.on('ready',function() {
 
             function(context, callback) {
 
-
-            },
-
-            function(context, callback) {
-
                 console.info('Auditor MDB: handler create');
 
                 var auditHandler = new AuditMessageHandler();

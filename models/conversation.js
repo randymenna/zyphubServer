@@ -2,24 +2,22 @@
  * Created by randy on 9/29/14.
  */
 var mongoose = require('mongoose');
-var profile = require('./profile');
 
 
 var Schema = mongoose.Schema;
 
 var conversationSchema = new Schema({
     envelope: {
-        origin: {type: Schema.Types.ObjectId, ref: 'Person'},
+        origin: {type: Schema.Types.ObjectId, ref: 'Profiles'},
         members: [
-            {type: Schema.Types.ObjectId, ref: 'Person'}
+            {type: Schema.Types.ObjectId, ref: 'Profiles'}
         ],
         pattern: String,
         behaviors: [String],
         meta: {
             enterprise: {type: String, default: "ConversePoint"},
             originalMembers: [ {type: Schema.Types.ObjectId} ],
-            groups: [ {type: Schema.Types.ObjectId, ref: 'Group'} ],
-            contexts: [ {type: Schema.Types.ObjectId, ref: 'Context'} ]
+            groups: [ {type: Schema.Types.ObjectId, ref: 'Group'} ]
         }
     },
     time: {
@@ -29,8 +27,9 @@ var conversationSchema = new Schema({
     },
     state: {    members: [
                     {
-                        member: {type: Schema.Types.ObjectId, ref: 'Person'},
-                        lastEvent: {type: String, default: "UNREAD" }
+                        member: {type: Schema.Types.ObjectId, ref: 'Profiles'},
+                        lastEvent: {type: String, default: "UNREAD" },
+                        _id: false
                     }
         ],
         maxAccepts: {type: Number, default: 1},
@@ -50,7 +49,7 @@ var conversationSchema = new Schema({
     content: {
         message: String,
         replies: [
-            { origin: {type: Schema.Types.ObjectId, ref: 'Person'}, created: {type: Date, default: Date.now}, content: String}
+            { origin: {type: Schema.Types.ObjectId, ref: 'Profiles'}, created: {type: Date, default: Date.now}, content: String}
         ]
     }
 });

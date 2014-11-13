@@ -43,12 +43,9 @@ var ConversationHelper = module.exports = function ConversationHelper () {
     };
 
     // remove conversation from Inbox
-    this.removeConversationFromOneMembersInbox = function(context, callback) {
+    this.removeConversationFromOriginMembersInbox = function(context, callback) {
 
-        console.log(context.profileId);
-        console.log(context.conversation._id);
-
-        model.Person.update({'_id': context.profileId},{$pull: {inbox: context.conversation._id}}, function (err, doc) {
+        model.Profile.update({'_id': context.origin},{$pull: {inbox: context.conversation._id}}, function (err, doc) {
             if ( err ) {
                 callback(err, null);
             }
@@ -61,7 +58,7 @@ var ConversationHelper = module.exports = function ConversationHelper () {
     // remove conversation from Inbox
     this.removeConversationFromAllMembersInboxes = function(context,callback) {
 
-        model.Person.update({'_id': { $in: context.conversation.envelope.members }},{$pull: {inbox: context.conversation._id}}, {multi:true}, function(err, profiles){
+        model.Profile.update({'_id': { $in: context.conversation.envelope.members }},{$pull: {inbox: context.conversation._id}}, {multi:true}, function(err, profiles){
             if ( err ) {
                 callback(err, null);
             }
@@ -86,7 +83,7 @@ var ConversationHelper = module.exports = function ConversationHelper () {
     };
 
     this.addConversationToNewMembersInboxes = function( context, callback ) {
-        model.Person.update({'_id': { $in: context.toProfiles }},{$push: {inbox: context.conversation._id }}, {multi:true}, function(err, profiles){
+        model.Profile.update({'_id': { $in: context.toProfiles }},{$push: {inbox: context.conversation._id }}, {multi:true}, function(err, profiles){
             if ( err ) {
                 callback(err, null);
             }
@@ -142,17 +139,17 @@ ConversationHelper.prototype.leaveConversation = function( context, callback ) {
 
             // remove conversation from Inbox
             function(context, callback) {
-                self.removeConversationFromOneMembersInbox(context, callback);
+                self.removeConversationFromOriginMembersInbox(context, callback);
             },
 
             // remove profile from Conversation
             function(context,callback) {
 
                 // remove from active members
-                context.conversation.envelope.members.pull({_id: new ObjectId(context.profileId)});
+                context.conversation.envelope.members.pull({_id: new ObjectId(context.origin)});
                 --context.conversation.state.curMemberCount;
                 ++context.conversation.state.leaves;
-                self.updateLastEvent( context.profileId, "LEFT", context.conversation);
+                self.updateLastEvent( context.origin, "LEFT", context.conversation);
 
                 context.conversation.save(function( err, conversation ){
                     if ( err ) {
@@ -195,7 +192,7 @@ ConversationHelper.prototype.acceptConversation = function( context, callback ) 
                 }
 
                 ++context.conversation.state.accepts;
-                self.updateLastEvent( context.profileId, "ACCEPTED", context.conversation);
+                self.updateLastEvent( context.origin, "ACCEPTED", context.conversation);
 
                 if ( context.conversation.state.accepts == context.conversation.state.maxAccepts ) {
                     self.removeAllMembersWhoDontHaveLastEventFromConversation( "ACCEPTED", context.conversation );
@@ -237,8 +234,8 @@ ConversationHelper.prototype.rejectConversation = function( context, callback ) 
             function(context,callback) {
 
                 ++context.conversation.state.rejects;
-                self.updateLastEvent( context.profileId, "REJECTED", context.conversation );
-                context.conversation.envelope.members.pull( new ObjectId(context.profileId) );
+                self.updateLastEvent( context.origin, "REJECTED", context.conversation );
+                context.conversation.envelope.members.pull( new ObjectId(context.origin) );
                 --context.conversation.state.curMemberCount;
 
                 context.conversation.save(function( err, conversation ){
@@ -274,16 +271,16 @@ ConversationHelper.prototype.okConversation = function( context, callback ) {
             },
 
             function(context,callback) {
-                self.removeConversationFromOneMembersInbox(context, callback);
+                self.removeConversationFromOriginMembersInbox(context, callback);
             },
 
             // remove profile from Conversation
             function(context,callback) {
                 // remove from active members
-                context.conversation.envelope.members.pull({_id: new ObjectId(context.profileId)});
+                context.conversation.envelope.members.pull({_id: new ObjectId(context.origin)});
                 --context.conversation.state.curMemberCount;
                 ++context.conversation.state.oks;
-                self.updateLastEvent( context.profileId, "OK", context.conversation );
+                self.updateLastEvent( context.origin, "OK", context.conversation );
 
                 context.conversation.save(function( err, conversation ){
                     if ( err ) {
@@ -328,7 +325,7 @@ ConversationHelper.prototype.closeConversation = function( context, callback ) {
             // remove profiles from Conversation
             function(context,callback) {
                 // remove from active members
-                self.updateLastEvent( context.profileId, "CLOSED", context.conversation);
+                self.updateLastEvent( context.origin, "CLOSED", context.conversation);
 
                 context.conversation.state.curMemberCount = 0;
 
@@ -419,15 +416,15 @@ ConversationHelper.prototype.delegateConversation = function( context, callback 
 
             // remove conversation from origin Inbox
             function(context, callback) {
-                self.removeConversationFromOneMembersInbox(context, callback);
+                self.removeConversationFromOriginMembersInbox(context, callback);
             },
 
             // remove origin from active members
             function(context,callback) {
 
-                context.conversation.envelope.members.pull({_id: new ObjectId(context.profileId)});
+                context.conversation.envelope.members.pull({_id: new ObjectId(context.origin)});
                 --context.conversation.state.curMemberCount;
-                self.updateLastEvent( context.profileId, "DELEGATED", context.conversation);
+                self.updateLastEvent( context.origin, "DELEGATED", context.conversation);
 
                 callback(null, context);
             },
@@ -558,7 +555,7 @@ ConversationHelper.prototype.replyToConversation = function( context, callback )
             function(context,callback) {
 
                 var reply = {};
-                reply.origin = context.profileId;
+                reply.origin = context.origin;
                 reply.content = context.reply;
 
                 context.conversation.content.replies.push(reply);

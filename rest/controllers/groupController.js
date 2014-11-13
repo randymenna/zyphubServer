@@ -93,6 +93,12 @@ exports.newGroup = function (req, res) {
                 var accountId = genericMongoController.extractAccountId(req);
                 context.accountId = accountId;
                 console.log("newGroup(): accountId=%s", accountId);
+
+                context.name = req.body.name;
+                context.label = req.body.label;
+                context.members = req.body.members;
+                context.owner = req.body.owner;
+
                 callback(null, context);
             },
 
@@ -103,10 +109,10 @@ exports.newGroup = function (req, res) {
 
                 var g = new model.Group({
                     _id: _id,
-                    name: req.body.name,
-                    label: req.body.label,
-                    members: req.body.members,
-                    owner: req.body.owner
+                    name: context.name,
+                    label: context.label,
+                    members: context.members,
+                    owner: context.owner
                 });
 
                 g.save(function( err, group){
@@ -123,7 +129,7 @@ exports.newGroup = function (req, res) {
             function(context,callback){
 
                 // add group id to member's memberOf
-                model.Person.update({'_id': { $in: context.group.members }},{$push:{'memberOf' : context.group._id}},{multi:true},function(err,ret){
+                model.Profile.update({'_id': { $in: context.group.members }},{$push:{'memberOf' : context.group._id}},{multi:true},function(err,ret){
                     callback(err,context);
                 });
             }
@@ -169,7 +175,7 @@ exports.joinGroup = function (req, res) {
             // add group id to member's memberOf
             function (context, callback) {
 
-                model.Person.findOneAndUpdate({'_id': context.profileId},{$push:{'memberOf' : context.groupId}},function(err,ret){
+                model.Profile.findOneAndUpdate({'_id': context.profileId},{$push:{'memberOf' : context.groupId}},function(err,ret){
                     callback(err,context);
                 });
             },
@@ -219,7 +225,7 @@ exports.joinGroup = function (req, res) {
 
                 if (context.conversations.length > 0) {
 
-                    model.Person.findOneAndUpdate({'_id': context.profileId},{$pushAll:{'inbox' : context.conversationIds}},function(err,ret){
+                    model.Profile.findOneAndUpdate({'_id': context.profileId},{$pushAll:{'inbox' : context.conversationIds}},function(err,ret){
                         callback(err,context);
                     });
                 }
@@ -268,7 +274,7 @@ exports.leaveGroup = function (req, res) {
             // add group id to member's memberOf
             function (context, callback) {
 
-                model.Person.findOneAndUpdate({'_id': context.profileId},{$pull:{'memberOf' : context.groupId}},function(err,ret){
+                model.Profile.findOneAndUpdate({'_id': context.profileId},{$pull:{'memberOf' : context.groupId}},function(err,ret){
                     callback(err,context);
                 });
             },
@@ -331,7 +337,7 @@ exports.leaveGroup = function (req, res) {
 
                 if (context.conversations.length > 0) {
 
-                    model.Person.findOneAndUpdate({'_id': context.profileId},{$pullAll:{'inbox' : context.conversationIds}},function(err,ret){
+                    model.Profile.findOneAndUpdate({'_id': context.profileId},{$pullAll:{'inbox' : context.conversationIds}},function(err,ret){
                         callback(err,context);
                     });
                 }

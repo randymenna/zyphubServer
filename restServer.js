@@ -146,6 +146,7 @@ function createExpressApplication() {
     app.use('/atrium/groups', require('./rest/groupService'));
     app.use('/atrium/conversations', require('./rest/conversationService'));
     app.use('/atrium/escalations', require('./rest/escalationService'));
+    app.use('/atrium/auditTrail', require('./rest/auditService'));
 
     return app;
 }

@@ -14,13 +14,13 @@ var escalationSchema = new Schema({
         {
             time: {type: Number, default: 300},
             targets: [
-                {type: Schema.Types.ObjectId, ref: 'Person'}
+                {type: Schema.Types.ObjectId, ref: 'Profiles'}
             ],
             trigger: {type: String, default: "NO_READS"}
         }
     ],
     owner: [
-        {type: Schema.Types.ObjectId, ref: 'Person'}
+        {type: Schema.Types.ObjectId, ref: 'Profiles'}
     ]
 });
 

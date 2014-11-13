@@ -13,20 +13,13 @@ var AuditMessageHandler = module.exports = function AuditMessageHandler( context
 
 module.exports.publisher = publisher;
 
-// *** Context
-// context.accountId
-// context.conversationId
-// context.action
-// context.profileId
-// context.forward
-// context.delegate
-// context.escalate
-// context.reply
-
 AuditMessageHandler.prototype.handleMessagePool = function (context, msgHandlerCallback) {
     var self = this;
 
     console.log("SchedulerMessageHandler.handleMessage() entered: message: " + JSON.stringify(context));
+
+    if ( !context.auditAction )
+        context.auditAction = "log";
 
     async.waterfall(
         [
@@ -58,34 +51,48 @@ AuditMessageHandler.prototype.handleMessagePool = function (context, msgHandlerC
 AuditMessageHandler.prototype.log = function(context,doneCallback) {
     console.log("log(): entered");
 
-    var details = {};
+    var details;
 
-    switch( context.action ) {
+    switch( context.action.toUpperCase() ) {
         case 'FORWARD':
-            details.forward = context.forward;
+            details = context.forward;
             break;
         case 'DELEGATE':
-            details.delegate = context.delegate;
+            details = context.delegate;
             break;
         case 'ESCALATE':
+            details = {};
             details.escalate = context.escalation.targets;
             details.trigger = context.escalation.trigger;
             break;
         case 'REPLY':
-            details.reply = context.reply;
+            details = context.reply;
             break;
         case 'NEW':
-            details.new = context;
+            details = context.conversation.content.message;
             break;
     }
 
-    var a = new model.audit.({
+    // *** Context
+    // context.accountId
+    // context.conversationId
+    // context.action
+    // context.profileId
+    // context.forward
+    // context.delegate
+    // context.escalate
+    // context.reply
+
+    var a = new model.AuditTrail({
+        timestamp: context.timestamp,
         conversationId: context.conversationId,
         action: context.action,
         origin: context.origin,
+        state: context.conversation.state,
         details: details
     });
 
+    a.markModified('details');
     a.save(function( err, action ){
 
         doneCallback(err,context);

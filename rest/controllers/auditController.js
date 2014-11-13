@@ -3,8 +3,8 @@
  */
 
 var async                   = require('async');
-var genericMongoController  = require('./genericMongoController');
 var model                   = require('../../models/models');
+var restHelper              = require('./helper/restHelper');
 
 
 exports.getOneAuditTrail = function (req, res) {
@@ -14,19 +14,24 @@ exports.getOneAuditTrail = function (req, res) {
         [
             function (callback) {
                 var context = {};
-                var accountId = genericMongoController.extractAccountId(req);
-                context.accountId = accountId;
-                context.conversationId = req.body.conversationId;
-                console.log("getOneAuditTrail(): accountId=%s", accountId);
+                context.origin = restHelper.extractOriginId(req);
+                context.conversationId = req.params.id;
+
+                console.log("getOneAuditTrail(): origin=%s", context.origin);
                 callback(null, context);
             },
+
             function (context, callback) {
-                model.Audit.find({conversationId:context.conversationId}).sort(-created).exec(function( err, audits){
+                model.AuditTrail.find({conversationId:context.conversationId})
+                    .sort({timestamp: -1 })
+                    .populate('origin', 'label id')
+                    .populate('state.members.member', 'label')
+                    .exec(function(err, audits){
                     if ( err ) {
                         callback(err, null);
                     }
                     else {
-                        context.audit = audits;
+                        context.auditTrail = audits;
                         callback(null, context);
                     }
                 });
@@ -36,7 +41,7 @@ exports.getOneAuditTrail = function (req, res) {
         function (err, context) {
             console.log("getOneAuditTrail(): exiting: err=%s,result=%s", err, context);
             if (!err) {
-                res.json(200, context.audit);
+                res.json(200, context.auditTrail);
             } else {
                 res.json(401, err);
             }

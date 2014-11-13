@@ -12,6 +12,7 @@ module.exports = function() {
     var app = express();
 
     app.get('/', ConversationController.getConversations);
+    app.get('/:id', ConversationController.getOneConversation);
     app.post('/', ConversationController.newConversation);
     app.post('/:id/:action', ConversationController.updateConversation);
 
@@ -33,6 +34,10 @@ module.exports = function() {
 
         exchangePublisherFactory.createSocketIOExchangePublisher( function(socketIOPublisher) {
             ConversationController.setSocketIOPublisher(socketIOPublisher);
+        });
+
+        exchangePublisherFactory.createAuditTrailExchangePublisher( function(auditTrailPublisher) {
+            ConversationController.setAuditTrailPublisher(auditTrailPublisher);
         });
 
     });

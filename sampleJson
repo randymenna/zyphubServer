@@ -1,7 +1,7 @@
 {
   "envelope": {
-    "origin": "a460c93136b880a0de62f55f",
-    "members": [ "b4614ccf36b880a0de62f563" ],
+    "origin": "a462d28ef20c2900001e5e2e",
+    "members": [ "b462d378f20c2900001e5e33" ],
     "messageType": "STANDARD"
   },
   "time": {
@@ -21,17 +21,17 @@
     "name":           "group 1",
     "label":          "The Group",
     "description":    "A test group",
-    "members":        ["a4614c5136b880a0de62f560","a4614c6736b880a0de62f561"],
-    "owner":          ["a460c93136b880a0de62f55f"]
+    "members":        ["a462d312f20c2900001e5e2f","a462d31ef20c2900001e5e30"],
+    "owner":          ["a462d28ef20c2900001e5e2e"]
 }
 
-group id b4614ccf36b880a0de62f563
-conversation in group 54614d0736b880a0de62f564
+group id b462d378f20c2900001e5e33
 
-new member for group a45e745729fc940000142c18
+conversation sent to group 5462d3bff20c2900001e5e34
 
-mr blue: a460c93136b880a0de62f55f
-mr green: a4614c5136b880a0de62f560
-mr red: a4614c6736b880a0de62f561
-mr yellow: a4614c8236b880a0de62f562
-mr purple: a461650e88acd511fc7f87ee
+mr blue: a462d28ef20c2900001e5e2e
+
+mr green: a462d312f20c2900001e5e2f
+mr red: a462d31ef20c2900001e5e30
+mr yellow: a462d32ff20c2900001e5e31
+mr purple: a462d347f20c2900001e5e32

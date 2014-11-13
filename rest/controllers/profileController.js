@@ -21,7 +21,7 @@ exports.getProfiles = function (req, res) {
                 callback(null, context);
             },
             function (context, callback) {
-                profile.Person.find().exec(function( err, people){
+                profile.Profile.find().exec(function( err, people){
                     if ( err ) {
                         callback(err, null);
                     }
@@ -70,7 +70,7 @@ exports.getOneProfile = function (req, res) {
                 callback(null, context);
             },
             function (context, callback) {
-                profile.Person.find({_id:context.id}).exec(function( err, person){
+                profile.Profile.find({_id:context.id}).exec(function( err, person){
                     if ( err ) {
                         callback(err, null);
                     }
@@ -111,7 +111,7 @@ exports.newProfile = function (req, res) {
                 stringId = 'a' + stringId.substring(1);
                 var _id = mongoose.Types.ObjectId( stringId );
 
-                var p = new profile.Person({
+                var p = new profile.Profile({
                             _id: _id,
                             name:req.body.name,
                             label:req.body.label
@@ -158,7 +158,7 @@ exports.getConversations = function (req, res) {
 
             // get all the conversations for a user
             function(context,callback) {
-                model.Person.findOne({'_id': context.profileId}, {_id: 0, inbox: 1})
+                model.Profile.findOne({'_id': context.profileId})
                     .exec(function (err, obj) {
                         if ( err ) {
                             callback(err, null);

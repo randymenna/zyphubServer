@@ -7,6 +7,7 @@ var MessageExchangePublisher = require('./MessageExchangePublisher');
 var CONVERSATION_EXCHANGE           = 'ConversationEngineExchange';
 var SCHEDULER_EXCHANGE              = 'SchedulerExchange';
 var SOCKETIO_EXCHANGE               = 'SocketIOExchange';
+var AUDITTRAIL_EXCHANGE             = 'AuditTrailExchange';
 
 
 var ExchangePublisherFactory = module.exports = function ExchangePublisherFactory(connection) {
@@ -33,6 +34,13 @@ ExchangePublisherFactory.prototype.createSchedulerExchangePublisher = function(c
 
 ExchangePublisherFactory.prototype.createSocketIOExchangePublisher = function(callback) {
     this.createExchangePublisher(SOCKETIO_EXCHANGE,function(newPublisher) {
+        callback(newPublisher);
+    });
+
+}
+
+ExchangePublisherFactory.prototype.createAuditTrailExchangePublisher = function(callback) {
+    this.createExchangePublisher(AUDITTRAIL_EXCHANGE,function(newPublisher) {
         callback(newPublisher);
     });
 

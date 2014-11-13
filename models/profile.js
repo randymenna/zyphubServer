@@ -17,15 +17,15 @@ var profileSchema = new Schema({
     public:     {type: Boolean, default: false},
     enterprise: {type: String, default: "ConversePoint"},
     memberOf:   [{type: Schema.Types.ObjectId, ref: 'Group'}],
-    friends:    [{type: Schema.Types.ObjectId, ref: 'Person'}],
+    friends:    [{type: Schema.Types.ObjectId, ref: 'Profiles'}],
     inbox:      [{type: Schema.Types.ObjectId, ref: 'Conversation'}]
 },
     {autoIndex: false});
 
-var _Person = mongoose.model('Person', profileSchema);
+var _Profile = mongoose.model('Profiles', profileSchema);
 
 module.exports =  {
-    Person : _Person
+    Profile : _Profile
 };
 
 

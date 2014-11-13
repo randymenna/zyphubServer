@@ -15,8 +15,12 @@ var groupSchema = new Schema({
     type:           {type: String, default: "GROUP"},
     public:         {type: Boolean, default: false},
     enterprise:     {type: String, default: "ConversePoint"},
-    members:        [{type: Schema.Types.ObjectId, ref: 'Person'}],
-    owner:          [{type: Schema.Types.ObjectId, ref: 'Person'}]
+    members:        [{type: Schema.Types.ObjectId, ref: 'Profiles'}],
+    owner:          [{type: Schema.Types.ObjectId, ref: 'Profiles'}],
+    meta:           {
+        tags: [ String ],
+        nvpairs: [{name: String, value: String}]
+    }
 },
     {autoIndex: false});
 

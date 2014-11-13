@@ -71,6 +71,14 @@ cpBus.connection.on('ready',function() {
 
                 console.info('Scheduler MDB: agenda start');
 
+                var indexCallback = function(err) { if (err) { console.log("Index creation failed: " + err); } };
+
+                agenda._db
+                    .ensureIndex("nextRunAt", indexCallback)
+                    .ensureIndex("lockedAt", indexCallback)
+                    .ensureIndex("name", indexCallback)
+                    .ensureIndex("priority", indexCallback);
+
                 agenda.start();
 
                 agenda.on('complete', function(job) {

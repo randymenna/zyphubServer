@@ -3,12 +3,13 @@
  */
 var mongoose                = require('mongoose');
 var async                   = require('async');
-var genericMongoController  = require('./genericMongoController')
+var restHelper              = require('./helper/restHelper');
 var model                   = require('../../models/models');
 
 var _conversationPublisher = null;
 var _schedulerPublisher = null;
 var _socketIOPublisher = null;
+var _auditTrailPublisher = null;
 
 exports.setConversationPublisher = function( conversationPublisher ) {
     _conversationPublisher = conversationPublisher;
@@ -22,6 +23,10 @@ exports.setSocketIOPublisher = function( schedulerPublisher ) {
     _socketIOPublisher = schedulerPublisher;
 }
 
+exports.setAuditTrailPublisher = function( auditTrailPublisher ) {
+    _auditTrailPublisher = auditTrailPublisher;
+}
+
 exports.getConversations = function (req, res) {
 
     console.log("getConversations(): entered");
@@ -29,9 +34,8 @@ exports.getConversations = function (req, res) {
         [
             function (callback) {
                 var context = {};
-                var accountId = genericMongoController.extractAccountId(req);
+                context.origin = restHelper.extractOriginId(req);
 
-                context.accountId = accountId;
                 context.profileId = req.params.profileId;
 
                 callback(null, context);
@@ -39,7 +43,7 @@ exports.getConversations = function (req, res) {
 
             // get all the conversations for a user
             function(context,callback) {
-                model.Person.findOne({'_id': context.profileId}, {_id: 0, inbox: 1})
+                model.Profile.findOne({'_id': context.profileId}, {_id: 0, inbox: 1})
                     .exec(function (err, obj) {
                         if ( err ) {
                             callback(err, null);
@@ -87,9 +91,8 @@ exports.getOneConversation = function(req, res) {
             function (callback) {
                 var context = {};
 
-                var accountId = genericMongoController.extractAccountId(req);
-                context.accountId = accountId;
-                context.conversationId = req.params.conversationId;
+                context.origin = restHelper.extractOriginId(req);
+                context.conversationId = req.params.id;
 
                 callback(null, context);
             },
@@ -113,7 +116,7 @@ exports.getOneConversation = function(req, res) {
         ],
 
         function (err, context) {
-            console.log("getOneConversation(): exiting: err=%s,result=%s", err.message, context);
+            console.log("getOneConversation(): exiting: err=%s,result=%s", err, context);
             if (!err) {
                 res.json(200, context.conversation);
             } else {
@@ -134,22 +137,18 @@ exports.newConversation = function (req, res) {
             function (callback) {
                 var context = {};
                 context.action = "new";
+                context.timestamp = new Date().toISOString();
+                context.origin = restHelper.extractOriginId(req);
 
                 context.originalMembers = req.body.envelope.members.slice();
                 context.members = req.body.envelope.members;
                 context.groups = [];
-                context.contexts = [];
 
                 var i = context.members.length;
                 while (i--) {
                     // is it a group?
                     if (context.members[i].charAt(0) == 'b') {
                         context.groups.push(context.members[i]);
-                        context.members.splice(i,1);
-                    }
-                    else
-                    if (context.members[i].charAt(0) == 'c') {
-                        context.contexts.push(context.members[i]);
                         context.members.splice(i,1);
                     }
                 }
@@ -182,29 +181,6 @@ exports.newConversation = function (req, res) {
 
             function(context,callback) {
 
-
-                if ( context.contexts.length > 0 ) {
-                    model.Context.find({'_id': {$in: context.contexts}}, function (err, ctxs) {
-
-                        if (err) {
-                            callback(err, null);
-                        }
-                        else {
-                            for (var i=0; i < ctxs.length; i++) {
-                                context.members.concat(ctxs[i].members);
-                            }
-
-                            callback(null, context);
-                        }
-                    });
-                }
-                else {
-                    callback(null, context);
-                }
-            },
-
-            function(context,callback) {
-
                 var c = new model.Conversation({
                     envelope:req.body.envelope,
                     time:req.body.time,
@@ -214,7 +190,6 @@ exports.newConversation = function (req, res) {
                 var meta = {};
                 meta.originalMembers = context.originalMembers;
                 meta.groups = context.groups;
-                meta.contexts = context.contexts;
 
                 c.envelope.members = context.members;
                 c.envelope.meta = meta;
@@ -232,6 +207,7 @@ exports.newConversation = function (req, res) {
                 }
                 
                 context.conversation = c;
+                context.conversationId = c._id
                 
                 callback(null, context);
             },
@@ -250,7 +226,7 @@ exports.newConversation = function (req, res) {
 
             // add a conversation to all the members in-boxes
             function(context,callback) {
-                model.Person.update({'_id': { $in: context.conversation.envelope.members }},{$push: {inbox: context.conversation._id}}, {multi:true}, function(err, profiles){
+                model.Profile.update({'_id': { $in: context.conversation.envelope.members }},{$push: {inbox: context.conversation._id}}, {multi:true}, function(err, profiles){
 
                     context.profiles = profiles;
 
@@ -258,7 +234,9 @@ exports.newConversation = function (req, res) {
                 });
             },
 
-            // schedule time based events (ttl & escalation)
+            // schedule time based events
+
+            // schedule ttl
             function(context, callback) {
 
                 if (context.conversation.time && context.conversation.time.toLive ) {
@@ -277,6 +255,7 @@ exports.newConversation = function (req, res) {
 
             },
 
+            // schedule escalation
             function(context, callback) {
 
                 if (context.conversation.escalation && context.conversation.escalation.id && context.conversation.escalation.id.length ) {
@@ -295,10 +274,11 @@ exports.newConversation = function (req, res) {
 
             },
 
-            // notify socket io
+            // socket io notifier
             function(context, callback) {
 
                 context.action = "new";
+
                 _socketIOPublisher.publish('SocketIOQueue',context, function( error ){
                     if ( error )
                         callback(Error("SocketIO Publish Failed"), null);
@@ -308,7 +288,19 @@ exports.newConversation = function (req, res) {
 
             },
 
-            // find one conversation and fill in the name and id only of the members
+            // audit trail
+            function(context, callback) {
+
+                _auditTrailPublisher.publish('AuditTrailQueue',context, function( error ){
+                    if ( error )
+                        callback(Error("AuditQueue Publish Failed"), null);
+                    else
+                        callback(null, context);
+                });
+
+            },
+
+            // return a populated conversation
             function(context,callback) {
                 model.Conversation.findOne({_id: context.conversation._id})
                     .populate('envelope.origin', 'label id')
@@ -344,16 +336,16 @@ exports.updateConversation = function (req, res) {
         [
             function (callback) {
                 var context = {};
-                var accountId = genericMongoController.extractAccountId(req);
 
-                context.accountId = accountId;
+                context.origin = restHelper.extractOriginId(req);
                 context.conversationId = req.params.id;
                 context.action = req.params.action;
-                context.profileId = req.body.origin;
+                context.profileId = context.origin;
                 context.forward = req.body.forward;
                 context.delegate = req.body.delegate;
                 context.escalate = req.body.escalate;
                 context.reply = req.body.reply;
+                context.timestamp = new Date().toISOString();
 
                 console.log(context.conversationId);
 
@@ -368,7 +360,21 @@ exports.updateConversation = function (req, res) {
                     else
                         callback(null, context);
                 });
+            },
+
+            /*
+            // send to auditor
+            function(context, callback) {
+
+                _auditTrailPublisher.publish('AuditTrailQueue',context, function( error ){
+                    if ( error )
+                        callback(Error("AuditQueue Publish Failed"), null);
+                    else
+                        callback(null, context);
+                });
+
             }
+            */
         ],
 
         function (err, context) {

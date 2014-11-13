@@ -35,6 +35,14 @@ cpBus.connection.on('ready',function() {
 
             function(context, callback) {
 
+                exchangePublisherFactory.createAuditTrailExchangePublisher(function(auditTrailPublisher) {
+                    context.auditTrailPublisher = auditTrailPublisher;
+                    callback(null,context);
+                });
+            },
+
+            function(context, callback) {
+
                 exchangePublisherFactory.createSocketIOExchangePublisher(function(socketIOPublisher) {
                     context.socketIOPublisher = socketIOPublisher;
                     callback(null,context);
@@ -44,6 +52,7 @@ cpBus.connection.on('ready',function() {
             function(context, callback) {
 
                 var conversationHandler = new ConversationMessageHandler();
+                conversationHandler.setAuditTrailPublisher(context.auditTrailPublisher);
                 conversationHandler.setSocketIOPublisher(context.socketIOPublisher);
                 conversationHandler.setConversationHelper( conversationHelper );
 

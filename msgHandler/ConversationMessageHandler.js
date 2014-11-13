@@ -12,6 +12,9 @@ var ConversationMessageHandler = module.exports = function ConversationMessageHa
         this._socketIOPublisher = socketIOPublisher;
     };
 
+    this.setAuditTrailPublisher = function(auditTrailPublisher) {
+        this._auditTrailPublisher = auditTrailPublisher;
+    };
     this.msgHandleSwitch                = {};
     this.msgHandleSwitch['REPLY']       = this.handleReply.bind(this);
     this.msgHandleSwitch['OK']          = this.handleOk.bind(this);
@@ -83,6 +86,18 @@ ConversationMessageHandler.prototype.handleMessagePool = function (context, msgH
                         callback(null, context);
                     }
                 })
+            },
+
+            // send to auditor
+            function(context, callback) {
+
+                self._auditTrailPublisher.publish('AuditTrailQueue',context, function( error ){
+                    if ( error )
+                        callback(Error("AuditQueue Publish Failed"), null);
+                    else
+                        callback(null, context);
+                });
+
             },
 
             // get a populated model
