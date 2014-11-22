@@ -7,6 +7,7 @@ var genericMongoController  = require('./genericMongoController')
 var profile                 = require('../../models/profile');
 var model                   = require('../../models/models');
 var mongoose                = require('mongoose');
+var profileHelper           = require('./helper/profileHelper');
 
 exports.getProfiles = function (req, res) {
 
@@ -107,15 +108,12 @@ exports.newProfile = function (req, res) {
             },
 
             function (context, callback) {
-                var stringId = mongoose.Types.ObjectId().toHexString();
-                stringId = 'a' + stringId.substring(1);
-                var _id = mongoose.Types.ObjectId( stringId );
 
-                var p = new profile.Profile({
-                            _id: _id,
-                            name:req.body.name,
-                            label:req.body.label
-                        });
+                var info = {}
+                info.name = req.body.name;
+                info.label = req.body.label;
+
+                var p = profileHelper.newProfile(info);
 
                 p.save(function( err, profile){
                     if ( err ) {
@@ -125,7 +123,7 @@ exports.newProfile = function (req, res) {
                         context.profile = profile;
                         callback(null, context);
                     }
-                })
+                });
             }
         ],
 

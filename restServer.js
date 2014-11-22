@@ -5,6 +5,9 @@ var https                   = require('https');
 var config                  = require('config');
 var fs                      = require('fs');
 var mongoose                = require('mongoose');
+var passport                = require('passport');
+
+require('./auth/passport')(passport);
 
 mongoDbClient.init(function(error) {
     if ( error == null ) {
@@ -94,7 +97,8 @@ function createExpressApplication() {
     app.use(express.json())
         .use(express.urlencoded())
         .use(checkContentType)
-        .use(allowCrossDomain);
+        .use(allowCrossDomain)
+        .use(passport.initialize());
 
     // IMPORTANT - this function must come before any routes
     //
@@ -147,6 +151,7 @@ function createExpressApplication() {
     app.use('/atrium/conversations', require('./rest/conversationService'));
     app.use('/atrium/escalations', require('./rest/escalationService'));
     app.use('/atrium/auditTrail', require('./rest/auditService'));
-
+    app.use('/atrium/account', require('./rest/userService'));
+    app.use('/auth', require('./rest/authService'));
     return app;
 }

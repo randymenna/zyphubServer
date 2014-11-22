@@ -42,3 +42,13 @@ restServer:
     privateKeyFile  : './bin/ssl/privatekey.pem'
     certificateFile : './bin/ssl/certificate.pem'
     caCertsFile     : './bin/ssl/privatekey.pem'   # this is not needed when self-signed so we jsut assign to privatekey for dev
+
+github:
+  clientID: 3be3a353b77d093a2727
+  clientSecret: 689158bbeeafe661e3db3432864d42f5ce1156f3
+  callbackURL: http://localhost:19690/auth/github/callback
+
+facebook:
+  appID: 1502606000005936
+  appSecret: e89b0e89999ff893c0bf84a13fa71c99
+  callbackURL: http://localhost:19690/auth/facebook/callback
