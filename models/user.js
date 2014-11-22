@@ -69,12 +69,12 @@ var UserSchema = new Schema({
 		default: ['user']
 	},
 
-	updated: { type: Date },
-	created: { type: Date, default: Date.now},
+	lastLogin: { type: Date },
+	created: { type: Date, default: Date.now },
 
 	/* For reset password */
 	resetPasswordToken: { type: String},
-  	resetPasswordExpires: { type: Date},
+  	resetPasswordExpires: { type: Date}
 });
 
 
@@ -86,7 +86,7 @@ UserSchema.pre('save', function(next) {
 		this.credentials.salt = new Buffer(crypto.randomBytes(16).toString('base64'), 'base64');
 		this.credentials.password = this.hashPassword(this.credentials.password);
 	}
-	this.updated = new Date;
+	this.lastLogin = new Date();
 
 	next();
 });
