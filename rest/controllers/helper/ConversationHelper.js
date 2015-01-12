@@ -4,11 +4,14 @@
 
 var async                   = require('async');
 var config                  = require('config');
-var model                   = require('../models/models');
+var model                   = require('../../../models/models');
 var mongoose                = require('mongoose');
 var ObjectId                = require('mongoose').Types.ObjectId;
+var TagHelper               = require('./tagHelper');
 
 var ConversationHelper = module.exports = function ConversationHelper () {
+
+    this._conversationPublisher = null;
 
     this.removeFromArray = function( id, list ) {
         for (var i=0; i < list.length; i++) {
@@ -124,6 +127,240 @@ var ConversationHelper = module.exports = function ConversationHelper () {
 
         return doNextStep;
     }
+
+    this.routeToGroups = function( context, callback ) {
+
+        context.groups = [];
+
+        var i = context.members.length;
+
+        while (i--) {
+            // is it a group?
+            if (context.members[i].charAt(0) == 'b') {
+                context.groups.push(context.members[i]);
+                context.members.splice(i,1);
+            }
+        }
+
+        if ( context.groups.length > 0 ) {
+            model.Group.find({'_id': {$in: context.groups}}, function (err, groups) {
+
+                if (err) {
+                    callback(err, null);
+                }
+                else {
+                    for (var i=0; i < groups.length; i++) {
+                        context.members = context.members.concat(groups[i].members);
+                    }
+
+                    callback(null, context);
+                }
+            });
+        }
+        else {
+            callback(null, context);
+        }
+    };
+
+    this.routeToTags = function( context, callback ) {
+        var self = this;
+
+        model.Tag.find({'label': {$in: context.tags}}, function (err, tags) {
+
+            if (err) {
+                callback(err, null);
+            }
+            else {
+                for (var i=0; i < tags.length; i++) {
+                    if ( TagHelper.isActive(tags[i]) )
+                        context.members.push(tags[i].owner[0]);
+                }
+                context.tags = tags;
+
+                callback(null, context);
+            }
+        });
+    };
+
+    this.unpackRawConversation = function( context ) {
+        context.members = context.body.envelope.members;
+        context.messageType = context.body.envelope.messageType;
+        context.ttl = context.body.time.toLive;
+        context.content = context.body.content;
+        context.tags = context.body.tags;
+        return context;
+    }
+};
+
+ConversationHelper.prototype.setSchedulerPublisher = function( schedulerPublisher ) {
+    var self = this;
+    self._schedulerPublisher = schedulerPublisher;
+}
+
+ConversationHelper.prototype.route = function( context, callback ) {
+    var self = this;
+
+    context = self.unpackRawConversation( context );
+
+    self.routeToGroups(context, function (err, context) {
+        if (err) {
+            callback(err, null);
+        }
+        else {
+            self.routeToTags(context, function (err, context) {
+                callback(err, context);
+            });
+        }
+    });
+}
+
+ConversationHelper.prototype.addProfileToConversations = function( profile, conversations, callback ) {
+    var self = this;
+    console.log("addProfileToConversation(): entered");
+
+    async.waterfall(
+        [
+            function (callback) {
+                var context = {};
+                context.conversationIds = [];
+                var functions = [];
+
+                for (var i=0; i < conversations.length; i++) {
+                    context.conversationIds.push(conversations[i]._id.toHexString());
+                    conversations[i].envelope.members.push( context.profileId );
+                    conversations[i].state.members.push( {member: context.profileId, state: "UNOPENED"} );
+                    ++conversations[i].state.curMemberCount;
+
+                    functions.push((function (doc) {
+                        return function (callback) {
+                            doc.save(callback);
+                        };
+                    })(conversations[i]));
+                }
+
+                context.conversations = conversations;
+
+                if (context.conversations.length > 0) {
+
+                    async.parallel(functions, function (err, results) {
+                        callback(err,context);
+                    });
+                }
+                else {
+                    callback(null,context);
+                }
+            },
+
+            // add the conversations to the profiles inbox
+            function (context, callback) {
+
+                if (context.conversations.length > 0) {
+
+                    model.Profile.findOneAndUpdate({'_id': profile._id},{$pushAll:{'inbox' : context.conversationIds}},function(err,ret){
+                        callback(err,context);
+                    });
+                }
+                else {
+                    callback(null,context);
+                }
+            }
+        ],
+
+        function (err, context) {
+            console.log("addProfileToConversation(): exiting: err=%s,result=%s", err, context);
+            callback( err, null );
+        }
+    );
+};
+
+ConversationHelper.prototype.removeProfileFromConversations = function( profile, conversations, callback ) {
+    var self = this;
+    console.log("removeProfileFromConversations(): entered");
+
+    async.waterfall(
+        [
+            function (callback) {
+                var context = {};
+                context.conversationIds = conversations;
+                context.profileId = profile;
+
+                callback(null,context);
+            },
+
+            function(context,callback) {
+
+                model.Conversation.find({'_id': { $in: context.conversationIds }})
+                    .exec(function( err, conversations){
+                        if ( err ) {
+                            callback(err, null);
+                        }
+                        else {
+                            context.conversations = conversations;
+                            callback(null, context);
+                        }
+                    });
+            },
+
+            function(context,callback) {
+
+                context.functions = [];
+
+                for (var i=0; i < context.conversations.length; i++) {
+
+                    // if conversation is closed, don't change it
+                    if (!context.conversations[i].state.open)
+                        continue;
+
+                    // remove from active members
+                    context.conversations[i].envelope.members.pull( {_id: new ObjectId(context.profileId)} );
+
+                    // update conversation state
+                    for (var j=0; j < context.conversations[i].state.members.length; j++)
+                        if (context.conversations[i].state.members[j].member == context.profileId ) {
+                            context.conversations[i].state.members[j].state = "LEFT";
+                            --context.conversations[i].state.curMemberCount;
+                            break;
+                        }
+
+                    context.functions.push((function (doc) {
+                        return function (callback) {
+                            doc.save(callback);
+                        };
+
+                    })(context.conversations[i]));
+                }
+
+                if (context.conversations.length > 0) {
+
+                    async.parallel(context.functions, function (err, results) {
+                        callback(err,context);
+                    });
+                }
+                else {
+                    callback(null,context);
+                }
+            },
+
+            // remove conversations from the inbox
+            function (context, callback) {
+
+                if (context.conversations.length > 0) {
+
+                    model.Profile.findOneAndUpdate({'_id': context.profileId},{$pullAll:{'inbox' : context.conversationIds}},function(err,ret){
+                        callback(err,context);
+                    });
+                }
+                else {
+                    callback(null,context);
+                }
+            }
+        ],
+
+        function (err, context) {
+            console.log("removeProfileFromConversations(): exiting: err=%s,result=%s", err, context);
+            callback( err, context );
+        }
+    );
 };
 
 ConversationHelper.prototype.leaveConversation = function( context, callback ) {
@@ -327,7 +564,7 @@ ConversationHelper.prototype.closeConversation = function( context, callback ) {
                 // remove from active members
                 self.updateLastEvent( context.origin, "CLOSED", context.conversation);
 
-                context.conversation.state.curMemberCount = 0;
+                context.conversation.state.open = false;
 
                 context.conversation.save(function( err, conversation ){
                     if ( err ) {

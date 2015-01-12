@@ -3,6 +3,7 @@
  */
 
 var ObjectID = require('bson').BSONPure.ObjectID;
+var passport                    = require('passport');
 
 var genericMongoController  = require('./controllers/genericMongoController');
 
@@ -17,13 +18,13 @@ module.exports = function(){
     var express = require('express');
     var app = express();
 
-    app.get('/:collection'                  , genericMongoController.findAll);
-    app.get('/:collection/:id'              , genericMongoController.findById);
-    app.post('/:collection/:skip/:limit'    , genericMongoController.getSubset);
-    app.get('/:collection/find/:query'      , genericMongoController.findByQuery);
-    app.post('/:collection'                 , genericMongoController.addEntity);
-    app.put('/:collection/:id'              , genericMongoController.updateEntity);
-    app.delete('/:collection/:id'           , genericMongoController.deleteEntity);
+    app.get('/:collection'                  ,  passport.authenticate('bearer', { session: false }), genericMongoController.findAll);
+    app.get('/:collection/:id'              ,  passport.authenticate('bearer', { session: false }), genericMongoController.findById);
+    app.post('/:collection/:skip/:limit'    ,  passport.authenticate('bearer', { session: false }), genericMongoController.getSubset);
+    app.get('/:collection/find/:query'      ,  passport.authenticate('bearer', { session: false }), genericMongoController.findByQuery);
+    app.post('/:collection'                 ,  passport.authenticate('bearer', { session: false }), genericMongoController.addEntity);
+    app.put('/:collection/:id'              ,  passport.authenticate('bearer', { session: false }), genericMongoController.updateEntity);
+    app.delete('/:collection/:id'           ,  passport.authenticate('bearer', { session: false }), genericMongoController.deleteEntity);
 
 
     cpbus.connection.on('error',function(err) {

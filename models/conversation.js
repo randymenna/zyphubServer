@@ -17,7 +17,8 @@ var conversationSchema = new Schema({
         meta: {
             enterprise: {type: String, default: "ConversePoint"},
             originalMembers: [ {type: Schema.Types.ObjectId} ],
-            groups: [ {type: Schema.Types.ObjectId, ref: 'Group'} ]
+            groups: [ {type: Schema.Types.ObjectId, ref: 'Group'} ],
+            tags: [String]
         }
     },
     time: {
@@ -25,13 +26,12 @@ var conversationSchema = new Schema({
         modified: Date,
         toLive: {type: Number, default: -1}
     },
-    state: {    members: [
-                    {
-                        member: {type: Schema.Types.ObjectId, ref: 'Profiles'},
-                        lastEvent: {type: String, default: "UNREAD" },
-                        _id: false
-                    }
-        ],
+    state: {
+        members: [{
+            member: {type: Schema.Types.ObjectId, ref: 'Profiles'},
+            lastEvent: {type: String, default: "UNREAD" },
+            _id: false
+        }],
         maxAccepts: {type: Number, default: 1},
         accepts: {type: Number, default: 0},
         rejects: {type: Number, default: 0},
@@ -40,7 +40,8 @@ var conversationSchema = new Schema({
         delegates: {type: Number, default: 0},
         leaves: {type: Number, default: 0},
         startMemberCount: Number,
-        curMemberCount: Number
+        curMemberCount: Number,
+        open: {type: Boolean, default: true}
     },
     escalation: {
         currentStep: {type: Number, default: 0},

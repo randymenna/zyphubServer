@@ -6,6 +6,9 @@ var async                               = require('async');
 var ScheduleMessageHandler              = require('../msgHandler/SchedulerMessageHandler');
 var ExchangePublisherFactory            = require('../util/bus/ExchangePublisherFactory');
 var cpBus                               = require('../bus');
+var ConversationHelper                  = require('../rest/controllers/helper/conversationHelper');
+
+var conversationHelper = new ConversationHelper();
 
 var ConversationPublisher;
 
@@ -23,8 +26,6 @@ cpBus.connection.on('ready',function() {
 });
 
 var ScheduleHelper = module.exports = function ScheduleHelper () {
-
-    this._conversationPublisher = null;
 
     this.cancelTimer = function( agenda, name, conversationId ) {
 
@@ -81,5 +82,21 @@ ScheduleHelper.prototype.handleEscalation = function( job, done ) {
             console.log("handleEscalation() out: Publish Failed " + context.conversationId);
         else
             console.log("handleEscalation() out" + context.conversationId);
+    });
+};
+
+ScheduleHelper.prototype.handleTagConstraint = function( job, done ) {
+    var self = this;
+
+    var ctx = job.attrs.data.context;
+    var owner = ctx.tag.owner[0];
+    var conversations = [ ctx.conversationId ];
+
+    // remove owner from conversation
+    conversationHelper.removeProfileFromConversations( owner, conversations, function( error, context ) {
+        if ( error ) {
+            console.log('handleTagConstraint(): error: %s removing profile %s from conversation %s',error,owner,context.conversationId);
+        }
+        console.log('handleTagConstraint(): removed %s from conversation %s',owner,ctx.conversationId);
     });
 };

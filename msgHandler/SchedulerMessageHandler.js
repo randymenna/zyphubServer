@@ -19,20 +19,11 @@ var SchedulerMessageHandler = module.exports = function SchedulerMessageHandler(
     this.msgHandleSwitch['SETTTL']              = this.setTTL.bind(this);
     this.msgHandleSwitch['ESCALATION']          = this.setEscalation.bind(this);
     this.msgHandleSwitch['ESCALATIONSTEP']      = this.handleEscalationStep.bind(this);
+    this.msgHandleSwitch['TAGCONSTRAINT']       = this.setTagConstraint.bind(this);
 
 };
 
 module.exports.publisher = publisher;
-
-// *** Context
-// context.accountId
-// context.conversationId
-// context.action
-// context.profileId
-// context.forward
-// context.delegate
-// context.escalate
-// context.reply
 
 SchedulerMessageHandler.prototype.handleMessagePool = function (context, msgHandlerCallback) {
     var self = this;
@@ -105,5 +96,14 @@ SchedulerMessageHandler.prototype.handleEscalationStep = function(context,doneCa
     self.agenda.schedule(expirationTime,'handle escalation',{context:context});
 
     console.log("SchedulerMessageHandler.handleMessage() 'handleEscalationStep' " + context.conversationId);
+    doneCallback(null,context);
+};
+
+SchedulerMessageHandler.prototype.setTagConstraint = function(context,doneCallback) {
+    var self = this;
+
+    var expirationTime = new Date(context.constraint);
+    var job = self.agenda.schedule(expirationTime,'tag constraint',{context:context});
+    console.log("SchedulerMessageHandler.handleMessage() 'tag constraint' " + expirationTime);
     doneCallback(null,context);
 };

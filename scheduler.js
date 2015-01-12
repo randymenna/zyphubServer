@@ -59,6 +59,7 @@ cpBus.connection.on('ready',function() {
 
                 agenda.define('handle escalation',scheduleHelper.handleEscalation);
                 agenda.define('handle ttl',scheduleHelper.handleTTL);
+                agenda.define('tag constraint',scheduleHelper.handleTagConstraint);
 
                 var schedulerHandler = new SchedulerMessageHandler();
                 schedulerHandler.setConversationPublisher(context.conversationPublisher);

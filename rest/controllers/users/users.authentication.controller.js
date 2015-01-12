@@ -106,7 +106,7 @@ exports.signin = function(req, res, next) {
 				res.status(400).send(info);
 			} else {
 
-				user.token = jwt.sign({ profile:user.profile[0] }, 'this-is-the-secret-key',{expiresInMinutes: 5});
+				user.token = jwt.sign({ profile:user.profile[0] }, 'this-is-the-secret-key',{expiresInMinutes: 500});
 
 				user.save(function( err, u){
 					res.json(userHelper.sanitizeUser(u));
@@ -146,7 +146,10 @@ exports.oauthCallback = function(strategy) {
 							res.status(401).send({error: "oauth callback mismatch"});
 						}
 						else {
-							user.token = jwt.sign({profile: user.profile[0]}, 'this-is-the-secret-key', {expiresInMinutes: 5});
+							// TODO: make this configurable
+							//user.token = jwt.sign({profile: user.profile[0]}, 'this-is-the-secret-key', {expiresInMinutes: 500});
+
+							user.token = jwt.sign({profile: user.profile[0]}, 'this-is-the-secret-key');
 							user.save(function (err, u) {
 
 								res.status(200).json(userHelper.sanitizeUser(u));

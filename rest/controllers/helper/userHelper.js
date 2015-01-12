@@ -43,6 +43,9 @@ exports.sanitizeUser = function( u ) {
         u.roles = undefined;
         u.created = undefined;
         u.updated = undefined;
+        u.lastLogin = undefined;
+        u.resetPasswordToken = undefined;
+        u.resetPasswordExpires = undefined;
     }
 
     return u;

@@ -3,11 +3,12 @@
 /**
  * Module dependencies.
  */
-var passport = require('passport'),
-	url = require('url'),
-	LinkedInStrategy = require('passport-linkedin').Strategy,
-	config = require('../config'),
-	users = require('../../app/controllers/users');
+
+var passport 			= require('passport');
+var config				= require('config');
+var LinkedInStrategy 	= require('passport-linkedin').Strategy;
+var users 				= require('../../rest/controllers/userController');
+var models				= require('../../models/models');
 
 module.exports = function() {
 	// Use linkedin strategy
@@ -23,6 +24,7 @@ module.exports = function() {
 			var providerData = profile._json;
 			providerData.accessToken = accessToken;
 			providerData.refreshToken = refreshToken;
+			providerData.code = req.query.code;
 
 			// Create the user OAuth profile
 			var providerUserProfile = {
@@ -33,7 +35,8 @@ module.exports = function() {
 				username: profile.username,
 				provider: 'linkedin',
 				providerIdentifierField: 'id',
-				providerData: providerData
+				providerData: providerData,
+				code: req.query.code
 			};
 
 			// Save the user OAuth profile

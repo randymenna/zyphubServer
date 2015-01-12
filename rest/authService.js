@@ -22,6 +22,19 @@ module.exports = function() {
 	app.get('/login/facebook', passport.authenticate('facebook', {scope: ['email']}));
 	app.get('/facebook/callback', UserController.oauthCallback('facebook'));
 
+	// Setting the google oauth routes
+	app.get('/login/google', passport.authenticate('google', {
+		scope: [
+			'https://www.googleapis.com/auth/userinfo.profile',
+			'https://www.googleapis.com/auth/userinfo.email'
+		]
+	}));
+	app.get('/google/callback', UserController.oauthCallback('google'));
+
+	// Setting the linkedin oauth routes
+	app.get('/login/linkedin', passport.authenticate('linkedin'));
+	app.get('/linkedin/callback', UserController.oauthCallback('linkedin'));
+
 	return app;
 }();
 /*

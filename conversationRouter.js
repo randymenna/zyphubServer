@@ -4,12 +4,12 @@ var MessageDrivenBean               = require('./util/mdb/MessageDrivenBean');
 var cpBus                           = require('./bus');
 var ConversationMessageHandler      = require('./msgHandler/ConversationMessageHandler');
 var ExchangePublisherFactory        = require('./util/bus/ExchangePublisherFactory');
-var ConversationHelper              = require('./util/ConversationHelper');
+var ConversationHelper              = require('./rest/controllers/helper/conversationHelper');
 var config                          = require('config');
 var mongoose                        = require('mongoose');
 
 var messageDrivenBean = null;
-var conversationHelper = new ConversationHelper();
+var conversationHelper = new conversationHelper();
 
 cpBus.connection.on('error',function(err) {
     logger.error("unable to connect to cp bus:" + err);

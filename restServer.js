@@ -152,6 +152,7 @@ function createExpressApplication() {
     app.use('/atrium/escalations', require('./rest/escalationService'));
     app.use('/atrium/auditTrail', require('./rest/auditService'));
     app.use('/atrium/account', require('./rest/userService'));
+    app.use('/atrium/tags', require('./rest/tagService'));
     app.use('/auth', require('./rest/authService'));
     return app;
 }

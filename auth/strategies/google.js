@@ -3,14 +3,17 @@
 /**
  * Module dependencies.
  */
-var passport = require('passport'),
-	url = require('url'),
-	GoogleStrategy = require('passport-google-oauth').OAuth2Strategy,
-	config = require('../config'),
-	users = require('../../app/controllers/users');
+
+var passport 			= require('passport');
+var config				= require('config');
+var GoogleStrategy 		= require('passport-google-oauth').OAuth2Strategy;
+var users 				= require('../../rest/controllers/userController');
+var models				= require('../../models/models');
+
 
 module.exports = function() {
 	// Use google strategy
+	console.log("google");
 	passport.use(new GoogleStrategy({
 			clientID: config.google.clientID,
 			clientSecret: config.google.clientSecret,
@@ -22,6 +25,7 @@ module.exports = function() {
 			var providerData = profile._json;
 			providerData.accessToken = accessToken;
 			providerData.refreshToken = refreshToken;
+			providerData.code = req.query.code;
 
 			// Create the user OAuth profile
 			var providerUserProfile = {
@@ -32,7 +36,8 @@ module.exports = function() {
 				username: profile.username,
 				provider: 'google',
 				providerIdentifierField: 'id',
-				providerData: providerData
+				providerData: providerData,
+				code: req.query.code
 			};
 
 			// Save the user OAuth profile

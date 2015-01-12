@@ -52,3 +52,13 @@ facebook:
   appID: 1502606000005936
   appSecret: e89b0e89999ff893c0bf84a13fa71c99
   callbackURL: http://localhost:19690/auth/facebook/callback
+
+google:
+  clientID: 526563584146-t8dp70hkvbniu59kj17cspidhbedav1q.apps.googleusercontent.com
+  clientSecret: df4zwW-GKjukvqnW3fy-uEMX
+  callbackURL: http://localhost:19690/auth/google/callback
+
+linkedin:
+  clientID: 727a6725-7fc4-4eae-8e2b-f318c48330b8
+  clientSecret: ea602421-d00f-4cf6-b6e8-1607b0f9b32c
+  callbackURL: http://localhost:19690/auth/google/callback

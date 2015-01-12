@@ -1,5 +1,5 @@
 /**
- * Created by al on 9/4/14.
+ * Created by randy on 9/4/14.
  */
 
 var async                   = require('async');
@@ -262,7 +262,7 @@ exports.leaveGroup = function (req, res) {
                 callback(null, context);
             },
 
-            // add member id to group members
+            // remove member id from group members
             function (context, callback) {
 
                 model.Group.findOneAndUpdate({'_id': context.groupId},{$pull:{'members' : context.profileId}},function(err,ret){
@@ -271,7 +271,7 @@ exports.leaveGroup = function (req, res) {
                 });
             },
 
-            // add group id to member's memberOf
+            // remove group id from member's memberOf
             function (context, callback) {
 
                 model.Profile.findOneAndUpdate({'_id': context.profileId},{$pull:{'memberOf' : context.groupId}},function(err,ret){
@@ -280,7 +280,7 @@ exports.leaveGroup = function (req, res) {
             },
 
 
-            // add the new member to all the conversations
+            // remove from all the conversations
             function (context, callback) {
 
                 model.Conversation.find({"envelope.meta.groups": context.groupId}, function(err, conversations){
@@ -332,7 +332,7 @@ exports.leaveGroup = function (req, res) {
                 });
             },
 
-            // add the open group conversations to the new members inbox
+            // remove conversations from the inbox
             function (context, callback) {
 
                 if (context.conversations.length > 0) {

@@ -18,7 +18,8 @@ var profileSchema = new Schema({
     enterprise:     {type: String, default: "ConversePoint"},
     memberOf:       [{type: Schema.Types.ObjectId, ref: 'Group'}],
     friends:        [{type: Schema.Types.ObjectId, ref: 'Profiles'}],
-    inbox:          [{type: Schema.Types.ObjectId, ref: 'Conversation'}]
+    inbox:          [{type: Schema.Types.ObjectId, ref: 'Conversation'}],
+    meta:           [{type: Schema.Types.ObjectId, ref: 'Tags'}]
 },
     {autoIndex: false});
 

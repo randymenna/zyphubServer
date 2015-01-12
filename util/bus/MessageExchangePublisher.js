@@ -1,5 +1,5 @@
 /**
- * Created by al
+ * Created by randy
  */
 
 var MessageExchangePublisher = module.exports = function MessageExchangePublisher(exchange,publishOptions) {

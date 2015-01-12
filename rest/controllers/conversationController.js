@@ -10,6 +10,7 @@ var _conversationPublisher = null;
 var _schedulerPublisher = null;
 var _socketIOPublisher = null;
 var _auditTrailPublisher = null;
+var _conversationHelper = null;
 
 exports.setConversationPublisher = function( conversationPublisher ) {
     _conversationPublisher = conversationPublisher;
@@ -17,6 +18,8 @@ exports.setConversationPublisher = function( conversationPublisher ) {
 
 exports.setSchedulerPublisher = function( schedulerPublisher ) {
     _schedulerPublisher = schedulerPublisher;
+    if ( _conversationHelper )
+        _conversationHelper.setSchedulerPublisher(schedulerPublisher);
 }
 
 exports.setSocketIOPublisher = function( schedulerPublisher ) {
@@ -25,6 +28,12 @@ exports.setSocketIOPublisher = function( schedulerPublisher ) {
 
 exports.setAuditTrailPublisher = function( auditTrailPublisher ) {
     _auditTrailPublisher = auditTrailPublisher;
+}
+
+exports.setConversationHelper = function( conversationHelper ) {
+    _conversationHelper = conversationHelper;
+    if ( _schedulerPublisher )
+        _conversationHelper.setSchedulerPublisher(_schedulerPublisher);
 }
 
 exports.getConversations = function (req, res) {
@@ -138,45 +147,13 @@ exports.newConversation = function (req, res) {
                 var context = {};
                 context.action = "new";
                 context.timestamp = new Date().toISOString();
-                context.origin = restHelper.extractOriginId(req);
+                context.origin = req.user.origin;
 
-                context.originalMembers = req.body.envelope.members.slice();
-                context.members = req.body.envelope.members;
-                context.groups = [];
+                context.body = req.body;
 
-                var i = context.members.length;
-                while (i--) {
-                    // is it a group?
-                    if (context.members[i].charAt(0) == 'b') {
-                        context.groups.push(context.members[i]);
-                        context.members.splice(i,1);
-                    }
-                }
-
-                callback(null, context);
-            },
-
-            function(context,callback) {
-
-
-                if ( context.groups.length > 0 ) {
-                    model.Group.find({'_id': {$in: context.groups}}, function (err, groups) {
-
-                        if (err) {
-                            callback(err, null);
-                        }
-                        else {
-                            for (var i=0; i < groups.length; i++) {
-                                context.members = context.members.concat(groups[i].members);
-                            }
-
-                            callback(null, context);
-                        }
-                    });
-                }
-                else {
-                    callback(null, context);
-                }
+                _conversationHelper.route(context,function(err,ctx){
+                    callback(err,ctx);
+                });
             },
 
             function(context,callback) {
@@ -274,6 +251,34 @@ exports.newConversation = function (req, res) {
 
             },
 
+            // schedule tag constraints
+            function(context, callback) {
+
+                if ( context.tags ) {
+
+                    for(var i=0; i<context.tags.length; i++) {
+                        if ( context.tags[i].constraint ) {
+                            var ctx = {};
+                            ctx.action = "tagConstraint";
+                            ctx.tag = context.tags[i].toObject();
+                            ctx.constraint = context.tags[i].constraint;
+                            ctx.conversationId = context.conversationId;
+
+                            _schedulerPublisher.publish('SchedulerQueue', ctx, function (error) {
+                                if (error)
+                                    console.log("Scheduler Publish Failed: tagConstraint");
+                            });
+                        }
+                        callback(null, context);
+                    }
+
+                }
+                else {
+                    callback(null, context);
+                }
+
+            },
+
             // socket io notifier
             function(context, callback) {
 
@@ -303,9 +308,9 @@ exports.newConversation = function (req, res) {
             // return a populated conversation
             function(context,callback) {
                 model.Conversation.findOne({_id: context.conversation._id})
-                    .populate('envelope.origin', 'label id')
-                    .populate('envelope.members', 'label id')
-                    .populate('state.members.member', 'label')
+                    .populate('envelope.origin', 'displayName id')
+                    .populate('envelope.members', 'displayName id')
+                    .populate('state.members.member', 'displayName')
                     .exec(function( err, conversation){
                         if ( err ) {
                             callback(err, null);

@@ -7,6 +7,7 @@ var group                   = require('./group');
 var escalation              = require('./escalation');
 var auditTrail              = require('./auditTrail');
 var user                    = require('./user');
+var tag                     = require('./tag');
 
 
 module.exports =  {
@@ -15,5 +16,6 @@ module.exports =  {
     Conversation : conversation.Conversation,
     Escalation : escalation.Escalation,
     AuditTrail: auditTrail.AuditTrail,
-    User: user.User
+    User: user.User,
+    Tag: tag.Tag
 };

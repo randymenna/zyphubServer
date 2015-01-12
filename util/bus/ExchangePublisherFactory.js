@@ -1,5 +1,5 @@
 /**
- * Created by al on 1/30/14.
+ * Created by randy on 1/30/14.
  */
 
 var MessageExchangePublisher = require('./MessageExchangePublisher');

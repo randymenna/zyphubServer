@@ -1,5 +1,5 @@
 /**
- * Created by al on 1/24/14.
+ * Created by randy on 1/24/14.
  */
 
 var RabbitMqMinionPool = require('rabbitmq_minionpool');

@@ -1,20 +1,22 @@
 /**
- * Created by al on 9/4/14.
+ * Created by randy on 9/4/14.
  */
 
 var ExchangePublisherFactory        = require('../util/bus/ExchangePublisherFactory');
 var ConversationController           = require('./controllers/conversationController');
 var cpBus                            = require('../bus');
+var ConversationHelper              = require('./controllers/helper/conversationHelper');
+var passport                    = require('passport');
 
 module.exports = function() {
 
     var express = require('express');
     var app = express();
 
-    app.get('/', ConversationController.getConversations);
-    app.get('/:id', ConversationController.getOneConversation);
-    app.post('/', ConversationController.newConversation);
-    app.post('/:id/:action', ConversationController.updateConversation);
+    app.get('/', passport.authenticate('bearer', { session: false }), ConversationController.getConversations);
+    app.get('/:id', passport.authenticate('bearer', { session: false }), ConversationController.getOneConversation);
+    app.post('/', passport.authenticate('bearer', { session: false }), ConversationController.newConversation);
+    app.put('/:id/:action', passport.authenticate('bearer', { session: false }), ConversationController.updateConversation);
 
     cpBus.connection.on('error',function(err) {
         console.error("Conversation Controller: Unable to connect to bus: " + err);
@@ -39,6 +41,9 @@ module.exports = function() {
         exchangePublisherFactory.createAuditTrailExchangePublisher( function(auditTrailPublisher) {
             ConversationController.setAuditTrailPublisher(auditTrailPublisher);
         });
+
+        var conversationHelper = new ConversationHelper();
+        ConversationController.setConversationHelper(conversationHelper);
 
     });
 

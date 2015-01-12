@@ -1,6 +1,7 @@
+// conversation
+
 {
   "envelope": {
-    "origin": "a462d28ef20c2900001e5e2e",
     "members": [ "b462d378f20c2900001e5e33" ],
     "messageType": "STANDARD"
   },
@@ -9,14 +10,17 @@
   },
   "content": {
     "message":"This is a standard message"
-  }
+  },
+  "tags": ["3rd Floor"]
 }
 
+// profile
 {
   "name": "mr blue",
   "label": "blue blue"
 }
 
+// group
 {
     "name":           "group 1",
     "label":          "The Group",
@@ -24,6 +28,24 @@
     "members":        ["a462d312f20c2900001e5e2f","a462d31ef20c2900001e5e30"],
     "owner":          ["a462d28ef20c2900001e5e2e"]
 }
+
+// tag
+{
+ "label": "3rd Floor",
+ "schedule": {
+    "dates": [{
+        "start": "1/1/15",
+        "end": "12/31/15"
+    }],
+    "dayTimes": [{
+        "days": "mon,tue,wednesday,thur,Friday",
+      	"startTime": "6:00 am",
+      	"endTime": "10:00 pm"
+    }]
+ }
+}
+
+// valid id's
 
 group id b462d378f20c2900001e5e33
 

@@ -29,4 +29,6 @@ module.exports = function(passport) {
 	require('./strategies/bearer')(passport);
 	require('./strategies/github')(passport);
 	require('./strategies/facebook')(passport);
+	require('./strategies/google')(passport);
+	require('./strategies/linkedin')(passport);
 };

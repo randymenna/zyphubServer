@@ -1,5 +1,5 @@
 /**
- * Created by al on 12/19/13.
+ * Created by randy on 12/19/13.
  */
 var config          = require('config');
 var WorkerPool      = require('../pool/WorkerPool');
