@@ -6,7 +6,7 @@ var MessageExchangePublisher = require('./MessageExchangePublisher');
 
 var CONVERSATION_EXCHANGE           = 'ConversationEngineExchange';
 var SCHEDULER_EXCHANGE              = 'SchedulerExchange';
-var SOCKETIO_EXCHANGE               = 'SocketIOExchange';
+var NOTIFICATION_EXCHANGE           = 'NotificationExchange';
 var AUDITTRAIL_EXCHANGE             = 'AuditTrailExchange';
 
 
@@ -32,8 +32,8 @@ ExchangePublisherFactory.prototype.createSchedulerExchangePublisher = function(c
 
 }
 
-ExchangePublisherFactory.prototype.createSocketIOExchangePublisher = function(callback) {
-    this.createExchangePublisher(SOCKETIO_EXCHANGE,function(newPublisher) {
+ExchangePublisherFactory.prototype.createNotificationExchangePublisher = function(callback) {
+    this.createFanOutExchangePublisher(NOTIFICATION_EXCHANGE,function(newPublisher) {
         callback(newPublisher);
     });
 
@@ -57,6 +57,19 @@ ExchangePublisherFactory.prototype.createExchangePublisher = function(exchangeNa
 
     var publishOptions  = this.getDefaultExchangeOptions();
     var exchangeOptions = this.getExchangeOptions({});
+
+    this._connection.exchange(exchangeName, exchangeOptions , function(exchange) {
+        var newExchangePublisher = new MessageExchangePublisher(exchange,publishOptions);
+        callback(newExchangePublisher);
+    });
+
+}
+
+ExchangePublisherFactory.prototype.createFanOutExchangePublisher = function(exchangeName,callback) {
+
+    var publishOptions  = this.getDefaultExchangeOptions();
+    var exchangeOptions = this.getExchangeOptions({});
+    exchangeOptions.type = 'fanout';
 
     this._connection.exchange(exchangeName, exchangeOptions , function(exchange) {
         var newExchangePublisher = new MessageExchangePublisher(exchange,publishOptions);
