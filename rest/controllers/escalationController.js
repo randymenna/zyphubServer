@@ -69,7 +69,7 @@ exports.newEscalation = function (req, res) {
             function(context, callback) {
 
                 context.action = "new";
-                _socketIOPublisher.publish('SocketIOQueue',context, function( error ){
+                _notificationPublisher.publish('SocketIOQueue',context, function( error ){
                     if ( error )
                         callback(Error("SocketIO Publish Failed"), null);
                     else

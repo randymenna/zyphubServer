@@ -1,4 +1,5 @@
 var express                 = require('express');
+var bodyParser              = require('body-parser');
 var url                     = require('url');
 var mongoDbClient           = require('./mongodb-client');
 var https                   = require('https');
@@ -93,9 +94,8 @@ function createExpressApplication() {
         }
     }
 
-    // we are using formidable for body parsing, don't use express's body parser
-    app.use(express.json())
-        .use(express.urlencoded())
+    app.use(bodyParser.json())
+        .use(bodyParser.urlencoded({extended:true}))
         .use(checkContentType)
         .use(allowCrossDomain)
         .use(passport.initialize());
@@ -111,36 +111,6 @@ function createExpressApplication() {
             // no token to validate
             next();
         }
-        else if ( req.url.indexOf("resource") != -1 ) {
-
-            // validate token from url, token must always be the last rest parameter
-            var args = req.url.split('/');
-
-            // validate token instead of true
-            if ( true ) {
-                next();
-            }
-            else {
-                res.json(401, {error: 'invalid credentials'});
-            }
-        }
-        else {
-            // validate token from http header
-            if ( req.headers.cptoken !== undefined ) {
-
-                if ( Login.validateToken( req.headers.cptoken ) ) {
-                    next();
-                }
-                else {
-                    res.json(401, {error: 'invalid credentials'});
-                }
-
-            }
-            else {
-                res.json(401, {error: 'missing credentials'});
-            }
-            // to invoke the rest api call next()
-        }
     });
 
     // Routes
@@ -154,5 +124,6 @@ function createExpressApplication() {
     app.use('/atrium/account', require('./rest/userService'));
     app.use('/atrium/tags', require('./rest/tagService'));
     app.use('/auth', require('./rest/authService'));
+
     return app;
 }

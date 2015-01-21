@@ -4,6 +4,10 @@ deviceGateway:
 logs:
   logFileName: 'cp.log'
 
+jwt:
+  secret: 'aboard.about.above.across.after.against.amid.among.anti'
+  ttl: -1
+
 mongo:
   host: 'localhost'
   port: 27017
@@ -12,14 +16,14 @@ mongo:
 
 socketio:
   origin: 'localhost:*'
-  port: 20142
+  port: 19691
   securePort: 20143
   isSecurePortEnabled : false
   isUnSecurePortEnabled : true
   ssl:
     privateKeyFile  : './bin/ssl/privatekey.pem'
     certificateFile : './bin/ssl/certificate.pem'
-    caCertsFile     : './bin/ssl/privatekey.pem'   # this is not needed when self-signed so we jsut assign to privatekey for dev
+    caCertsFile     : './bin/ssl/privatekey.pem'   # this is not needed when self-signed so we assign to privatekey for dev
 
 rabbitmq:
   host: '127.0.0.1'
@@ -34,14 +38,14 @@ rabbitmq:
 
 # This is the development configuration
 restServer:
-  isSecurePortEnabled : true
+  isSecurePortEnabled : false
   isUnSecurePortEnabled : true
   port: 19690
   securePort: 3001
   ssl:
     privateKeyFile  : './bin/ssl/privatekey.pem'
     certificateFile : './bin/ssl/certificate.pem'
-    caCertsFile     : './bin/ssl/privatekey.pem'   # this is not needed when self-signed so we jsut assign to privatekey for dev
+    caCertsFile     : './bin/ssl/privatekey.pem'   # this is not needed when self-signed so we assign to privatekey for dev
 
 github:
   clientID: 3be3a353b77d093a2727

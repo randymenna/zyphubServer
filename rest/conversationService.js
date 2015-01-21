@@ -3,10 +3,10 @@
  */
 
 var ExchangePublisherFactory        = require('../util/bus/ExchangePublisherFactory');
-var ConversationController           = require('./controllers/conversationController');
-var cpBus                            = require('../bus');
+var ConversationController          = require('./controllers/conversationController');
+var cpBus                           = require('../bus');
 var ConversationHelper              = require('./controllers/helper/conversationHelper');
-var passport                    = require('passport');
+var passport                        = require('passport');
 
 module.exports = function() {
 
@@ -34,8 +34,8 @@ module.exports = function() {
             ConversationController.setSchedulerPublisher(schedulerPublisher);
         });
 
-        exchangePublisherFactory.createSocketIOExchangePublisher( function(socketIOPublisher) {
-            ConversationController.setSocketIOPublisher(socketIOPublisher);
+        exchangePublisherFactory.createNotificationExchangePublisher( function(notificationPublisher) {
+            ConversationController.setNotificationPublisher(notificationPublisher);
         });
 
         exchangePublisherFactory.createAuditTrailExchangePublisher( function(auditTrailPublisher) {

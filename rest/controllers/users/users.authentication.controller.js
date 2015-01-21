@@ -3,7 +3,9 @@
 var model                   = require('../../../models/models');
 var profileHelper			= require('../../../rest/controllers/helper/profileHelper');
 var userHelper				= require('../../../rest/controllers/helper/userHelper');
-var jwt 					= require('jsonwebtoken');
+var AuthHelper				= require('../../../util/authenticationHelper');
+var jwt 					= require('jwt-simple');
+var config					= require('config');
 
 /**
  * Module dependencies.
@@ -12,6 +14,8 @@ var _ = require('lodash'),
 	errorHandler = require('../errors'),
 	mongoose = require('mongoose'),
 	passport = require('passport');
+
+var authHelper = new AuthHelper();
 
 /**
  * Signup
@@ -79,7 +83,7 @@ exports.signin = function(req, res, next) {
 							res.status(400).send(err);
 						} else {
 
-							user.token = jwt.sign({ profile:user.profile[0] }, 'this-is-the-secret-key',{expiresInMinutes: 5});
+							user.token = authHelper.createToken(user.profile[0], config.jwt.secret,{expiresInMinutes: config.jwt.ttl});
 
 							user.save(function( err, u){
 								res.json(userHelper.sanitizeUser(u));
@@ -92,7 +96,7 @@ exports.signin = function(req, res, next) {
 			else {
 
 				user.credentials.password = req.body.password;
-				user.token = jwt.sign({ profile:user.profile[0] }, 'this-is-the-secret-key',{expiresInMinutes: 5});
+				user.token = authHelper.createToken(user.profile[0], config.jwt.secret,{expiresInMinutes: config.jwt.ttl});
 
 				user.save(function( err, u){
 					res.json(userHelper.sanitizeUser(u));
@@ -106,7 +110,7 @@ exports.signin = function(req, res, next) {
 				res.status(400).send(info);
 			} else {
 
-				user.token = jwt.sign({ profile:user.profile[0] }, 'this-is-the-secret-key',{expiresInMinutes: 500});
+				user.token = authHelper.createToken(user.profile[0], config.jwt.secret,{expiresInMinutes: config.jwt.ttl});
 
 				user.save(function( err, u){
 					res.json(userHelper.sanitizeUser(u));
@@ -147,9 +151,10 @@ exports.oauthCallback = function(strategy) {
 						}
 						else {
 							// TODO: make this configurable
-							//user.token = jwt.sign({profile: user.profile[0]}, 'this-is-the-secret-key', {expiresInMinutes: 500});
+							// user.token = authHelper.createToken(user.profile[0], config.jwt.secret,{expiresInMinutes: config.jwt.ttl});
 
-							user.token = jwt.sign({profile: user.profile[0]}, 'this-is-the-secret-key');
+							user.token = authHelper.createToken(user.profile[0], config.jwt.secret,{});
+
 							user.save(function (err, u) {
 
 								res.status(200).json(userHelper.sanitizeUser(u));

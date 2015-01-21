@@ -181,15 +181,6 @@ var ConversationHelper = module.exports = function ConversationHelper () {
             }
         });
     };
-
-    this.unpackRawConversation = function( context ) {
-        context.members = context.body.envelope.members;
-        context.messageType = context.body.envelope.messageType;
-        context.ttl = context.body.time.toLive;
-        context.content = context.body.content;
-        context.tags = context.body.tags;
-        return context;
-    }
 };
 
 ConversationHelper.prototype.setSchedulerPublisher = function( schedulerPublisher ) {
@@ -197,19 +188,53 @@ ConversationHelper.prototype.setSchedulerPublisher = function( schedulerPublishe
     self._schedulerPublisher = schedulerPublisher;
 }
 
+ConversationHelper.prototype.requestToModel = function( body, user ) {
+    var c = new model.Conversation();
+
+    c.envelope.origin = user.origin;
+    c.envelope.members = body.members;
+    c.envelope.messageType = body.messageType;
+    if ( body.tags )
+        c.envelope.tags = body.tags;
+
+    if ( body.ttl )
+        c.time.toLive = body.ttl;
+    c.content.message = body.content.text;
+    // TODO: fix this
+    c.escalation = body.escalation;
+
+    return c;
+}
+
+ConversationHelper.prototype.decorateContext = function( context, body ) {
+
+    context.originalMembers = JSON.parse(JSON.stringify(body.members));
+    context.members = JSON.parse(JSON.stringify(context.originalMembers));
+
+    context.messageType = body.messageType;
+    context.ttl = body.ttl;
+    context.tags = body.tags;
+    context.escalation = body.escalation;
+
+    return context;
+}
+
 ConversationHelper.prototype.route = function( context, callback ) {
     var self = this;
-
-    context = self.unpackRawConversation( context );
 
     self.routeToGroups(context, function (err, context) {
         if (err) {
             callback(err, null);
         }
         else {
-            self.routeToTags(context, function (err, context) {
+            if (context.tags) {
+                self.routeToTags(context, function (err, context) {
+                    callback(err, context);
+                });
+            }
+            else {
                 callback(err, context);
-            });
+            }
         }
     });
 }

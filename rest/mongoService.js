@@ -9,7 +9,6 @@ var genericMongoController  = require('./controllers/genericMongoController');
 
 var cpbus                          = require('../bus');
 var ExchangePublisherFactory         = require('../util/bus/ExchangePublisherFactory');
-var EventPublisher                   = require('../util/bus/EventPublisher');
 
 var exchangePublisherFactory = null;
 var eventPublisher           = null;
@@ -35,10 +34,6 @@ module.exports = function(){
 
         console.log("MongoService: Connected to cp bus");
         exchangePublisherFactory = new ExchangePublisherFactory(cpbus.connection);
-
-        exchangePublisherFactory.createConversationExchangePublisher(function(conversationEngineExchangePublisher) {
-            eventPublisher = new EventPublisher( conversationEngineExchangePublisher );
-        });
     });
 
     return app;

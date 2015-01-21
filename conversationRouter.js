@@ -9,7 +9,7 @@ var config                          = require('config');
 var mongoose                        = require('mongoose');
 
 var messageDrivenBean = null;
-var conversationHelper = new conversationHelper();
+var conversationHelper = new ConversationHelper();
 
 cpBus.connection.on('error',function(err) {
     logger.error("unable to connect to cp bus:" + err);
@@ -43,8 +43,16 @@ cpBus.connection.on('ready',function() {
 
             function(context, callback) {
 
-                exchangePublisherFactory.createSocketIOExchangePublisher(function(socketIOPublisher) {
-                    context.socketIOPublisher = socketIOPublisher;
+                exchangePublisherFactory.createNotificationExchangePublisher(function(notificationPublisher) {
+                    context.notificationPublisher = notificationPublisher;
+                    callback(null,context);
+                });
+            },
+
+            function(context, callback) {
+
+                exchangePublisherFactory.createSchedulerExchangePublisher(function(schedulerPublisher) {
+                    context.schedulerPublisher = schedulerPublisher;
                     callback(null,context);
                 });
             },
@@ -53,7 +61,8 @@ cpBus.connection.on('ready',function() {
 
                 var conversationHandler = new ConversationMessageHandler();
                 conversationHandler.setAuditTrailPublisher(context.auditTrailPublisher);
-                conversationHandler.setSocketIOPublisher(context.socketIOPublisher);
+                conversationHandler.setNotificationPublisher(context.notificationPublisher);
+                conversationHandler.setSchedulerPublisher(context.schedulerPublisher);
                 conversationHandler.setConversationHelper( conversationHelper );
 
                 mongoose.connect(config.mongo.host, config.mongo.dbName, config.mongo.port, {auto_reconnect: true});

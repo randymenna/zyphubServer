@@ -12,13 +12,14 @@ var conversationSchema = new Schema({
         members: [
             {type: Schema.Types.ObjectId, ref: 'Profiles'}
         ],
-        pattern: String,
+        tags: [String],
         behaviors: [String],
+        pattern: String,
         meta: {
             enterprise: {type: String, default: "ConversePoint"},
             originalMembers: [ {type: Schema.Types.ObjectId} ],
             groups: [ {type: Schema.Types.ObjectId, ref: 'Group'} ],
-            tags: [String]
+            tags: [ {type: Schema.Types.ObjectId, ref: 'Tag'} ]
         }
     },
     time: {
@@ -57,7 +58,7 @@ var conversationSchema = new Schema({
 
 conversationSchema.pre('save', function (next) {
 
-    this.time.lastModified = new Date();
+    this.time.modified = new Date();
     next();
 });
 
