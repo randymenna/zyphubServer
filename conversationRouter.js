@@ -21,7 +21,6 @@ cpBus.connection.on('ready',function() {
 
     var exchangePublisherFactory = new ExchangePublisherFactory(cpBus.connection);
 
-    // INITIALIZATION CODE
     async.waterfall(
         [
             function(callback) {

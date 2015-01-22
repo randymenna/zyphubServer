@@ -42,7 +42,7 @@ cpBus.connection.on('ready',function() {
         setupSecureServer();
     }
 
-    messageDrivenBean = new MessageDrivenBean('NotificationServer',notificationHandler);
+    messageDrivenBean = new MessageDrivenBean('NotificationServer',notificationHandler, 1);
     console.log('NotificationMessageHandler Initialized');
 });
 

@@ -4,9 +4,10 @@
 var config          = require('config');
 var WorkerPool      = require('../pool/WorkerPool');
 
-var MessageDrivenBean = module.exports = function MessageDrivenBean(baseName,messageHandler) {
+var MessageDrivenBean = module.exports = function MessageDrivenBean(baseName,messageHandler, instance) {
     this.baseName       = baseName;
     this.messageHandler = messageHandler;
+    this.instance       = instance;
     this.workerPool     = new WorkerPool.WorkerPool(this.getWorkerPoolOptions());
     this.workerPool.start();
 };
@@ -65,6 +66,11 @@ MessageDrivenBean.prototype.notifyMessageBroker = function (err, message,deliver
 MessageDrivenBean.prototype.getWorkerPoolOptions = function() {
 
     var self = this;
+
+    var queueName = self.baseName;
+    if ( self.instance )
+        queueName += self.instance;
+
     var workerPoolOptions = {
         name: self.baseName + 'Pool',
         debug: true,
@@ -81,7 +87,7 @@ MessageDrivenBean.prototype.getWorkerPoolOptions = function() {
             reconnectExponentialLimit: config.rabbitmq.reconnectExponentialLimit,
             reconnectBackoffTime: config.rabbitmq.reconnectBackoffTime,
             exchangeName: self.baseName + 'Exchange',
-            queueName:    self.baseName + 'Queue',
+            queueName:    queueName + 'Queue',
             routingKey:   self.baseName,
             retryTimeout: 20000
         },

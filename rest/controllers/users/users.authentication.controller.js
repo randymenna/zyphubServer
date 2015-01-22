@@ -4,7 +4,6 @@ var model                   = require('../../../models/models');
 var profileHelper			= require('../../../rest/controllers/helper/profileHelper');
 var userHelper				= require('../../../rest/controllers/helper/userHelper');
 var AuthHelper				= require('../../../util/authenticationHelper');
-var jwt 					= require('jwt-simple');
 var config					= require('config');
 
 /**

@@ -1,20 +1,50 @@
-// conversation
+// notification
 
 {
+  "notification: {
+    "type":"new",
+    "origin":"54c086d1d9f7910000847bfe",
+  }
   "envelope": {
+    "origin":"54c086d1d9f7910000847bfe",
     "members": [ "b462d378f20c2900001e5e33" ],
-    "messageType": "STANDARD"
-  },
-  "time": {
-    "toLive" : 3600
+    "messageType": "STANDARD",
+    "tags": ["3rd Floor"]
   },
   "content": {
     "message":"This is a standard message"
   },
-  "tags": ["3rd Floor"]
+  "state":{
+    "curMemberCount":2,
+    "startMemberCount":2,
+    "open":true,
+    "leaves":0,
+    "delegates":0,
+    "forwards":0,
+    "oks":0,
+    "rejects":0,
+    "accepts":0,
+    "maxAccepts":1,
+    "members":[
+        {
+            "member":{
+                "_id":"a462d312f20c2900001e5e2f",
+                "label":"green blue"
+            },
+            "lastEvent":"UNREAD"
+        },
+        {
+            "member":{
+                "_id":"a462d31ef20c2900001e5e30",
+                "label":"red blue"
+            },
+            "lastEvent":"UNREAD"
+        }
+    ]
+  }
 }
 
-// new conversation
+// new conversation json
 {
     "members": [ "b462d378f20c2900001e5e33" ],
     "messageType": "STANDARD",

@@ -3,7 +3,9 @@
  */
 var BearerStrategy              = require('passport-http-bearer').Strategy;
 var User                        = require('mongoose').model('User');
-var jwt 					    = require('jsonwebtoken');
+var AuthHelper				    = require('../../util/authenticationHelper');
+
+var authHelper = new AuthHelper();
 
 module.exports = function(passport) {
 
@@ -21,16 +23,16 @@ module.exports = function(passport) {
                     return done(null, false);
                 }
 
-                jwt.verify(token, 'this-is-the-secret-key', function(err, decoded) {
-                    if (err) {
-                        return done(null, false);
-                    }
-                    else {
-                        user.origin = decoded.profile;
+                var decoded = authHelper.validateToken( token );
 
-                        return done(null, user);
-                    }
-                });
+                if (!decoded) {
+                    return done(Error('Invalid Bearer token'), false);
+                }
+                else {
+                    user.origin = decoded.profileId;
+
+                    return done(null, user);
+                }
 
             });
         }
