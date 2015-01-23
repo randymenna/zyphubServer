@@ -1,9 +1,9 @@
 var async                           = require('async');
 var mongodbClient                   = require('./mongodb-client');
-var MessageDrivenBean               = require('./util/mdb/MessageDrivenBean');
+var MessageDrivenBean               = require('./util/mdb/messageDrivenBean');
 var cpBus                           = require('./bus');
-var ConversationMessageHandler      = require('./msgHandler/ConversationMessageHandler');
-var ExchangePublisherFactory        = require('./util/bus/ExchangePublisherFactory');
+var ConversationMessageHandler      = require('./msgHandler/conversationMessageHandler');
+var ExchangePublisherFactory        = require('./util/bus/exchangePublisherFactory');
 var ConversationHelper              = require('./rest/controllers/helper/conversationHelper');
 var config                          = require('config');
 var mongoose                        = require('mongoose');
@@ -12,14 +12,14 @@ var messageDrivenBean = null;
 var conversationHelper = new ConversationHelper();
 
 cpBus.connection.on('error',function(err) {
-    logger.error("unable to connect to cp bus:" + err);
+    console.log("unable to connect to cp bus:" + err);
 });
 
 // INITIALIZATION CODE
 // ONCE WE CAN CONNECT TO RABBIT MQ, TRY AND CONNECT TO MONGO, THEN START THE MDB
 cpBus.connection.on('ready',function() {
 
-    var exchangePublisherFactory = new ExchangePublisherFactory(cpBus.connection);
+    var exchangePublisherFactory = new exchangePublisherFactory(cpBus.connection);
 
     async.waterfall(
         [
@@ -58,7 +58,7 @@ cpBus.connection.on('ready',function() {
 
             function(context, callback) {
 
-                var conversationHandler = new ConversationMessageHandler();
+                var conversationHandler = new conversationMessageHandler();
                 conversationHandler.setAuditTrailPublisher(context.auditTrailPublisher);
                 conversationHandler.setNotificationPublisher(context.notificationPublisher);
                 conversationHandler.setSchedulerPublisher(context.schedulerPublisher);
@@ -66,7 +66,7 @@ cpBus.connection.on('ready',function() {
 
                 mongoose.connect(config.mongo.host, config.mongo.dbName, config.mongo.port, {auto_reconnect: true});
 
-                messageDrivenBean = new MessageDrivenBean('ConversationEngine',conversationHandler);
+                messageDrivenBean = new messageDrivenBean('ConversationEngine',conversationHandler);
                 callback(null,'done');
             }
         ],

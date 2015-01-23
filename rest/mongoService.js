@@ -8,7 +8,7 @@ var passport                    = require('passport');
 var genericMongoController  = require('./controllers/genericMongoController');
 
 var cpbus                          = require('../bus');
-var ExchangePublisherFactory         = require('../util/bus/ExchangePublisherFactory');
+var ExchangePublisherFactory         = require('../util/bus/exchangePublisherFactory');
 
 var exchangePublisherFactory = null;
 var eventPublisher           = null;
@@ -33,7 +33,7 @@ module.exports = function(){
     cpbus.connection.on('ready',function() {
 
         console.log("MongoService: Connected to cp bus");
-        exchangePublisherFactory = new ExchangePublisherFactory(cpbus.connection);
+        exchangePublisherFactory = new exchangePublisherFactory(cpbus.connection);
     });
 
     return app;

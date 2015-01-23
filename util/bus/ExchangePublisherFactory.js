@@ -2,7 +2,7 @@
  * Created by randy on 1/30/14.
  */
 
-var MessageExchangePublisher = require('./MessageExchangePublisher');
+var MessageExchangePublisher = require('./messageExchangePublisher');
 
 var CONVERSATION_EXCHANGE           = 'ConversationEngineExchange';
 var SCHEDULER_EXCHANGE              = 'SchedulerExchange';
@@ -47,7 +47,7 @@ ExchangePublisherFactory.prototype.createExchangePublisher = function(exchangeNa
     var exchangeOptions = this.getExchangeOptions({});
 
     this._connection.exchange(exchangeName, exchangeOptions , function(exchange) {
-        var newExchangePublisher = new MessageExchangePublisher(exchange,publishOptions);
+        var newExchangePublisher = new messageExchangePublisher(exchange,publishOptions);
         callback(newExchangePublisher);
     });
 
@@ -56,13 +56,13 @@ ExchangePublisherFactory.prototype.createExchangePublisher = function(exchangeNa
 ExchangePublisherFactory.prototype.createFanoutExchangePublisher = function(exchangeName,callback) {
 
     var publishOptions  = this.getDefaultExchangeOptions();
-    publishOptions.type = 'fanout';
+    //publishOptions.type = 'fanout';
 
     var exchangeOptions = this.getExchangeOptions({});
-    exchangeOptions.type = 'fanout';
+    //exchangeOptions.type = 'fanout';
 
     this._connection.exchange(exchangeName, exchangeOptions , function(exchange) {
-        var newExchangePublisher = new MessageExchangePublisher(exchange,publishOptions);
+        var newExchangePublisher = new messageExchangePublisher(exchange,publishOptions);
         callback(newExchangePublisher);
     });
 }

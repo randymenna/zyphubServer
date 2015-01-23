@@ -2,12 +2,9 @@
  * Created by randy on 1/19/15.
  */
 var shortId                             = require('shortid');
+var clientMap                           = require('../clientMap');
 
 var RFC6455Server = module.exports = function RFC6455Server( context ) {
-
-    this.setClientMapHelper = function(clientMapHelper) {
-        this._clientMapHelper = clientMapHelper;
-    };
 
     this.setAuthenticationProvider = function( authenticationProvider ) {
         this._authenticationProvider = authenticationProvider;
@@ -44,17 +41,17 @@ RFC6455Server.prototype.startUnsecureServer = function () {
             if ( token = self._authenticationProvider.validateToken(data) ) {
                 console.log('Notification server: %s', token.profileId);
                 ws.id = shortId.generate();
-                self._clientMapHelper.addClient( token.profileId, ws );
+                clientMap.addClient( token.profileId, ws );
             }
         });
 
         ws.on('close', function(data){
-           self._clientMapHelper.removeClient(ws);
+            clientMap.removeClient(ws);
         });
 
         ws.on('error', function(e){
             console.log("websocket error: " + e);
-            self._clientMapHelper.removeClient(ws);
+            clientMap.removeClient(ws);
         });
     });
 };

@@ -6,7 +6,6 @@ var RabbitMqMinionPool = require('rabbitmq_minionpool');
 var util               = require('util');
 
 function WorkerPool(options,messageHandler) {
-    console.log('here!');
     WorkerPool.super_.call(this, options);
 }
 

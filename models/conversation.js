@@ -15,6 +15,7 @@ var conversationSchema = new Schema({
         tags: [String],
         behaviors: [String],
         pattern: String,
+        priority: {type: Number, default: 1},
         meta: {
             enterprise: {type: String, default: "ConversePoint"},
             originalMembers: [ {type: Schema.Types.ObjectId} ],

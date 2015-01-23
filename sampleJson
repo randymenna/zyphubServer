@@ -1,22 +1,24 @@
 // notification
 
 {
+  "conversation" : "54c086d1d9f7910000847bfe",
   "notification: {
     "type":"new",
-    "origin":"54c086d1d9f7910000847bfe",
+    "origin":"a4c086d1d9f7910000847bfe",
   }
   "envelope": {
-    "origin":"54c086d1d9f7910000847bfe",
+    "origin":"a4c086d1d9f7910000847bfe",
     "members": [ "b462d378f20c2900001e5e33" ],
     "messageType": "STANDARD",
     "tags": ["3rd Floor"]
   },
   "content": {
-    "message":"This is a standard message"
+    "message":"This is a standard message",
+    "replies": [ ]
   },
   "state":{
-    "curMemberCount":2,
-    "startMemberCount":2,
+    "currentMemberCount":2,
+    "startingMemberCount":2,
     "open":true,
     "leaves":0,
     "delegates":0,
@@ -44,7 +46,7 @@
   }
 }
 
-// new conversation json
+// create conversation json
 {
     "members": [ "b462d378f20c2900001e5e33" ],
     "messageType": "STANDARD",
@@ -56,13 +58,13 @@
     "escalation" : { "todo - fill this in" }
 }
 
-// profile
+// create profile
 {
   "name": "mr blue",
   "label": "blue blue"
 }
 
-// group
+// create group
 {
     "name":           "group 1",
     "label":          "The Group",
@@ -71,7 +73,7 @@
     "owner":          ["a462d28ef20c2900001e5e2e"]
 }
 
-// tag
+// create tag
 {
  "label": "3rd Floor",
  "schedule": {

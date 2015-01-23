@@ -2,13 +2,13 @@
  * Created by randy on 12/19/13.
  */
 var config          = require('config');
-var WorkerPool      = require('../pool/WorkerPool');
+var WorkerPool      = require('../pool/workerPool');
 
 var MessageDrivenBean = module.exports = function MessageDrivenBean(baseName,messageHandler, instance) {
     this.baseName       = baseName;
     this.messageHandler = messageHandler;
     this.instance       = instance;
-    this.workerPool     = new WorkerPool.WorkerPool(this.getWorkerPoolOptions());
+    this.workerPool     = new workerPool.WorkerPool(this.getWorkerPoolOptions());
     this.workerPool.start();
 };
 
@@ -38,6 +38,7 @@ MessageDrivenBean.prototype.onMessagePool = function(msg, state, callback) {
         self.messageHandler.handleMessagePool(payload, function(err) {
             self.notifyMessageBroker(err,message,deliveryInfo);
             callback(undefined, state);
+            delete payload.notification;
             console.log(self.baseName+'.onMessage(): exiting', 'message='+JSON.stringify(payload));
         });
     } catch (exception) {
@@ -68,8 +69,8 @@ MessageDrivenBean.prototype.getWorkerPoolOptions = function() {
     var self = this;
 
     var queueName = self.baseName;
-    if ( self.instance )
-        queueName += self.instance;
+    //if ( self.instance )
+      //  queueName += self.instance;
 
     var workerPoolOptions = {
         name: self.baseName + 'Pool',

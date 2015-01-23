@@ -4,3 +4,7 @@
 
 
 module.exports.SYSTEM_GUID = "internal-system-origin-cp-10-17-2005";
+
+module.exports.NOTIFICATION_TYPES = {
+  NEW_CONVERSATION : "new"
+};

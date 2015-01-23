@@ -54,7 +54,7 @@ module.exports.connection=connection;
 // var cpbus = require('../cp-bus');
 // cpbus.connection.on('ready',function() {
 //   console.log('xxxxxConnected to cp Bus using amqp...');
-//    cpbus.createSubscriberWithCallback('PositionGatewayQueue',handleReceivedData);
+//    cpbus.createSubscriberWithCallback('GatewayQueue',handleReceivedData);
 // });
 //
 //cpbus.connection.on('error',function() {

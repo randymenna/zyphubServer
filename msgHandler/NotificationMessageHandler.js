@@ -1,6 +1,11 @@
 /**
  * Created by randy on 1/27/14.
  */
+var async                   = require("async");
+var mongoose                = require('mongoose');
+var model                   = require('../models/models');
+var clientMap               = require('../util/clientMap');
+var _                       = require('lodash');
 
 var NotificationMessageHandler = module.exports = function NotificationMessageHandler( context ) {
 
@@ -8,9 +13,9 @@ var NotificationMessageHandler = module.exports = function NotificationMessageHa
         this._conversationHelper = conversationHelper;
     };
 
-    this.setClientMapHelper = function(clientMapHelper) {
-        this._clientMapHelper = clientMapHelper;
-    };
+    this.setNotificationHelper = function( notificationHelper ) {
+        this._notificationHelper = notificationHelper;
+    }
 
     this.msgHandleSwitch                = {};
     this.msgHandleSwitch['NEW']         = this.handleNew.bind(this);
@@ -27,15 +32,10 @@ var NotificationMessageHandler = module.exports = function NotificationMessageHa
 };
 
 
-NotificationMessageHandler.prototype.handleMessagePool = function (message,msgHandlerCallback) {
+NotificationMessageHandler.prototype.handleMessagePool = function ( context, msgHandlerCallback ) {
     var self = this;
 
-    console.log("NotificationMessageHandler(): entered: handleMessage:" + message);
-
-
-    msgHandlerCallback(null);
-    console.log("NotificationMessageHandler(): exit: handleMessage");
-
+    console.log("NotificationMessageHandler(): entered: handleMessage:" + context);
 
     async.waterfall(
         [
@@ -47,9 +47,9 @@ NotificationMessageHandler.prototype.handleMessagePool = function (message,msgHa
                 if (msgHandlerFunction !== undefined) {
 
                     // returns participants and notification on context;
-                    msgHandlerFunction(message, function (err, context) {
+                    msgHandlerFunction(context, function (err, context) {
 
-                        context.clientList = self._clientMapHelper.getSocketList(context.particpants);
+                        context.notification.recipientSocketIds = clientMap.getSocketList(context.notification.recipients);
 
                         callback(err, context);
                     });
@@ -62,17 +62,19 @@ NotificationMessageHandler.prototype.handleMessagePool = function (message,msgHa
             // send the notification
             function(context, callback) {
 
-                if (context.clientList != null) {
-                    for (var i=0; i < context.clientList.length; i++) {
-                        var client = context.clientList[i];
+                if (context.notification.recipientSocketIds.length) {
+                    for (var i=0; i < context.notification.recipientSocketIds.length; i++) {
+                        var socket = context.notification.recipientSocketIds[i];
 
-                        if (client != null) {
-                            client.socket.emit(context.notification.topic, context.notification.message);
+                        if (socket != null) {
+                            socket.send(context.notification.message.getMessage());
                             console.log("NotificationMessageHandler(): sent to topic: " + context.notification.topic);
                         }
                     }
+                    callback(null,context);
                 } else {
                     console.log("NotificationMessageHandler(): no clients found: ");
+                    callback(null,context);
                 }
 
             }
@@ -80,7 +82,8 @@ NotificationMessageHandler.prototype.handleMessagePool = function (message,msgHa
 
         function (err, context) {
 
-            msgHandlerCallback(err, context);
+            msgHandlerCallback(null);
+            console.log("NotificationMessageHandler(): exit: handleMessage");
         }
     );
 };
@@ -91,8 +94,9 @@ NotificationMessageHandler.prototype.handleNew = function(context,doneCallback) 
 
     // send to: conversation.origin, members
     // send envelope, state, content
+    context.notification = self._notificationHelper.newConversationNotification(context);
 
-    doneCallback(err,context);
+    doneCallback(null,context);
 }
 
 NotificationMessageHandler.prototype.handleReply = function(context,doneCallback) {

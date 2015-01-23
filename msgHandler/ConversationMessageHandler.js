@@ -129,7 +129,7 @@ ConversationMessageHandler.prototype.handleMessagePool = function (context, msgH
 
             // broadcast change
             function(context,callback) {
-                self._notificationPublisher.publish('NotificationPublisher',context, function( err ){
+                self._notificationPublisher.publish('CPNotificationQueue',context, function( err ){
                     if ( err ) {
                         callback(Error("Cannot publish to SocketIO"), null);
                     }
@@ -312,9 +312,9 @@ ConversationMessageHandler.prototype.handleNew = function(context,doneCallback) 
 
                 context.action = "new";
 
-                self._notificationPublisher.publish('SocketIOQueue',context, function( error ){
+                self._notificationPublisher.publish('CPNotification',context, function( error ){
                     if ( error )
-                        callback(Error("SocketIO Publish Failed"), null);
+                        callback(Error("NotificationServer Publish Failed"), null);
                     else
                         callback(null, context);
                 });

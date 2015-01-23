@@ -1,10 +1,10 @@
 var async                           = require('async');
-var MessageDrivenBean               = require('./util/mdb/MessageDrivenBean');
+var MessageDrivenBean               = require('./util/mdb/messageDrivenBean');
 var cpBus                           = require('./bus');
-var ExchangePublisherFactory        = require('./util/bus/ExchangePublisherFactory');
+var ExchangePublisherFactory        = require('./util/bus/exchangePublisherFactory');
 var config                          = require('config');
 var mongoose                        = require('mongoose');
-var AuditMessageHandler             = require('./msgHandler/AuditMessageHandler');
+var AuditMessageHandler             = require('./msgHandler/auditMessageHandler');
 
 var messageDrivenBean = null;
 
@@ -16,7 +16,7 @@ cpBus.connection.on('error',function(err) {
 // ONCE WE CAN CONNECT TO RABBIT MQ, TRY AND CONNECT TO MONGO, THEN START THE MDB
 cpBus.connection.on('ready',function() {
 
-    var exchangePublisherFactory = new ExchangePublisherFactory(cpBus.connection);
+    var exchangePublisherFactory = new exchangePublisherFactory(cpBus.connection);
 
     // INITIALIZATION CODE
     async.waterfall(
@@ -36,11 +36,11 @@ cpBus.connection.on('ready',function() {
 
                 console.info('Auditor MDB: handler create');
 
-                var auditHandler = new AuditMessageHandler();
+                var auditHandler = new auditMessageHandler();
 
                 console.info('Auditor MDB: mdb bind');
 
-                messageDrivenBean = new MessageDrivenBean('AuditTrail',auditHandler);
+                messageDrivenBean = new messageDrivenBean('AuditTrail',auditHandler);
 
                 callback(null,'done');
             }

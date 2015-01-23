@@ -2,7 +2,7 @@
  * Created by randy on 9/4/14.
  */
 
-var ExchangePublisherFactory        = require('../util/bus/ExchangePublisherFactory');
+var ExchangePublisherFactory        = require('../util/bus/exchangePublisherFactory');
 var ConversationController          = require('./controllers/conversationController');
 var cpBus                           = require('../bus');
 var ConversationHelper              = require('./controllers/helper/conversationHelper');
@@ -24,7 +24,7 @@ module.exports = function() {
 
     cpBus.connection.on('ready',function() {
 
-        var exchangePublisherFactory = new ExchangePublisherFactory(cpBus.connection);
+        var exchangePublisherFactory = new exchangePublisherFactory(cpBus.connection);
 
         exchangePublisherFactory.createConversationExchangePublisher( function(conversationPublisher) {
             ConversationController.setConversationPublisher(conversationPublisher);
