@@ -1,0 +1,140 @@
+#%RAML 0.8
+title: ConversePoint
+version: v2
+#baseUri: http://localhost:19690/api/{version}
+baseUri: http://localhost:19690/atrium/
+protocols: [HTTP, HTTPS]
+mediaType: application/json
+
+/account:
+  securedBy: [null]
+  get:
+  post:
+  put:
+  /login:
+    post:
+  /logout:
+    post:
+    
+/auditTrail:
+  /{id}:
+    get:
+      securedBy: [bearer_token]
+      description: Get the Audit Trail for a Conversation
+      responses:
+                401:
+                    description: |
+                        Bad or expired token. This can happen if the user or Dropbox
+                        revoked or expired an access token. To fix, you should re-
+                        authenticate the user.      
+
+/auth:
+  securedBy: [null]
+  /login:
+    /github:
+      get:
+        description: OAuth2 login through Github
+    /facebook:
+      get:
+        description: OAuth2 login through Facebook
+    /linkedin:
+      get:
+        description: OAuth2 login through linkedin
+        
+/conversations:
+  securedBy: [bearer_token]
+  get:
+    description: Get all the conversations for an enterprise
+  post:
+  /{id}:
+    get:
+      description: Create a new conversation
+  /{action}:
+      put:
+        description: Update a conversation
+/escalations:
+  securedBy: [bearer_token]
+  get:
+    description: Get all the preconfigured Escalations
+  post:
+    description: Create a new preconfigured Escalation
+  put:
+    description: Update a preconfigured Escalation
+  delete:
+    description: Remove a preconfigured Escalation
+/groups:
+  securedBy: [bearer_token]
+  get:
+    description: Get all the Groups
+  post:
+    description: Create a new Group
+  put:
+    description: Update a Group
+  delete:
+    description: Remove a Group
+  /{id}:
+    get:
+    /join:
+      post:
+        description: Join an existing Group
+    /leave:
+      post:
+        description: Leave a Group
+/profiles:
+  securedBy: [bearer_token]
+  get:
+    description: Get all Profiles
+  post:
+    description: Create a Profile
+  put:
+    description: Update a Profile
+  delete:
+    description: Remove a Profile
+  /{id}:
+    /conversations:
+      get:
+        description: Get all the open conversations for the profile
+    /tags:
+      get:
+        description: Get all the Tags on a Profile
+      delete:
+        description: Remove all Tags from a Profile
+      /{tagId}:
+        get:
+          description: Get a Tag from a Profile
+        post:
+          description: Add a Tag to a Profile
+        put:
+          description: Update a Tag in a Profile
+        delete:
+          description: Remove a Tag from a Profile
+/tags:
+  securedBy: [bearer_token]
+  get:
+    description: Get all Tags
+  post:
+    description: Create a Tag
+  put:
+    description: Update a Tag
+  delete:
+    description: Remove a Tag
+  /{id}:
+    get:
+      description: Get a Tag
+    put:
+      description: Update a Tag
+    delete:  
+      description: Remove a Tag
+    
+securitySchemes:
+  - bearer_token:
+      description: bearer security token which has to be provided in the header
+      type: x-bearer_token
+      describedBy:
+        headers:
+          Authorization:
+            description: |
+              the security token you have to provide
+            type: string
+            example: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJwcm9maWxlSWQiOiJhNDcwMTNkYWNhYTdkMjAwMDBlNTkzMDgiLCJleHBpcmF0aW9uIjowfQ.pfagcCL-H6h7bZXtGTSdLtU3QavxM5Es_3wzS7eaTbU
+                  

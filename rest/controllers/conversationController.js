@@ -43,7 +43,7 @@ exports.getConversations = function (req, res) {
         [
             function (callback) {
                 var context = {};
-                context.origin = restHelper.extractOriginId(req);
+                context.origin = req.user.origin;
 
                 context.profileId = req.params.profileId;
 
@@ -52,7 +52,7 @@ exports.getConversations = function (req, res) {
 
             // get all the conversations for a user
             function(context,callback) {
-                model.Profile.findOne({'_id': context.profileId}, {_id: 0, inbox: 1})
+                model.Profile.findOne({'_id': context.origin}, {_id: 0, inbox: 1})
                     .exec(function (err, obj) {
                         if ( err ) {
                             callback(err, null);
@@ -100,7 +100,7 @@ exports.getOneConversation = function(req, res) {
             function (callback) {
                 var context = {};
 
-                context.origin = restHelper.extractOriginId(req);
+                context.origin = req.user.origin;
                 context.conversationId = req.params.id;
 
                 callback(null, context);
@@ -216,7 +216,8 @@ exports.updateConversation = function (req, res) {
             function (callback) {
                 var context = {};
 
-                context.origin = restHelper.extractOriginId(req);
+                context.origin = req.user.origin;
+
                 context.conversationId = req.params.id;
                 context.action = req.params.action;
                 context.profileId = context.origin;

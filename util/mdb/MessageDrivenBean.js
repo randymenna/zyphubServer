@@ -8,7 +8,7 @@ var MessageDrivenBean = module.exports = function MessageDrivenBean(baseName,mes
     this.baseName       = baseName;
     this.messageHandler = messageHandler;
     this.instance       = instance;
-    this.workerPool     = new workerPool.WorkerPool(this.getWorkerPoolOptions());
+    this.workerPool     = new WorkerPool.WorkerPool(this.getWorkerPoolOptions());
     this.workerPool.start();
 };
 

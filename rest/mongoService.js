@@ -2,16 +2,14 @@
  * Created by randy on 1/15/14.
  */
 
-var ObjectID = require('bson').BSONPure.ObjectID;
-var passport                    = require('passport');
+//var ObjectID                            = require('bson').BSONPure.ObjectID;
+var passport                            = require('passport');
+var genericMongoController              = require('./controllers/genericMongoController');
+var cpbus                               = require('../bus');
+//var ExchangePublisherFactory            = require('../util/bus/exchangePublisherFactory');
 
-var genericMongoController  = require('./controllers/genericMongoController');
-
-var cpbus                          = require('../bus');
-var ExchangePublisherFactory         = require('../util/bus/exchangePublisherFactory');
-
-var exchangePublisherFactory = null;
-var eventPublisher           = null;
+//var exchangePublisherFactory = null;
+//var eventPublisher           = null;
 
 module.exports = function(){
     var express = require('express');
@@ -33,7 +31,7 @@ module.exports = function(){
     cpbus.connection.on('ready',function() {
 
         console.log("MongoService: Connected to cp bus");
-        exchangePublisherFactory = new exchangePublisherFactory(cpbus.connection);
+        //exchangePublisherFactory = new ExchangePublisherFactory(cpbus.connection);
     });
 
     return app;

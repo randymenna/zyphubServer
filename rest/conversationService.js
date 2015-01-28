@@ -24,7 +24,7 @@ module.exports = function() {
 
     cpBus.connection.on('ready',function() {
 
-        var exchangePublisherFactory = new exchangePublisherFactory(cpBus.connection);
+        var exchangePublisherFactory = new ExchangePublisherFactory(cpBus.connection);
 
         exchangePublisherFactory.createConversationExchangePublisher( function(conversationPublisher) {
             ConversationController.setConversationPublisher(conversationPublisher);

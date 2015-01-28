@@ -11,10 +11,10 @@ module.exports = function() {
     var app = express();
 
     app.get('/',  passport.authenticate('bearer', { session: false }), GroupController.getGroups);
-    app.get('/:id',  passport.authenticate('bearer', { session: false }), GroupController.getOneGroup);
     app.post('/',  passport.authenticate('bearer', { session: false }), GroupController.newGroup);
-    //app.delete('/', GroupController.removeGroup);
     //app.put('/', GroupController.updateGroup);
+    //app.delete('/', GroupController.removeGroup);
+    app.get('/:id',  passport.authenticate('bearer', { session: false }), GroupController.getOneGroup);
     app.post('/:id/join',  passport.authenticate('bearer', { session: false }), GroupController.joinGroup);
     app.post('/:id/leave',  passport.authenticate('bearer', { session: false }), GroupController.leaveGroup);
 

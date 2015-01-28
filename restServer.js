@@ -113,6 +113,8 @@ function createExpressApplication() {
         }
     });
 
+    // the API Spec
+    app.use("/apiDoc", express.static(__dirname + '/cp-api-swager.json'));
     // Routes
 
     app.use('/api', require('./rest/mongoService'));
@@ -123,6 +125,7 @@ function createExpressApplication() {
     app.use('/atrium/auditTrail', require('./rest/auditService'));
     app.use('/atrium/account', require('./rest/userService'));
     app.use('/atrium/tags', require('./rest/tagService'));
+    app.use('/atrium/auth', require('./rest/authService'));
     app.use('/auth', require('./rest/authService'));
 
     return app;

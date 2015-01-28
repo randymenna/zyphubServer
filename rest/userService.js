@@ -13,14 +13,11 @@ module.exports = function() {
 	var express = require('express');
 	var app = express();
 
+	app.get('/', passport.authenticate('bearer', { session: false }), UserController.me);
 	app.post('/',  passport.authenticate('bearer', { session: false }), UserController.signup);
+	app.put('/',  passport.authenticate('bearer', { session: false }), UserController.update);
 	app.post('/login',  passport.authenticate('bearer', { session: false }), UserController.signin);
 	app.post('/logout',  passport.authenticate('bearer', { session: false }), UserController.signout);
-
-	//app.get('/', UserController.requiresLogin, UserController.me);
-	app.get('/', passport.authenticate('bearer', { session: false }), UserController.me);
-
-	app.put('/',  passport.authenticate('bearer', { session: false }), UserController.update);
 
 	return app;
 }();

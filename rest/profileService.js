@@ -3,7 +3,6 @@
  */
 
 var ProfileController           = require('./controllers/profileController');
-//var TagController 				= require('./controllers/tagController');
 var passport                    = require('passport');
 
 module.exports = function() {
@@ -15,12 +14,17 @@ module.exports = function() {
     app.get('/:id', passport.authenticate('bearer', { session: false }), ProfileController.getOneProfile);
     app.get('/:id/conversations', passport.authenticate('bearer', { session: false }), ProfileController.getConversations);
     app.post('/', passport.authenticate('bearer', { session: false }), ProfileController.newProfile);
+    /*
+     app.put('/:id', passport.authenticate('bearer', { session: false }), ProfileController.updateProfile);
+     app.delete('/:id', passport.authenticate('bearer', { session: false }), ProfileController.removeProfileT);
+     */
 /*
-    app.get('/tags', passport.authenticate('bearer', { session: false }), TagController.getProfileTags);
-    app.get('/tags/:label', passport.authenticate('bearer', { session: false }), TagController.getOneProfileTag);
-    app.post('/tags/:label', passport.authenticate('bearer', { session: false }), TagController.newProfileTag);
-    app.put('/tags/:label', passport.authenticate('bearer', { session: false }), TagController.updateProfileTag);
-    app.delete('/tags/:label', passport.authenticate('bearer', { session: false }), TagController.removeProfileTag);
+    app.get(':id/tags', passport.authenticate('bearer', { session: false }), TagController.getProfileTags);
+    app.delete(':id/tags/', passport.authenticate('bearer', { session: false }), TagController.removeAllProfileTags);
+    app.get(':id/tags/:label', passport.authenticate('bearer', { session: false }), TagController.getOneProfileTag);
+    app.post(':id/tags/:label', passport.authenticate('bearer', { session: false }), TagController.newProfileTag);
+    app.put(':id/tags/:label', passport.authenticate('bearer', { session: false }), TagController.updateProfileTag);
+    app.delete(':id/tags/:label', passport.authenticate('bearer', { session: false }), TagController.removeProfileTag);
 */
     return app;
 }();

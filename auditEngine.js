@@ -9,14 +9,14 @@ var AuditMessageHandler             = require('./msgHandler/auditMessageHandler'
 var messageDrivenBean = null;
 
 cpBus.connection.on('error',function(err) {
-    logger.error("unable to connect to cp bus:" + err);
+    console.log("unable to connect to cp bus:" + err);
 });
 
 // INITIALIZATION CODE
 // ONCE WE CAN CONNECT TO RABBIT MQ, TRY AND CONNECT TO MONGO, THEN START THE MDB
 cpBus.connection.on('ready',function() {
 
-    var exchangePublisherFactory = new exchangePublisherFactory(cpBus.connection);
+    var exchangePublisherFactory = new ExchangePublisherFactory(cpBus.connection);
 
     // INITIALIZATION CODE
     async.waterfall(
@@ -36,11 +36,11 @@ cpBus.connection.on('ready',function() {
 
                 console.info('Auditor MDB: handler create');
 
-                var auditHandler = new auditMessageHandler();
+                var auditHandler = new AuditMessageHandler();
 
                 console.info('Auditor MDB: mdb bind');
 
-                messageDrivenBean = new messageDrivenBean('AuditTrail',auditHandler);
+                messageDrivenBean = new MessageDrivenBean('AuditTrail',auditHandler);
 
                 callback(null,'done');
             }

@@ -1,0 +1,1359 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "ConversePoint API",
+    "description": "Mediated Communication",
+    "termsOfService": "http://conversepoint.com/apiTerms"
+  },
+  "host": "localhost:19690",
+  "basePath": "/atrium",
+  "schemes": [
+    "http",
+    "https"
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "security": [
+    {
+      "Bearer-Authorization": []
+    }
+  ],
+  "definitions": {
+    "login-request": {
+      "type": "object",
+      "required": [
+        "email",
+        "password"
+      ],
+      "properties": {
+        "email": {
+          "type": "string",
+          "description": "email address as user id"
+        },
+        "password": {
+          "type": "string",
+          "description": "users password"
+        }
+      }
+    },
+    "login-response": {
+      "type": "object",
+      "required": [
+        "token"
+      ],
+      "properties": {
+        "email": {
+          "type": "string",
+          "description": "email address as user id"
+        },
+        "token": {
+          "type": "string",
+          "description": "bearer authentication token to use with subsequent api calls"
+        },
+        "public": {
+          "type": "object",
+          "description": "users public information",
+          "properties": {
+            "displayName": {
+              "type": "string",
+              "description": "users displayed name"
+            },
+            "name": {
+              "type": "string",
+              "description": "redundant? users displayed name"
+            },
+            "firstName": {
+              "type": "string",
+              "description": "users first name"
+            },
+            "lastName": {
+              "type": "string",
+              "description": "users last name"
+            }
+          }
+        },
+        "profile": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "description": "array containing current profile id of user"
+          }
+        }
+      }
+    },
+    "audit": {
+      "type": "object",
+      "properties": {
+        "timestamp": {
+          "type": "string"
+        },
+        "conversationId": {
+          "type": "string"
+        },
+        "action": {
+          "type": "string",
+          "description": "the conversation action",
+          "enum": [
+            "new",
+            "reply",
+            "ok",
+            "accept",
+            "reject",
+            "escalate",
+            "close",
+            "leave",
+            "forward",
+            "delegate"
+          ]
+        },
+        "origin": {
+          "type": "object",
+          "properties": {
+            "_id": {
+              "type": "string"
+            }
+          }
+        },
+        "details": {
+          "type": "string"
+        },
+        "_id": {
+          "type": "string"
+        },
+        "__v": {
+          "type": "integer"
+        },
+        "state": {
+          "$ref": "#/definitions/conversation-state"
+        }
+      }
+    },
+    "conversation": {
+      "type": "object",
+      "properties": {
+        "_id": {
+          "type": "string"
+        },
+        "timestamps": {
+          "$ref": "#/definitions/conversation-timestamps"
+        },
+        "envelope": {
+          "$ref": "#/definitions/conversation-envelope"
+        },
+        "state": {
+          "$ref": "#/definitions/conversation-state"
+        },
+        "content": {
+          "$ref": "#/definitions/conversation-content"
+        }
+      }
+    },
+    "conversation-timestamps": {
+      "type": "object",
+      "properties": {
+        "created": {
+          "type": "string"
+        },
+        "modified": {
+          "type": "string"
+        },
+        "toLive": {
+          "type": "string"
+        }
+      }
+    },
+    "conversation-envelope": {
+      "type": "object",
+      "properties": {
+        "origin": {
+          "type": "string"
+        },
+        "priority": {
+          "type": "integer"
+        },
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "members": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/member"
+          }
+        }
+      }
+    },
+    "conversation-content": {
+      "type": "object",
+      "properties": {
+        "message": {
+          "type": "string"
+        },
+        "replies": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "conversation-state": {
+      "type": "object",
+      "properties": {
+        "curMemberCount": {
+          "type": "integer"
+        },
+        "startMemberCount": {
+          "type": "integer"
+        },
+        "leaves": {
+          "type": "integer"
+        },
+        "delegates": {
+          "type": "integer"
+        },
+        "forwards": {
+          "type": "integer"
+        },
+        "oks": {
+          "type": "integer"
+        },
+        "rejects": {
+          "type": "integer"
+        },
+        "accepts": {
+          "type": "integer"
+        },
+        "maxAccepts": {
+          "type": "integer"
+        },
+        "members": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/member-state"
+          }
+        }
+      }
+    },
+    "member-state": {
+      "type": "object",
+      "properties": {
+        "_id": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        },
+        "lastEvent": {
+          "type": "string",
+          "description": "the conversation action",
+          "enum": [
+            "UNREAD",
+            "LEFT",
+            "ACCEPTED",
+            "REJECTED",
+            "OK",
+            "CLOSED",
+            "ESCALATED",
+            "FORWARDED",
+            "DELEGATED"
+          ]
+        }
+      }
+    },
+    "member": {
+      "type": "object",
+      "properties": {
+        "_id": {
+          "type": "string"
+        },
+        "label": {
+          "type": "string"
+        }
+      }
+    },
+    "escalations": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/escalation"
+      }
+    },
+    "escalation": {
+      "type": "object",
+      "properties": {
+        "_id": {
+          "type": "string"
+        }
+      }
+    },
+    "profiles": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/profile"
+      }
+    },
+    "profile": {
+      "type": "object",
+      "properties": {
+        "_id": {
+          "type": "string"
+        }
+      }
+    },
+    "groups": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/group"
+      }
+    },
+    "group": {
+      "type": "object",
+      "properties": {
+        "_id": {
+          "type": "string"
+        }
+      }
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/tag"
+      }
+    },
+    "tag": {
+      "type": "object",
+      "properties": {
+        "_id": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "securityDefinitions": {
+    "Bearer-Authorization": {
+      "type": "apiKey",
+      "description": "Client credentials from login. Each call must contain a Bearer Authorization header",
+      "name": "Authorization",
+      "in": "header"
+    }
+  },
+  "paths": {
+    "/account": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Get User",
+        "description": "Get the active User account.",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "title": "user",
+              "type": "object",
+              "properties": {
+                "profileId": {
+                  "type": "string"
+                },
+                "label": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "New User",
+        "description": "Create a new User account.\nUser accounts are created automatically on first login",
+        "tags": [
+          "Users"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "title": "user",
+              "type": "object",
+              "properties": {
+                "profileId": {
+                  "type": "string"
+                },
+                "label": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "summary": "Update User",
+        "description": "Update a User account.\n",
+        "tags": [
+          "Users"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "title": "user",
+              "type": "object",
+              "properties": {
+                "profileId": {
+                  "type": "string"
+                },
+                "label": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/account/login": {
+      "post": {
+        "summary": "Login with password",
+        "description": "Login using basic authentication\n",
+        "tags": [
+          "Login"
+        ],
+        "parameters": [
+          {
+            "in": "body",
+            "name": "body",
+            "description": "Username and password",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/login-request"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "$ref": "#/definitions/login-response"
+            },
+            "examples": {
+              "application/json": "{\n  \"email\": \"randy@newportave.com\",\n  \"token\": \"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJwcm9maWxlSWQiOiJhNDcwMTNkYWNhYTdkMjAwMDBlNTkzMDgiLCJleHBpcmF0aW9uIjowfQ.pfagcCL-H6h7bZXtGTSdLtU3QavxM5Es_3wzS7eaTbU\",\n  \"public\": {\n    \"displayName\": \"randy newportave.com\",\n    \"name\": \"randy newportave.com\",\n    \"lastName\": \"newportave.com\",\n     \"firstName\": \"randy\"\n  },\n  \"profile\": [\n    \"a47013dacaa7d20000e59308\"\n  ]\n}"
+            }
+          }
+        }
+      }
+    },
+    "/auditTrail/{id}": {
+      "get": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "id of conversation",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Audits"
+        ],
+        "security": [
+          {
+            "Bearer-Authorization": []
+          }
+        ],
+        "summary": "Get Audit log",
+        "description": "Get a Conversations audit log.\n",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "$ref": "#/definitions/audit"
+            },
+            "examples": {
+              "application/json": "[\n  {\n      \"timestamp\": \"2015-01-11T02:40:45.029Z\",\n      \"conversationId\": \"54b1e2bbf248a8443862fab9\",\n      \"action\": \"new\",\n      \"origin\": {\n          \"_id\": \"a47013dacaa7d20000e59308\"\n      },\n      \"details\": \"This is a standard message\",\n      \"_id\": \"54c54661a6e5cc99741da760\",\n      \"__v\": 0,\n      \"state\": {\n          \"curMemberCount\": 3,\n          \"startMemberCount\": 3,\n          \"leaves\": 0,\n          \"delegates\": 0,\n          \"forwards\": 0,\n          \"oks\": 0,\n          \"rejects\": 0,\n          \"accepts\": 0,\n          \"maxAccepts\": 1,\n          \"members\": [\n              {\n                  \"member\": {\n                      \"_id\": \"a462d312f20c2900001e5e2f\",\n                      \"label\": \"green blue\"\n                  },\n                  \"lastEvent\": \"UNREAD\"\n              },\n              {\n                  \"member\": {\n                      \"_id\": \"a462d31ef20c2900001e5e30\",\n                      \"label\": \"red blue\"\n                  },\n                  \"lastEvent\": \"UNREAD\"\n              },\n              {\n                  \"member\": {\n                      \"_id\": \"a47013dacaa7d20000e59308\"\n                  },\n                  \"lastEvent\": \"UNREAD\"\n              }\n          ]\n      }\n  }\n]"
+            }
+          }
+        }
+      }
+    },
+    "/auth/login/google": {
+      "get": {
+        "tags": [
+          "Login"
+        ],
+        "summary": "Login through Google",
+        "description": "OAuth2 login through Google",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "$ref": "#/definitions/login-response"
+            },
+            "examples": {
+              "application/json": "{\n  \"email\": \"randy@newportave.com\",\n  \"token\": \"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJwcm9maWxlSWQiOiJhNDcwMTNkYWNhYTdkMjAwMDBlNTkzMDgiLCJleHBpcmF0aW9uIjowfQ.pfagcCL-H6h7bZXtGTSdLtU3QavxM5Es_3wzS7eaTbU\",\n  \"public\": {\n    \"displayName\": \"randy newportave.com\",\n    \"name\": \"randy newportave.com\",\n    \"lastName\": \"newportave.com\",\n     \"firstName\": \"randy\"\n  },\n  \"profile\": [\n    \"a47013dacaa7d20000e59308\"\n  ]\n}"
+            }
+          }
+        }
+      }
+    },
+    "/auth/login/github": {
+      "get": {
+        "tags": [
+          "Login"
+        ],
+        "summary": "Login through Github",
+        "description": "OAuth2 login through Github",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "$ref": "#/definitions/login-response"
+            },
+            "examples": {
+              "application/json": "{\n  \"email\": \"randy@newportave.com\",\n  \"token\": \"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJwcm9maWxlSWQiOiJhNDcwMTNkYWNhYTdkMjAwMDBlNTkzMDgiLCJleHBpcmF0aW9uIjowfQ.pfagcCL-H6h7bZXtGTSdLtU3QavxM5Es_3wzS7eaTbU\",\n  \"public\": {\n    \"displayName\": \"randy newportave.com\",\n    \"name\": \"randy newportave.com\",\n    \"lastName\": \"newportave.com\",\n     \"firstName\": \"randy\"\n  },\n  \"profile\": [\n    \"a47013dacaa7d20000e59308\"\n  ]\n}"
+            }
+          }
+        }
+      }
+    },
+    "/auth/login/facebook": {
+      "get": {
+        "tags": [
+          "Login"
+        ],
+        "summary": "Login through Facebook",
+        "description": "OAuth2 login through Facebook",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "$ref": "#/definitions/login-response"
+            },
+            "examples": {
+              "application/json": "{\n  \"email\": \"randy@newportave.com\",\n  \"token\": \"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJwcm9maWxlSWQiOiJhNDcwMTNkYWNhYTdkMjAwMDBlNTkzMDgiLCJleHBpcmF0aW9uIjowfQ.pfagcCL-H6h7bZXtGTSdLtU3QavxM5Es_3wzS7eaTbU\",\n  \"public\": {\n    \"displayName\": \"randy newportave.com\",\n    \"name\": \"randy newportave.com\",\n    \"lastName\": \"newportave.com\",\n     \"firstName\": \"randy\"\n  },\n  \"profile\": [\n    \"a47013dacaa7d20000e59308\"\n  ]\n}"
+            }
+          }
+        }
+      }
+    },
+    "/auth/login/linkedin": {
+      "get": {
+        "tags": [
+          "Login"
+        ],
+        "summary": "Login through Linkedin",
+        "description": "OAuth2 login through Linkedin",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "$ref": "#/definitions/login-response"
+            },
+            "examples": {
+              "application/json": "{\n  \"email\": \"randy@newportave.com\",\n  \"token\": \"eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJwcm9maWxlSWQiOiJhNDcwMTNkYWNhYTdkMjAwMDBlNTkzMDgiLCJleHBpcmF0aW9uIjowfQ.pfagcCL-H6h7bZXtGTSdLtU3QavxM5Es_3wzS7eaTbU\",\n  \"public\": {\n    \"displayName\": \"randy newportave.com\",\n    \"name\": \"randy newportave.com\",\n    \"lastName\": \"newportave.com\",\n     \"firstName\": \"randy\"\n  },\n  \"profile\": [\n    \"a47013dacaa7d20000e59308\"\n  ]\n}"
+            }
+          }
+        }
+      }
+    },
+    "/conversations": {
+      "get": {
+        "tags": [
+          "Conversations"
+        ],
+        "summary": "Get all Conversations",
+        "description": "Get all open conversations for the logged in user",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "$ref": "#/definitions/conversation"
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Conversations"
+        ],
+        "summary": "Start a Conversation",
+        "description": "Create a new Conversation",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "title": "conversationId",
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/conversations/{id}": {
+      "get": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "id of conversation",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Conversations"
+        ],
+        "summary": "Get a Conversation",
+        "description": "Get a conversation by id",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "$ref": "#/definitions/conversation"
+            }
+          }
+        }
+      }
+    },
+    "/conversations/{id}/{action}": {
+      "post": {
+        "tags": [
+          "Conversations"
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "id of conversation",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "action",
+            "in": "path",
+            "description": "Conversation action",
+            "type": "string",
+            "required": true,
+            "enum": [
+              "reply",
+              "leave",
+              "reject",
+              "accept",
+              "ok",
+              "close",
+              "forward",
+              "delegate"
+            ]
+          }
+        ],
+        "summary": "Interact with a Conversation",
+        "description": "Perform an action on a conversation.",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "$ref": "#/definitions/conversation"
+            }
+          }
+        }
+      }
+    },
+    "/escalations": {
+      "get": {
+        "tags": [
+          "Escalations"
+        ],
+        "summary": "Get all Escalations",
+        "description": "Get all pre-configured Escalations",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "$ref": "#/definitions/escalations"
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Escalations"
+        ],
+        "summary": "New Escalation",
+        "description": "Create an Escalation",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "$ref": "#/definitions/escalation"
+            }
+          }
+        }
+      }
+    },
+    "/escalations/{id}": {
+      "get": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "id of conversation",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Escalations"
+        ],
+        "summary": "Get an Escalation",
+        "description": "Get an Escalation by Id",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "$ref": "#/definitions/escalation"
+            }
+          }
+        }
+      },
+      "put": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "id of conversation",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Escalations"
+        ],
+        "summary": "Update Escalation",
+        "description": "Update an Escalation by Id",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "$ref": "#/definitions/escalation"
+            }
+          }
+        }
+      },
+      "delete": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "id of conversation",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Escalations"
+        ],
+        "summary": "Remove Escalation",
+        "description": "Delete an Escalation by Id",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "title": "escalationId",
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/groups": {
+      "get": {
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Get Groups",
+        "description": "Get all Groups",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "$ref": "#/definitions/groups"
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Groups"
+        ],
+        "summary": "New Group",
+        "description": "Create an Group",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "$ref": "#/definitions/group"
+            }
+          }
+        }
+      }
+    },
+    "/groups/{id}": {
+      "get": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "id of group",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Get a Group",
+        "description": "Get a Group by Id",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "$ref": "#/definitions/group"
+            }
+          }
+        }
+      },
+      "put": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "id of group",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Update Group",
+        "description": "Update a Group",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "$ref": "#/definitions/group"
+            }
+          }
+        }
+      },
+      "delete": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "id of group",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Remove a Group",
+        "description": "Delete a Group",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "title": "groupId",
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/groups/{id}/join": {
+      "post": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "id of group",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Join Group",
+        "description": "Join a Group",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "title": "groupId",
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/groups/{id}/leave": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "description": "id of group",
+          "required": true,
+          "type": "string"
+        }
+      ],
+      "post": {
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Leave Group",
+        "description": "Leave a Group",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "title": "groupId",
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/profiles": {
+      "get": {
+        "tags": [
+          "Profiles"
+        ],
+        "summary": "Get Profiles",
+        "description": "Get all Profiles",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "$ref": "#/definitions/profiles"
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Profiles"
+        ],
+        "summary": "New Profile",
+        "description": "Create an Profile",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "$ref": "#/definitions/profile"
+            }
+          }
+        }
+      }
+    },
+    "/profiles/{id}": {
+      "get": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "id of profile",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Profiles"
+        ],
+        "summary": "Get a profile",
+        "description": "Get a Profile by Id",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "$ref": "#/definitions/profile"
+            }
+          }
+        }
+      },
+      "put": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "id of profile",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Profiles"
+        ],
+        "summary": "Update profile",
+        "description": "Update a Profile by Id",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "$ref": "#/definitions/profile"
+            }
+          }
+        }
+      },
+      "delete": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "id of profile",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Profiles"
+        ],
+        "summary": "Remove a Profile",
+        "description": "Delete a Profile by Id",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "title": "profileId",
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/profiles/{id}/conversations": {
+      "get": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "id of profile",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Profiles"
+        ],
+        "summary": "Get Conversations",
+        "description": "Get all Conversations for a Profile by Id",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/definitions/conversation"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/profiles/{id}/tags": {
+      "get": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "id of profile",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Profiles"
+        ],
+        "summary": "Get Profile Tags",
+        "description": "Get all Tags for a Profile by Id",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "$ref": "#/definitions/tags"
+            }
+          }
+        }
+      },
+      "delete": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "id of profile",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Profiles"
+        ],
+        "summary": "Remove Profile Tags",
+        "description": "Delete all Tags from a Profile by Id",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "title": "profileId",
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/profiles/{id}/tags/{tagId}": {
+      "get": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "id of profile",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "tagId",
+            "in": "path",
+            "description": "id of tag",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Profiles"
+        ],
+        "summary": "Get a Tag",
+        "description": "Get a Tag by Id on a Profile by Id",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "$ref": "#/definitions/tags"
+            }
+          }
+        }
+      },
+      "post": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "id of profile",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "tagId",
+            "in": "path",
+            "description": "id of tag",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Profiles"
+        ],
+        "summary": "Add a Tag",
+        "description": "Add a Tag by Id to a Profile by Id",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "$ref": "#/definitions/tags"
+            }
+          }
+        }
+      },
+      "put": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "id of profile",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "tagId",
+            "in": "path",
+            "description": "id of tag",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Profiles"
+        ],
+        "summary": "Update a Tag",
+        "description": "Update a Tag by Id on a Profile by Id",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "$ref": "#/definitions/tags"
+            }
+          }
+        }
+      },
+      "delete": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "id of profile",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "tagId",
+            "in": "path",
+            "description": "id of tag",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Profiles"
+        ],
+        "summary": "Remove a Tag",
+        "description": "Remove a Tag by Id from a Profile by Id",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "title": "profileId",
+              "type": "string"
+            }
+          }
+        }
+      }
+    },
+    "/tags": {
+      "get": {
+        "tags": [
+          "Tags"
+        ],
+        "summary": "Get Tags",
+        "description": "Get all Tags",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "$ref": "#/definitions/tags"
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Tags"
+        ],
+        "summary": "New Tags",
+        "description": "Create an Tag",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "$ref": "#/definitions/tag"
+            }
+          }
+        }
+      }
+    },
+    "/tags/{id}": {
+      "get": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "id of tag",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Tags"
+        ],
+        "summary": "Get a Tag",
+        "description": "Get a Tag by Id",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "$ref": "#/definitions/tag"
+            }
+          }
+        }
+      },
+      "put": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "id of tag",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Tags"
+        ],
+        "summary": "Update Tag",
+        "description": "Update a Tag",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "$ref": "#/definitions/tag"
+            }
+          }
+        }
+      },
+      "delete": {
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "id of tag",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Tags"
+        ],
+        "summary": "Remove Tag",
+        "description": "Delete a Tag",
+        "responses": {
+          "200": {
+            "description": "Successful response",
+            "schema": {
+              "title": "tagId",
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

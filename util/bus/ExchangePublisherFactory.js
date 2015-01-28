@@ -47,7 +47,7 @@ ExchangePublisherFactory.prototype.createExchangePublisher = function(exchangeNa
     var exchangeOptions = this.getExchangeOptions({});
 
     this._connection.exchange(exchangeName, exchangeOptions , function(exchange) {
-        var newExchangePublisher = new messageExchangePublisher(exchange,publishOptions);
+        var newExchangePublisher = new MessageExchangePublisher(exchange,publishOptions);
         callback(newExchangePublisher);
     });
 
@@ -62,7 +62,7 @@ ExchangePublisherFactory.prototype.createFanoutExchangePublisher = function(exch
     //exchangeOptions.type = 'fanout';
 
     this._connection.exchange(exchangeName, exchangeOptions , function(exchange) {
-        var newExchangePublisher = new messageExchangePublisher(exchange,publishOptions);
+        var newExchangePublisher = new MessageExchangePublisher(exchange,publishOptions);
         callback(newExchangePublisher);
     });
 }

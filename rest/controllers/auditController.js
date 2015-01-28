@@ -14,7 +14,8 @@ exports.getOneAuditTrail = function (req, res) {
         [
             function (callback) {
                 var context = {};
-                context.origin = restHelper.extractOriginId(req);
+                context.origin = req.user.origin;
+
                 context.conversationId = req.params.id;
 
                 console.log("getOneAuditTrail(): origin=%s", context.origin);
