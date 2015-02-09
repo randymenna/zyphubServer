@@ -74,7 +74,7 @@ exports.getConversations = function (req, res) {
                             callback(err, null);
                         }
                         else {
-                            context.conversations = conversations;
+                            context.conversations = _conversationHelper.sanitize(conversations);
                             callback(null, context);
                         }
                     });
@@ -120,7 +120,7 @@ exports.getOneConversation = function(req, res) {
                             callback(err, null);
                         }
                         else {
-                            context.conversation = conversation;
+                            context.conversation = _conversationHelper.sanitize(conversation);
                             callback(null, context);
                         }
                     });
@@ -137,21 +137,6 @@ exports.getOneConversation = function(req, res) {
         }
     );
 };
-
-// new conversation request
-/*
-{
-    "members": [ "b462d378f20c2900001e5e33" ],
-    "messageType": "STANDARD",
-    "ttl" : 3600,
-    "content": {
-        "text":"This is a standard message"
-    },
-    "tags": ["3rd Floor"],
-    "escalation" : { "todo - fill this in" }
-}
-*/
-
 
 exports.newConversation = function (req, res) {
 

@@ -9,6 +9,8 @@ var _ = require('lodash'),
 	passport = require('passport'),
 	User = mongoose.model('User');
 
+var userHelper 		= require('../helper/userHelper');
+
 /**
  * Update user details
  */
@@ -52,5 +54,9 @@ exports.update = function(req, res) {
  * Send User
  */
 exports.me = function(req, res) {
-	res.jsonp(req.user || null);
+	var user = null;
+	if (req.user)
+		user = userHelper.sanitize(req.user);
+
+	res.jsonp(user);
 };

@@ -51,6 +51,29 @@ exports.sanitizeUser = function( u ) {
     return u;
 }
 
+exports.sanitize = function( user ) {
+
+
+    function clean( u ) {
+
+        delete u.__v;
+        delete u.token;
+        delete u.roles;
+        delete u.credentials;
+        return u;
+    }
+
+    if ( user instanceof Array )
+        for(var i=0; i < user.length; i++ ) {
+            user[i] = clean( user[i].toObject());
+        }
+    else
+    if (user)
+        user = clean(user.toObject());
+
+    return user;
+};
+
 exports.newUserFromOAuth = function( providerUserProfile, callback ) {
     var info = {}
     info.name = providerUserProfile.email;

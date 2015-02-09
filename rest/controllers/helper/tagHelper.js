@@ -135,7 +135,7 @@ exports.isActive = function( pTag ) {
     return dayTimeInRange;
 };
 
-exports.santize = function( tag ) {
+exports.sanitize = function( tag ) {
 
 
     function clean( t ) {
@@ -160,6 +160,7 @@ exports.santize = function( tag ) {
             tag[i] = clean( tag[i].toObject());
         }
     else
+    if (tag)
         tag = clean(tag.toObject());
 
     return tag;
@@ -183,7 +184,7 @@ exports.getOne = function (context, callback) {
             callback(err, null);
         }
         else {
-            context.tag = exports.santize( tag.toObject() );
+            context.tag = exports.sanitize( tag );
             callback(null, context);
         }
     });
@@ -195,7 +196,19 @@ exports.updateOne = function (context, callback) {
             callback(err, null);
         }
         else {
-            context.tag = tagHelper.santize( tag.toObject() );
+            context.tag = exports.sanitize( tag );
+            callback(null, context);
+        }
+    });
+};
+
+exports.removeAll = function (context, callback) {
+    model.Tag.remove(context.search).exec(function( err, tag){
+        if ( err ) {
+            callback(err, null);
+        }
+        else {
+            context.tag =  { numRemoved: tag };
             callback(null, context);
         }
     });
@@ -207,7 +220,7 @@ exports.removeOne = function (context, callback) {
             callback(err, null);
         }
         else {
-            context.tag = tagHelper.santize( tag.toObject() );
+            context.tag = exports.sanitize( tag );
             callback(null, context);
         }
     });
