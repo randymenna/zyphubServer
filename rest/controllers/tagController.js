@@ -58,9 +58,7 @@ exports.newTag = function (req, res) {
                         callback(err, null);
                     }
                     else {
-                        context.tag = tag.toObject();
-                        delete context.tag.__v;
-                        delete context.tag.owner;
+                        context.tag = tagHelper.santize( tag.toObject() );
 
                         callback(null, context);
                     }
@@ -103,25 +101,47 @@ exports.getAll = function (req, res) {
                 callback(null, context);
             },
             function (context, callback) {
-                tag.Tag.find(context.search).exec(function( err, tags){
-                    if ( err ) {
-                        callback(err, null);
-                    }
-                    else {
-                        context.tags = tags;
-                        for(var i=0; i< context.tags.length; i++) {
-                            context.tags[i] = tags[i].toObject();
-                            delete context.tags[i].__v;
-                            delete context.tags[i].owner;
-                        }
-                        callback(null, context);
-                    }
-                })
+
+                tagHelper.getAll(context,callback);
             }
         ],
 
         function (err, context) {
             console.log("tags.getAll(): exiting: err=%s,result=%s", err, context);
+            if (!err) {
+                res.json(200, context.tags);
+            } else {
+                res.json(401, err);
+            }
+        }
+    );
+};
+
+exports.getAllByProfileId = function (req, res) {
+
+    console.log("tags.getAllByProfileId(): entered");
+    async.waterfall(
+        [
+            function (callback) {
+                var context = {};
+
+                context.search = {}
+                context.search.owner = req.params.id;
+
+                if ( req.body.enterprise ) {
+                    context.search.enterprise = req.body.enterprise;
+                }
+
+                callback(null, context);
+            },
+            function (context, callback) {
+
+                tagHelper.getAll(context,callback);
+            }
+        ],
+
+        function (err, context) {
+            console.log("tags.getAllByProfileId(): exiting: err=%s,result=%s", err, context);
             if (!err) {
                 res.json(200, context.tags);
             } else {
@@ -141,30 +161,51 @@ exports.getOne = function (req, res) {
 
                 context.search = {};
                 context.search._id = ObjectId(req.params.id);
-                context.search.owner = req.user.origin;
+                //context.search.owner = req.user.origin;
 
                 callback(null, context);
             },
             function (context, callback) {
-                tag.Tag.findOne(context.search).exec(function( err, tag){
-                    if ( err ) {
-                        callback(err, null);
-                    }
-                    else {
-                        context.tag = tag.toObject();
-                        delete context.tag.__v;
-                        delete context.tag.owner;
 
-                        callback(null, context);
-                    }
-                })
+                tagHelper.getOne(context,callback);
             }
         ],
 
         function (err, context) {
             console.log("tags.getOne(): exiting: err=%s,result=%s", err, context);
             if (!err) {
-                res.json(200, context.tags);
+                res.json(200, context.tag);
+            } else {
+                res.json(401, err);
+            }
+        }
+    );
+};
+
+exports.getOneByProfileId = function (req, res) {
+
+    console.log("tags.getOneByProfileId(): entered");
+    async.waterfall(
+        [
+            function (callback) {
+                var context = {};
+
+                context.search = {};
+                context.search._id = ObjectId(req.params.id);
+                //context.search.owner = req.user.origin;
+
+                callback(null, context);
+            },
+            function (context, callback) {
+
+                tagHelper.getOne(context,callback);
+            }
+        ],
+
+        function (err, context) {
+            console.log("tags.getOneByProfileId(): exiting: err=%s,result=%s", err, context);
+            if (!err) {
+                res.json(200, context.tag);
             } else {
                 res.json(401, err);
             }
@@ -187,17 +228,39 @@ exports.update = function (req, res) {
                 callback(null, context);
             },
             function (context, callback) {
-                tag.Tag.findOneAndUpdate(context.search,context.update).exec(function( err, tag){
-                    if ( err ) {
-                        callback(err, null);
-                    }
-                    else {
-                        context.tag = tag.toObject();
-                        delete context.tag.__v;
-                        delete context.tag.owner;
-                        callback(null, context);
-                    }
-                })
+
+                tagHelper.updateOne(context,callback);
+            }
+        ],
+
+        function (err, context) {
+            console.log("tags.update(): exiting: err=%s,result=%s", err, context);
+            if (!err) {
+                res.json(200, context.tag);
+            } else {
+                res.json(401, err);
+            }
+        }
+    );
+};
+
+exports.updateByProfileId = function (req, res) {
+
+    console.log("tags.update(): entered");
+    async.waterfall(
+        [
+            function (callback) {
+                var context = {};
+
+                context.search = {};
+                context.search._id = ObjectId(req.params.id);
+                context.update = tagHelper.fixDates(req.body);
+
+                callback(null, context);
+            },
+            function (context, callback) {
+
+                tagHelper.updateOne(context,callback);
             }
         ],
 
@@ -226,17 +289,38 @@ exports.remove = function (req, res) {
                 callback(null, context);
             },
             function (context, callback) {
-                tag.Tag.findOneAndRemove(context.search).exec(function( err, tag){
-                    if ( err ) {
-                        callback(err, null);
-                    }
-                    else {
-                        context.tag = tag.toObject();
-                        delete context.tag.__v;
-                        delete context.tag.owner;
-                        callback(null, context);
-                    }
-                })
+
+                tagHelper.removeOne(context,callback);
+            }
+        ],
+
+        function (err, context) {
+            console.log("tags.remove(): exiting: err=%s,result=%s", err, context);
+            if (!err) {
+                res.json(200, context.tag);
+            } else {
+                res.json(401, err);
+            }
+        }
+    );
+};
+
+exports.removeByProfileId = function (req, res) {
+
+    console.log("tags.remove(): entered");
+    async.waterfall(
+        [
+            function (callback) {
+                var context = {};
+
+                context.search = {};
+                context.search._id = ObjectId(req.params.id);
+
+                callback(null, context);
+            },
+            function (context, callback) {
+
+                tagHelper.removeOne(context,callback);
             }
         ],
 

@@ -27,9 +27,8 @@ module.exports = function(passport) {
 					});
 				}
 				if (!user.authenticate(password)) {
-					return done(Error('authenticate failed'), false, {
-						message: 'Unknown user or invalid password'
-					});
+					var msg = { message: 'Unknown user or invalid password' };
+					return done(null, user, msg);
 				}
 
 				return done(null, user);

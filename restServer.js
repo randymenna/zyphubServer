@@ -59,9 +59,9 @@ function createExpressApplication() {
         var requestType = req.get('Content-Type');
         if (req.method == 'POST' || req.method == 'PUT') {
             if (requestType == undefined) {
-                res.json(415, {error: 'Content-Type not defined'});
+                res.status(415).json({error: 'Content-Type not defined'});
             } else if (requestType != "application/json") {
-                res.json(415, {error: 'Unsupported Content-Type ' + "'" + requestType + "'"});
+                res.status(415).json({error: 'Unsupported Content-Type ' + "'" + requestType + "'"});
             }
         }
         next();
@@ -123,7 +123,7 @@ function createExpressApplication() {
     app.use('/atrium/conversations', require('./rest/conversationService'));
     app.use('/atrium/escalations', require('./rest/escalationService'));
     app.use('/atrium/auditTrail', require('./rest/auditService'));
-    app.use('/atrium/account', require('./rest/userService'));
+    app.use('/atrium/users', require('./rest/userService'));
     app.use('/atrium/tags', require('./rest/tagService'));
     app.use('/atrium/auth', require('./rest/authService'));
     app.use('/auth', require('./rest/authService'));

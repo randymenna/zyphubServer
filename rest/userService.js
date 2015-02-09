@@ -15,9 +15,20 @@ module.exports = function() {
 
 	app.get('/', passport.authenticate('bearer', { session: false }), UserController.me);
 	app.post('/',  passport.authenticate('bearer', { session: false }), UserController.signup);
-	app.put('/',  passport.authenticate('bearer', { session: false }), UserController.update);
-	app.post('/login',  passport.authenticate('bearer', { session: false }), UserController.signin);
+	app.put('/:id',  passport.authenticate('bearer', { session: false }), UserController.update);
+
+	app.post('/login', UserController.signin);
 	app.post('/logout',  passport.authenticate('bearer', { session: false }), UserController.signout);
+
+	app.get('/login/google', passport.authenticate('google', {
+		scope: [
+			'https://www.googleapis.com/auth/userinfo.profile',
+			'https://www.googleapis.com/auth/userinfo.email'
+		]
+	}));
+	app.get('/login/facebook', passport.authenticate('facebook', {scope: ['email']}));
+	app.get('/login/github', passport.authenticate('github'));
+	app.get('/login/linkedin', passport.authenticate('linkedin'));
 
 	return app;
 }();

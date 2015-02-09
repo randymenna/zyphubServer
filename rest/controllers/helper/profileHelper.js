@@ -15,3 +15,16 @@ exports.newProfile = function( info ) {
 
     return p;
 }
+
+exports.santize = function( profile ) {
+
+    delete profile.__v;
+    delete profile.meta;
+    delete profile.friends;
+    delete profile.public;
+    delete profile.type;
+    delete profile.role;
+    delete profile.avatar;
+
+    return profile;
+}

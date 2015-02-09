@@ -16,7 +16,8 @@ var escalationSchema = new Schema({
             targets: [
                 {type: Schema.Types.ObjectId, ref: 'Profiles'}
             ],
-            trigger: {type: String, default: "NO_READS"}
+            trigger: {type: String, default: "NO_READS"},
+            _id: false
         }
     ],
     owner: [

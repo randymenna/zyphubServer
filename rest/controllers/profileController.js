@@ -8,6 +8,10 @@ var profile                 = require('../../models/profile');
 var model                   = require('../../models/models');
 var mongoose                = require('mongoose');
 var profileHelper           = require('./helper/profileHelper');
+var ConversationHelper      = require('./helper/conversationHelper');
+
+var ObjectId = mongoose.Types.ObjectId;
+var conversationHelper = new ConversationHelper();
 
 exports.getProfiles = function (req, res) {
 
@@ -22,16 +26,20 @@ exports.getProfiles = function (req, res) {
                 callback(null, context);
             },
             function (context, callback) {
-                profile.Profile.find().exec(function( err, people){
+                profile.Profile.find().exec(function( err, profiles){
                     if ( err ) {
                         callback(err, null);
                     }
                     else {
-                        context.profiles = people;
+                        context.profiles = profiles;
+
+                        for (var i=0; i < profiles.length; i++ )
+                            context.profiles[i] = profileHelper.santize( profiles[i].toObject() );
+
                         callback(null, context);
                     }
                 })
-            },
+            } /*,
 
             function (context, callback) {
                 model.Group.find().exec(function( err, groups){
@@ -44,6 +52,7 @@ exports.getProfiles = function (req, res) {
                     }
                 })
             }
+            */
         ],
 
         function (err, context) {
@@ -59,7 +68,7 @@ exports.getProfiles = function (req, res) {
 
 exports.getOneProfile = function (req, res) {
 
-    console.log("getProfiles(): entered");
+    console.log("getOneProfile(): entered");
     async.waterfall(
         [
             function (callback) {
@@ -71,12 +80,12 @@ exports.getOneProfile = function (req, res) {
                 callback(null, context);
             },
             function (context, callback) {
-                profile.Profile.find({_id:context.id}).exec(function( err, person){
+                profile.Profile.findOne({_id:context.id}).exec(function( err, profile){
                     if ( err ) {
                         callback(err, null);
                     }
                     else {
-                        context.person = person;
+                        context.profile = profileHelper.santize( profile.toObject() );
                         callback(null, context);
                     }
                 })
@@ -84,9 +93,9 @@ exports.getOneProfile = function (req, res) {
         ],
 
         function (err, context) {
-            console.log("getProfiles(): exiting: err=%s,result=%s", err, context);
+            console.log("getOneProfile(): exiting: err=%s,result=%s", err, context);
             if (!err) {
-                res.json(200, context.person);
+                res.json(200, context.profile);
             } else {
                 res.json(401, err);
             }
@@ -120,7 +129,7 @@ exports.newProfile = function (req, res) {
                         callback(err, null);
                     }
                     else {
-                        context.profile = profile;
+                        context.profile = profileHelper.santize( profile.toObject() );
                         callback(null, context);
                     }
                 });
@@ -169,6 +178,12 @@ exports.getConversations = function (req, res) {
             },
 
             function(context,callback) {
+
+                conversationHelper.getConversationsInInbox( context.inbox, function( err, conversations){
+                    context.conversations = conversationHelper.sanitize( conversations );
+                    callback( err, context );
+                });
+                /*
                 model.Conversation.find({'_id': { $in: context.inbox }})
                     .populate('envelope.origin', 'label _id')
                     .populate('envelope.members', 'label _id')
@@ -182,6 +197,7 @@ exports.getConversations = function (req, res) {
                             callback(null, context);
                         }
                     });
+                    */
             }
         ],
 
@@ -196,3 +212,76 @@ exports.getConversations = function (req, res) {
     );
 };
 
+exports.update = function (req, res) {
+
+    console.log("profiles.update(): entered");
+    async.waterfall(
+        [
+            function (callback) {
+                var context = {};
+
+                context.search = {};
+                context.search._id = ObjectId(req.params.id);
+
+                callback(null, context);
+            },
+            function (context, callback) {
+                model.Profile.findOneAndUpdate(context.search,context.update).exec(function( err, profile){
+                    if ( err ) {
+                        callback(err, null);
+                    }
+                    else {
+                        context.profile = profileHelper.santize( profile.toObject() );
+                        callback(null, context);
+                    }
+                })
+            }
+        ],
+
+        function (err, context) {
+            console.log("profile.update(): exiting: err=%s,result=%s", err, context);
+            if (!err) {
+                res.json(200, context.profile);
+            } else {
+                res.json(401, err);
+            }
+        }
+    );
+};
+
+exports.remove = function (req, res) {
+
+    console.log("profile.remove(): entered");
+    async.waterfall(
+        [
+            function (callback) {
+                var context = {};
+
+                context.search = {};
+                context.search._id = ObjectId(req.params.id);
+
+                callback(null, context);
+            },
+            function (context, callback) {
+                model.Profile.findOneAndRemove(context.search).exec(function( err, profile){
+                    if ( err ) {
+                        callback(err, null);
+                    }
+                    else {
+                        context.profile = profileHelper.santize( profile.toObject() );
+                        callback(null, context);
+                    }
+                })
+            }
+        ],
+
+        function (err, context) {
+            console.log("profile.remove(): exiting: err=%s,result=%s", err, context);
+            if (!err) {
+                res.json(200, context.tag);
+            } else {
+                res.json(401, err);
+            }
+        }
+    );
+};

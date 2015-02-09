@@ -840,3 +840,46 @@ ConversationHelper.prototype.replyToConversation = function( context, callback )
         }
     );
 };
+
+ConversationHelper.prototype.sanitize = function( conversation ) {
+
+    function clean( c ) {
+
+        delete c.__v;
+
+        if (!c.escalation.id.length)
+            delete c.escalation;
+
+        delete c.envelope.meta;
+
+        if ( !c.envelope.tags.length )
+            delete c.envelope.tags;
+
+        return c;
+    }
+
+    if ( conversation instanceof Array )
+        for(var i=0; i < conversation.length; i++ ) {
+            conversation[i] = clean( conversation[i].toObject());
+        }
+    else
+        conversation = clean(conversation.toObject());
+
+    return conversation;
+}
+
+ConversationHelper.prototype.getConversationsInInbox = function( inbox, callback ) {
+
+    model.Conversation.find({'_id': { $in: inbox }})
+        .populate('envelope.origin', 'label _id')
+        .populate('envelope.members', 'label _id')
+        .populate('state.members.member', 'label _id')
+        .exec(function( err, conversations){
+            if ( err ) {
+                callback(err, null);
+            }
+            else {
+                callback(null, conversations);
+            }
+        });
+}

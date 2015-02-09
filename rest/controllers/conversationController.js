@@ -81,10 +81,13 @@ exports.getConversations = function (req, res) {
             }
         ],
 
+        //TODO: express deprecated res.json(status, obj): Use res.status(status).json(obj) instead at rest/controllers/conversationController.js
+
         function (err, context) {
             console.log("getConversations(): exiting: err=%s,result=%s", err, context);
             if (!err) {
-                res.json(200, context.conversations);
+                //res.json(200, context.conversations);
+                res.status(200).json(context.conversations);
             } else {
                 res.json(401, err.message);
             }

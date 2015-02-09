@@ -34,22 +34,33 @@ var minutesOfDay = function(m){
 }
 
 exports.fixDates = function( context ) {
+    var noDates = true;
+    var noDayTimes = true;
     if ( context.schedule ) {
-        for (var i = 0; i < context.schedule.dates.length; i++) {
-            if (context.schedule.dates[i].start)
-                context.schedule.dates[i].start = moment(context.schedule.dates[i].start).toDate();
+        if ( context.schedule.dates ) {
+            noDates = false;
+            for (var i = 0; i < context.schedule.dates.length; i++) {
+                if (context.schedule.dates[i].start)
+                    context.schedule.dates[i].start = moment(context.schedule.dates[i].start).toDate();
 
-            if (context.schedule.dates[i].end)
-                context.schedule.dates[i].end = moment(context.schedule.dates[i].end).toDate();
+                if (context.schedule.dates[i].end)
+                    context.schedule.dates[i].end = moment(context.schedule.dates[i].end).toDate();
+            }
         }
-        for (var i = 0; i < context.schedule.dayTimes.length; i++) {
-            if (context.schedule.dayTimes[i].startTime)
-                context.schedule.dayTimes[i].startTime = moment(context.schedule.dayTimes[i].startTime,"h:ma").toDate();
+        if ( context.schedule.dayTimes ) {
+            noDayTimes = false;
+            for (var i = 0; i < context.schedule.dayTimes.length; i++) {
+                if (context.schedule.dayTimes[i].startTime)
+                    context.schedule.dayTimes[i].startTime = moment(context.schedule.dayTimes[i].startTime, "h:ma").toDate();
 
-            if (context.schedule.dayTimes[i].endTime)
-                context.schedule.dayTimes[i].endTime = moment(context.schedule.dayTimes[i].endTime,"h:ma").toDate();
+                if (context.schedule.dayTimes[i].endTime)
+                    context.schedule.dayTimes[i].endTime = moment(context.schedule.dayTimes[i].endTime, "h:ma").toDate();
+            }
         }
     }
+
+    if ( noDates && noDayTimes )
+        delete context.schedule;
 
     return context;
 }
@@ -122,4 +133,82 @@ exports.isActive = function( pTag ) {
     }
 
     return dayTimeInRange;
+};
+
+exports.santize = function( tag ) {
+
+
+    function clean( t ) {
+
+        delete t.__v;
+        delete t.owner;
+
+        if ( (!t.schedule.dayTimes.length || t.schedule.dayTimes.length && t.schedule.dayTimes[0] == null) && !t.schedule.dates.length )
+            delete t.schedule;
+        else
+        if ( !t.schedule.dayTimes.length || t.schedule.dayTimes.length && t.schedule.dayTimes[0] == null )
+            delete t.schedule.dayTimes;
+        else
+        if (!t.schedule.dates.length )
+            delete t.schedule.dates;
+
+        return t;
+    }
+
+    if ( tag instanceof Array )
+        for(var i=0; i < tag.length; i++ ) {
+            tag[i] = clean( tag[i].toObject());
+        }
+    else
+        tag = clean(tag.toObject());
+
+    return tag;
+};
+
+exports.getAll = function (context, callback) {
+    model.Tag.find(context.search).exec(function( err, tags){
+        if ( err ) {
+            callback(err, null);
+        }
+        else {
+            context.tags = exports.sanitize(tags);
+            callback(null, context);
+        }
+    });
+};
+
+exports.getOne = function (context, callback) {
+    model.Tag.findOne(context.search).exec(function( err, tag){
+        if ( err ) {
+            callback(err, null);
+        }
+        else {
+            context.tag = exports.santize( tag.toObject() );
+            callback(null, context);
+        }
+    });
+};
+
+exports.updateOne = function (context, callback) {
+    model.Tag.findOneAndUpdate(context.search,context.update).exec(function( err, tag){
+        if ( err ) {
+            callback(err, null);
+        }
+        else {
+            context.tag = tagHelper.santize( tag.toObject() );
+            callback(null, context);
+        }
+    });
+};
+
+exports.removeOne = function (context, callback) {
+    model.Tag.findOneAndRemove(context.search).exec(function( err, tag){
+        if ( err ) {
+            callback(err, null);
+        }
+        else {
+            context.tag = tagHelper.santize( tag.toObject() );
+            callback(null, context);
+        }
+    });
 };

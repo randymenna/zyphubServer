@@ -76,25 +76,50 @@ exports.signin = function(req, res, next) {
 				res.status(400).send(info);
 			} else
 			if (!user) {
-				userHelper.newUserFromLocal( req.body, function(err, user){
-					req.login(user, function(err) {
-						if (err) {
-							res.status(400).send(err);
-						} else {
+				if ( !req.body.email || !req.body.password ) {
+					res.status(400).send(info);
+				}
+				else {
+					userHelper.newUserFromLocal(req.body, function (err, user) {
+						req.login(user, function (err) {
+							if (err) {
+								res.status(400).send(err);
+							}
+							else {
 
-							user.token = authHelper.createToken(user.profile[0], config.jwt.secret,{expiresInMinutes: config.jwt.ttl});
+								user.token = authHelper.createToken(user.profile[0], config.jwt.secret, {expiresInMinutes: config.jwt.ttl});
 
-							user.save(function( err, u){
-								res.json(userHelper.sanitizeUser(u));
-							});
+								user.save(function (err, u) {
+									res.json(userHelper.sanitizeUser(u));
+								});
 
-						}
+							}
+						});
 					});
-				});
+				}
 			}
 			else {
 
-				user.credentials.password = req.body.password;
+				if ( info ) {
+					res.status(400).send(info);
+				}
+				else {
+					user.credentials.password = req.body.password;
+					user.token = authHelper.createToken(user.profile[0], config.jwt.secret, {expiresInMinutes: config.jwt.ttl});
+
+					user.save(function (err, u) {
+						res.json(userHelper.sanitizeUser(u));
+					});
+				}
+			}
+		})(req, res, next);
+
+	if ( req.body.provider == 'github' )
+		passport.authenticate('github', {session: false}, function(err, user, info) {
+			if (err || !user) {
+				res.status(400).send(info);
+			} else {
+
 				user.token = authHelper.createToken(user.profile[0], config.jwt.secret,{expiresInMinutes: config.jwt.ttl});
 
 				user.save(function( err, u){
@@ -103,8 +128,13 @@ exports.signin = function(req, res, next) {
 			}
 		})(req, res, next);
 
-	if ( req.body.provider == 'github' )
-		passport.authenticate('github', {session: false}, function(err, user, info) {
+	if ( req.body.provider == 'google' )
+		passport.authenticate('google', {
+			scope: [
+				'https://www.googleapis.com/auth/userinfo.profile',
+				'https://www.googleapis.com/auth/userinfo.email'
+			]
+		}, function(err, user, info) {
 			if (err || !user) {
 				res.status(400).send(info);
 			} else {

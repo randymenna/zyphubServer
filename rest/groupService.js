@@ -12,11 +12,11 @@ module.exports = function() {
 
     app.get('/',  passport.authenticate('bearer', { session: false }), GroupController.getGroups);
     app.post('/',  passport.authenticate('bearer', { session: false }), GroupController.newGroup);
-    //app.put('/', GroupController.updateGroup);
-    //app.delete('/', GroupController.removeGroup);
+    app.put('/:id', GroupController.update);
+    app.delete('/:id', GroupController.remove);
     app.get('/:id',  passport.authenticate('bearer', { session: false }), GroupController.getOneGroup);
-    app.post('/:id/join',  passport.authenticate('bearer', { session: false }), GroupController.joinGroup);
-    app.post('/:id/leave',  passport.authenticate('bearer', { session: false }), GroupController.leaveGroup);
+    app.put('/:id/join',  passport.authenticate('bearer', { session: false }), GroupController.joinGroup);
+    app.put('/:id/leave',  passport.authenticate('bearer', { session: false }), GroupController.leaveGroup);
 
     return app;
 }();
