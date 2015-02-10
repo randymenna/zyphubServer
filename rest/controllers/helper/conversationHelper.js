@@ -994,7 +994,62 @@ ConversationHelper.prototype.sanitize = function( conversation ) {
         conversation = clean(conversation.toObject());
 
     return conversation;
-}
+};
+
+ConversationHelper.prototype.readConversation = function( context, callback ) {
+    var self = this;
+
+    console.log("readConversation(): entered");
+    async.waterfall(
+        [
+            function (callback) {
+
+                model.Conversation.findOne({'_id': context.conversationId})
+                    .exec(function( err, conversation ){
+                        if ( err ) {
+                            callback(err, null);
+                        }
+                        else {
+                            if ( conversation ) {
+                                context.conversation = conversation;
+                                callback(null, context);
+                            }
+                            else {
+                                callback({message: 'conversation not found'}, null);
+                            }
+                        }
+                    });
+            },
+
+            function(context,callback) {
+                self.updateLastEvent(context.origin, "READ", context.conversation);
+                callback(null,context);
+            },
+
+            // remove profile from Conversation
+            function(context,callback) {
+
+                context.conversation.save(function( err, conversation ){
+                    if ( err ) {
+                        callback(err, null);
+                    }
+                    else {
+
+                        context.conversation = conversation;
+
+                        callback(null, context);
+                    }
+                });
+            }
+        ],
+
+        function (err, context) {
+            console.log("readConversation(): exit: error %s", err);
+            callback( err, context );
+        }
+    );
+};
+
 
 ConversationHelper.prototype.getConversationsInInbox = function( context, callback ) {
 

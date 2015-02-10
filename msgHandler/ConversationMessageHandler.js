@@ -22,6 +22,7 @@ var ConversationMessageHandler = module.exports = function ConversationMessageHa
 
     this.msgHandleSwitch                = {};
     this.msgHandleSwitch['NEW']         = this.handleNew.bind(this);
+    this.msgHandleSwitch['READ']        = this.handleRead.bind(this);
     this.msgHandleSwitch['REPLY']       = this.handleReply.bind(this);
     this.msgHandleSwitch['OK']          = this.handleOk.bind(this);
     this.msgHandleSwitch['ACCEPT']      = this.handleAccept.bind(this);
@@ -33,16 +34,6 @@ var ConversationMessageHandler = module.exports = function ConversationMessageHa
     this.msgHandleSwitch['DELEGATE']    = this.handleDelegate.bind(this);
 
 };
-
-// *** Context
-// context.accountId
-// context.conversationId
-// context.action
-// context.profileId
-// context.forward
-// context.delegate
-// context.escalate
-// context.reply
 
 ConversationMessageHandler.prototype.handleMessagePool = function (context, msgHandlerCallback) {
     var self = this;
@@ -149,6 +140,8 @@ ConversationMessageHandler.prototype.handleMessagePool = function (context, msgH
 
 ConversationMessageHandler.prototype.handleNew = function(context,doneCallback) {
     var self = this;
+
+    console.log("newConversation(): enter: context=%", context);
 
     async.waterfall(
         [
@@ -417,6 +410,14 @@ ConversationMessageHandler.prototype.handleForward = function(context,doneCallba
 ConversationMessageHandler.prototype.handleDelegate = function(context,doneCallback) {
     var self = this;
     self._conversationHelper.delegateConversation( context, function( err, ret ){
+
+        doneCallback(err,context);
+    });
+};
+
+ConversationMessageHandler.prototype.handleRead = function(context,doneCallback) {
+    var self = this;
+    self._conversationHelper.readConversation( context, function( err, ret ){
 
         doneCallback(err,context);
     });
