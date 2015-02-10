@@ -53,31 +53,20 @@ exports.getConversations = function (req, res) {
             // get all the conversations for a user
             function(context,callback) {
                 model.Profile.findOne({'_id': context.origin}, {_id: 0, inbox: 1})
-                    .exec(function (err, obj) {
+                    .exec(function (err, profile) {
                         if ( err ) {
                             callback(err, null);
                         }
                         else {
-                            context.inbox = obj.inbox;
+                            context.inbox = profile.toObject().inbox;
                             callback(null, context);
                         }
                     });
             },
 
             function(context,callback) {
-                model.Conversation.find({'_id': { $in: context.inbox }})
-                    .populate('envelope.origin', 'label _id')
-                    .populate('envelope.members', 'label _id')
-                    .populate('stats.members.member', 'label')
-                    .exec(function( err, conversations){
-                        if ( err ) {
-                            callback(err, null);
-                        }
-                        else {
-                            context.conversations = _conversationHelper.sanitize(conversations);
-                            callback(null, context);
-                        }
-                    });
+
+                _conversationHelper.getConversationsInInbox(context, callback);
             }
         ],
 

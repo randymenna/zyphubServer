@@ -210,6 +210,7 @@ ConversationHelper.prototype.decorateContext = function( context, body ) {
 
     context.originalMembers = JSON.parse(JSON.stringify(body.members));
     context.members = JSON.parse(JSON.stringify(context.originalMembers));
+    context.members.push(context.origin);
 
     context.messageType = body.messageType;
     context.ttl = body.ttl;
@@ -396,7 +397,21 @@ ConversationHelper.prototype.leaveConversation = function( context, callback ) {
         [
             function (callback) {
 
-                callback(null, context);
+                model.Conversation.findOne({'_id': context.conversationId})
+                    .exec(function( err, conversation ){
+                        if ( err ) {
+                            callback(err, null);
+                        }
+                        else {
+                            if ( conversation ) {
+                                context.conversation = conversation;
+                                callback(null, context);
+                            }
+                            else {
+                                callback({message: 'conversation not found'}, null);
+                            }
+                        }
+                    });
             },
 
             // remove conversation from Inbox
@@ -442,7 +457,21 @@ ConversationHelper.prototype.acceptConversation = function( context, callback ) 
         [
             function (callback) {
 
-                callback(null, context);
+                model.Conversation.findOne({'_id': context.conversationId})
+                    .exec(function( err, conversation ){
+                        if ( err ) {
+                            callback(err, null);
+                        }
+                        else {
+                            if ( conversation ) {
+                                context.conversation = conversation;
+                                callback(null, context);
+                            }
+                            else {
+                                callback({message: 'conversation not found'}, null);
+                            }
+                        }
+                    });
             },
 
             // update Conversation
@@ -489,7 +518,21 @@ ConversationHelper.prototype.rejectConversation = function( context, callback ) 
         [
             function (callback) {
 
-                callback(null, context);
+                model.Conversation.findOne({'_id': context.conversationId})
+                    .exec(function( err, conversation ){
+                        if ( err ) {
+                            callback(err, null);
+                        }
+                        else {
+                            if ( conversation ) {
+                                context.conversation = conversation;
+                                callback(null, context);
+                            }
+                            else {
+                                callback({message: 'conversation not found'}, null);
+                            }
+                        }
+                    });
             },
 
             // update Conversation
@@ -529,7 +572,21 @@ ConversationHelper.prototype.okConversation = function( context, callback ) {
         [
             function (callback) {
 
-                callback(null, context);
+                model.Conversation.findOne({'_id': context.conversationId})
+                    .exec(function( err, conversation ){
+                        if ( err ) {
+                            callback(err, null);
+                        }
+                        else {
+                            if ( conversation ) {
+                                context.conversation = conversation;
+                                callback(null, context);
+                            }
+                            else {
+                                callback({message: 'conversation not found'}, null);
+                            }
+                        }
+                    });
             },
 
             function(context,callback) {
@@ -573,7 +630,21 @@ ConversationHelper.prototype.closeConversation = function( context, callback ) {
         [
             function (callback) {
 
-                callback(null, context);
+                model.Conversation.findOne({'_id': context.conversationId})
+                    .exec(function( err, conversation ){
+                        if ( err ) {
+                            callback(err, null);
+                        }
+                        else {
+                            if ( conversation ) {
+                                context.conversation = conversation;
+                                callback(null, context);
+                            }
+                            else {
+                                callback({message: 'conversation not found'}, null);
+                            }
+                        }
+                    });
             },
 
             function(context,callback) {
@@ -628,7 +699,22 @@ ConversationHelper.prototype.forwardConversation = function( context, callback )
                 else {
                     context.newMembers = context.forward;
                 }
-                callback(null, context);
+
+                model.Conversation.findOne({'_id': context.conversationId})
+                    .exec(function( err, conversation ){
+                        if ( err ) {
+                            callback(err, null);
+                        }
+                        else {
+                            if ( conversation ) {
+                                context.conversation = conversation;
+                                callback(null, context);
+                            }
+                            else {
+                                callback({message: 'conversation not found'}, null);
+                            }
+                        }
+                    });
             },
 
             function(context,callback) {
@@ -673,7 +759,21 @@ ConversationHelper.prototype.delegateConversation = function( context, callback 
                 context.newMembers = [];
                 context.newMembers.push(context.delegate);
 
-                callback(null, context);
+                model.Conversation.findOne({'_id': context.conversationId})
+                    .exec(function( err, conversation ){
+                        if ( err ) {
+                            callback(err, null);
+                        }
+                        else {
+                            if ( conversation ) {
+                                context.conversation = conversation;
+                                callback(null, context);
+                            }
+                            else {
+                                callback({message: 'conversation not found'}, null);
+                            }
+                        }
+                    });
             },
 
             // remove conversation from origin Inbox
@@ -737,7 +837,21 @@ ConversationHelper.prototype.escalateConversation = function( context, callback 
 
                     context.newMembers = context.escalate.steps[context.currentState].targets;
 
-                    callback( context, null );
+                    model.Conversation.findOne({'_id': context.conversationId})
+                        .exec(function( err, conversation ){
+                            if ( err ) {
+                                callback(err, null);
+                            }
+                            else {
+                                if ( conversation ) {
+                                    context.conversation = conversation;
+                                    callback(null, context);
+                                }
+                                else {
+                                    callback({message: 'conversation not found'}, null);
+                                }
+                            }
+                        });
                 }
                 else {
                     callback( Error("Escalation Aborted"), null );
@@ -810,7 +924,21 @@ ConversationHelper.prototype.replyToConversation = function( context, callback )
     async.waterfall(
         [
             function (callback) {
-                callback(null, context);
+                model.Conversation.findOne({'_id': context.conversationId})
+                    .exec(function( err, conversation ){
+                        if ( err ) {
+                            callback(err, null);
+                        }
+                        else {
+                            if ( conversation ) {
+                                context.conversation = conversation;
+                                callback(null, context);
+                            }
+                            else {
+                                callback({message: 'conversation not found'}, null);
+                            }
+                        }
+                    });
             },
 
             // save Conversation
@@ -868,9 +996,13 @@ ConversationHelper.prototype.sanitize = function( conversation ) {
     return conversation;
 }
 
-ConversationHelper.prototype.getConversationsInInbox = function( inbox, callback ) {
+ConversationHelper.prototype.getConversationsInInbox = function( context, callback ) {
 
-    model.Conversation.find({'_id': { $in: inbox }})
+    for (var i=0; i < context.inbox.length; i++) {
+        context.inbox[i] = context.inbox[i].toHexString();
+    }
+
+    model.Conversation.find({'_id': { $in: context.inbox }})
         .populate('envelope.origin', 'label _id')
         .populate('envelope.members', 'label _id')
         .populate('state.members.member', 'label _id')
@@ -879,7 +1011,8 @@ ConversationHelper.prototype.getConversationsInInbox = function( inbox, callback
                 callback(err, null);
             }
             else {
-                callback(null, conversations);
+                context.conversations = ConversationHelper.prototype.sanitize(conversations);
+                callback(null, context);
             }
         });
 }

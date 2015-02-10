@@ -4,6 +4,7 @@ var MessageDrivenBean               = require('./util/mdb/messageDrivenBean');
 var cpBus                           = require('./bus');
 var ConversationMessageHandler      = require('./msgHandler/conversationMessageHandler');
 var ExchangePublisherFactory        = require('./util/bus/exchangePublisherFactory');
+
 var ConversationHelper              = require('./rest/controllers/helper/conversationHelper');
 var config                          = require('config');
 var mongoose                        = require('mongoose');
@@ -19,7 +20,7 @@ cpBus.connection.on('error',function(err) {
 // ONCE WE CAN CONNECT TO RABBIT MQ, TRY AND CONNECT TO MONGO, THEN START THE MDB
 cpBus.connection.on('ready',function() {
 
-    var exchangePublisherFactory = new exchangePublisherFactory(cpBus.connection);
+    var exchangePublisherFactory = new ExchangePublisherFactory(cpBus.connection);
 
     async.waterfall(
         [
@@ -58,7 +59,7 @@ cpBus.connection.on('ready',function() {
 
             function(context, callback) {
 
-                var conversationHandler = new conversationMessageHandler();
+                var conversationHandler = new ConversationMessageHandler();
                 conversationHandler.setAuditTrailPublisher(context.auditTrailPublisher);
                 conversationHandler.setNotificationPublisher(context.notificationPublisher);
                 conversationHandler.setSchedulerPublisher(context.schedulerPublisher);
@@ -66,7 +67,7 @@ cpBus.connection.on('ready',function() {
 
                 mongoose.connect(config.mongo.host, config.mongo.dbName, config.mongo.port, {auto_reconnect: true});
 
-                messageDrivenBean = new messageDrivenBean('ConversationEngine',conversationHandler);
+                messageDrivenBean = new MessageDrivenBean('ConversationEngine',conversationHandler);
                 callback(null,'done');
             }
         ],

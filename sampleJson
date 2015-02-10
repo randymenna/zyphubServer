@@ -91,15 +91,15 @@
 
 // valid id's
 
-group id b462d378f20c2900001e5e33
+randy@newportave token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJwcm9maWxlSWQiOiJhNGQ5NmJlN2U4MjgxZDM1NGVkYWYyOGYiLCJleHBpcmF0aW9uIjoiMjAxNS0wMi0xMFQwMjoyMzozOS45NzhaIn0.S2mCtVPfG5QcZ9qZq81HeQ4kjbpWmiPkMeYoKp3ce2A
+12345678
+a4d96be7e8281d354edaf28f
 
-conversation sent to group 5462d3bff20c2900001e5e34
 
-mr blue: a462d28ef20c2900001e5e2e
+fred@bedrock.com token: eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJwcm9maWxlSWQiOiJhNGQ5NmMzZWU4MjgxZDM1NGVkYWYyOTEiLCJleHBpcmF0aW9uIjoiMjAxNS0wMi0xMFQwMjoyNTowNi45NDZaIn0.tOLO520MEBCwXTvH2siNehwUeYTg-D_zAhJMtNlhr1k
+12345678
+a4d96c3ee8281d354edaf291
 
-mr green: a462d312f20c2900001e5e2f
-mr red: a462d31ef20c2900001e5e30
-mr yellow: a462d32ff20c2900001e5e31
-mr purple: a462d347f20c2900001e5e32
-
-Fred Flintstone 	  a4d57323f3333600003946c8
+// conversations
+54d9808b3b7e0491ae72c7af
+54d980b13b7e0491ae72c7b0
