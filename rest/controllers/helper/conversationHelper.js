@@ -11,6 +11,18 @@ var TagHelper               = require('./tagHelper');
 
 var ConversationHelper = module.exports = function ConversationHelper () {
 
+    this.getOriginAllowableActions = function( pattern ){
+        var actions = { "STANDARD" : [ "CLOSE", "REPLY", "FORWARD" ] };
+
+        return actions[pattern];
+    };
+
+    this.getParticipantAllowableActions = function(pattern){
+        var actions = { "STANDARD" : [ "READ", "LEAVE", "REPLY", "FORWARD", "DELEGATE" ] };
+
+        return actions[pattern];
+    }
+
     this._conversationPublisher = null;
 
     this.removeFromArray = function( id, list ) {
@@ -183,39 +195,64 @@ var ConversationHelper = module.exports = function ConversationHelper () {
     };
 };
 
+ConversationHelper.prototype.getOriginAllowableActions = function( pattern ){
+    var actions = {
+        "STANDARD" : [ "CLOSE", "REPLY", "FORWARD" ],
+        "FYI": [ "CLOSE", "FORWARD" ],
+        "FCFS": [ "CLOSE", "REPLY", "FORWARD"]
+    };
+
+    return actions[pattern];
+};
+
+ConversationHelper.prototype.getParticipantAllowableActions = function(pattern){
+    var actions = {
+        "STANDARD" : [ "READ", "LEAVE", "REPLY", "FORWARD", "DELEGATE" ],
+        "FYI": [ "OK" ],
+        "FCFS": [ "ACCEPT", "REJECT", "DELEGATE", "REPLY", "FORWARD"]
+    };
+
+    return actions[pattern];
+}
+
 ConversationHelper.prototype.setSchedulerPublisher = function( schedulerPublisher ) {
     var self = this;
     self._schedulerPublisher = schedulerPublisher;
 }
 
-ConversationHelper.prototype.requestToModel = function( body, user ) {
+ConversationHelper.prototype.requestToModel = function( context ) {
     var c = new model.Conversation();
 
-    c.envelope.origin = user.origin;
-    c.envelope.members = body.members;
-    c.envelope.messageType = body.messageType;
-    if ( body.tags )
-        c.envelope.tags = body.tags;
+    c.envelope.origin = context.origin;
+    c.envelope.members = context.members;
+    c.envelope.pattern = context.pattern;
+    if ( context.tags )
+        c.envelope.tags = context.tags;
 
-    if ( body.ttl )
-        c.time.toLive = body.ttl;
-    c.content.message = body.content.text;
+    if ( context.ttl )
+        c.time.toLive = context.ttl;
+    c.content.message = context.content.text;
     // TODO: fix this
-    c.escalation = body.escalation;
+    c.escalation = context.escalation;
+    //c.actions = context.allowableActions;
 
     return c;
 }
 
 ConversationHelper.prototype.decorateContext = function( context, body ) {
+    var self = this;
 
     context.originalMembers = JSON.parse(JSON.stringify(body.members));
     context.members = JSON.parse(JSON.stringify(context.originalMembers));
     context.members.push(context.origin);
 
-    context.messageType = body.messageType;
+    context.pattern = body.pattern;
     context.ttl = body.ttl;
     context.tags = body.tags;
     context.escalation = body.escalation;
+    context.content = body.content;
+
+    //context.allowableActions = self.AllowableActions[ context.pattern ];
 
     return context;
 }
@@ -969,7 +1006,7 @@ ConversationHelper.prototype.replyToConversation = function( context, callback )
     );
 };
 
-ConversationHelper.prototype.sanitize = function( conversation ) {
+ConversationHelper.prototype.sanitize = function( conversation, user ) {
 
     function clean( c ) {
 
@@ -982,6 +1019,11 @@ ConversationHelper.prototype.sanitize = function( conversation ) {
 
         if ( !c.envelope.tags.length )
             delete c.envelope.tags;
+
+        if (c.envelope.origin._id.toHexString() == user)
+            c.allowableActions = ConversationHelper.prototype.getOriginAllowableActions(c.envelope.pattern);
+        else
+            c.allowableActions = ConversationHelper.prototype.getParticipantAllowableActions(c.envelope.pattern);
 
         return c;
     }
@@ -1058,16 +1100,23 @@ ConversationHelper.prototype.getConversationsInInbox = function( context, callba
     }
 
     model.Conversation.find({'_id': { $in: context.inbox }})
-        .populate('envelope.origin', 'label _id')
-        .populate('envelope.members', 'label _id')
-        .populate('state.members.member', 'label _id')
+        .populate('envelope.origin', 'displayName _id')
+        .populate('envelope.members', 'displayName _id')
+        .populate('state.members.member', 'displayName _id')
         .exec(function( err, conversations){
             if ( err ) {
                 callback(err, null);
             }
             else {
-                context.conversations = ConversationHelper.prototype.sanitize(conversations);
+                context.conversations = ConversationHelper.prototype.sanitize(conversations, context.origin);
                 callback(null, context);
             }
         });
+}
+
+ConversationHelper.prototype.setAllowableActions = function( context ) {
+    var self = this;
+
+    context.allowableActions = self.AllowableActions[ context.pattern ];
+    return context;
 }

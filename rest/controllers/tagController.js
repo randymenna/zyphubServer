@@ -11,32 +11,6 @@ var tagHelper               = require('./helper/tagHelper');
 
 var ObjectId = mongoose.Types.ObjectId;
 
-/*
-app.post('/', passport.authenticate('bearer', { session: false }), TagController.newTag);
-app.get('/', passport.authenticate('bearer', { session: false }), TagController.getAll);
-app.get('/:id', passport.authenticate('bearer', { session: false }), TagController.getOne);
-app.put('/:id', passport.authenticate('bearer', { session: false }),TagController.update);
-app.delete('/:id', passport.authenticate('bearer', { session: false }),TagController.remove);
-
----------------
- label: String,
- schedule: {
-    dates: [{
-        start: Date, end: Date}
-    ],
-    dayTimes: [{
-        days: String,
-        startTime: Date,
-        endTime: Date
-    }]
- }
- expires: Date,
- owner: [{type: Schema.Types.ObjectId, ref: 'Profiles'}],
- enterprise: [String],
- meta: {}
------------------
-*/
-
 exports.newTag = function (req, res) {
 
     console.log("newTag(): entered");

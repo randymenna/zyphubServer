@@ -222,6 +222,7 @@ exports.update = function (req, res) {
 
                 context.search = {};
                 context.search._id = ObjectId(req.params.id);
+                context.update = profileHelper.getUpdate( req.body );
 
                 callback(null, context);
             },

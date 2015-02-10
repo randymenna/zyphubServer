@@ -14,7 +14,7 @@ exports.newProfile = function( info ) {
     var p = new model.Profile(info);
 
     return p;
-}
+};
 
 exports.santize = function( profile ) {
 
@@ -27,4 +27,19 @@ exports.santize = function( profile ) {
     delete profile.avatar;
 
     return profile;
-}
+};
+
+exports.getUpdate = function( body ) {
+    var update = {};
+
+    if (body.displayName)
+        update.displayName = body.displayName;
+
+    if (body.memberOf)
+        update.memberOf = body.memberOf;
+
+    if (body.enterprise)
+    update.enterprise = body.enterprise;
+
+    return update;
+};

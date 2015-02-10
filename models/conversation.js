@@ -54,7 +54,8 @@ var conversationSchema = new Schema({
         replies: [
             { origin: {type: Schema.Types.ObjectId, ref: 'Profiles'}, created: {type: Date, default: Date.now}, content: String}
         ]
-    }
+    },
+    allowableActions: [String]
 });
 
 conversationSchema.pre('save', function (next) {

@@ -101,15 +101,15 @@ exports.getOneConversation = function(req, res) {
             // find one conversation and fill in the name and id only of the members
             function(context,callback) {
                 model.Conversation.findOne({_id: context.conversationId})
-                    .populate('envelope.origin', 'label _id')
-                    .populate('envelope.members', 'label _id')
-                    .populate('stats.members.member', 'label')
+                    .populate('envelope.origin', 'displayName _id')
+                    .populate('envelope.members', 'displayName _id')
+                    .populate('stats.members.member', 'displayName _id')
                     .exec(function( err, conversation){
                         if ( err ) {
                             callback(err, null);
                         }
                         else {
-                            context.conversation = _conversationHelper.sanitize(conversation);
+                            context.conversation = _conversationHelper.sanitize(conversation, context.origin);
                             callback(null, context);
                         }
                     });
@@ -148,7 +148,7 @@ exports.newConversation = function (req, res) {
             // create & save an unrouted message
             function(context,callback) {
 
-                var c = _conversationHelper.requestToModel( req.body, req.user );
+                var c = _conversationHelper.requestToModel( context );
 
                 context.conversationId = c._id
 

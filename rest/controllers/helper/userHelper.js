@@ -79,18 +79,20 @@ exports.newUserFromOAuth = function( providerUserProfile, callback ) {
     info.name = providerUserProfile.email;
     info.label = providerUserProfile.displayName;
 
+    var user = new model.User();
+
+    user.email = providerUserProfile.email;
+    user.profile[0] = profile._id;
+    user.public.firstName = providerUserProfile.firstName;
+    user.public.lastName = providerUserProfile.lastName;
+    user.public.name = providerUserProfile.displayName;
+    user.public.displayName = providerUserProfile.displayName;
+
+
     var p = profileHelper.newProfile(info);
+    p.displayName = user.public.displayName;
 
     p.save(function( err, profile) {
-
-        var user = new model.User();
-
-        user.email = providerUserProfile.email;
-        user.profile[0] = profile._id;
-        user.public.firstName = providerUserProfile.firstName;
-        user.public.lastName = providerUserProfile.lastName;
-        user.public.name = providerUserProfile.displayName;
-        user.public.displayName = providerUserProfile.displayName;
 
         var pData = {};
 
@@ -108,32 +110,28 @@ exports.newUserFromOAuth = function( providerUserProfile, callback ) {
 
 exports.newUserFromLocal = function( body, callback ) {
 
-    var possibleName = body.email.split('@');
+    var user = new model.User();
 
-    var info = {}
-    info.name = body.email;
-    info.label = possibleName[0];
+    user.email = body.email;
+    user.profile[0] = profile._id;
+    user.public.firstName = body.firstName ? body.firstName : possibleName[0];
+    user.public.lastName = body.lastName ? body.lastName : possibleName[1];
+    user.public.name = body.name ? body.name : possibleName[0] + " " + possibleName[1];
+    user.public.displayName = user.public.name;
+    user.credentials.password = body.password;
 
-    var p = profileHelper.newProfile(info);
+    var p = profileHelper.newProfile();
+    p.displayName = user.public.displayName;
 
     p.save(function( err, profile) {
 
-        var user = new model.User();
-
-        user.email = body.email;
-        user.profile[0] = profile._id;
-        user.public.firstName = body.firstName ? body.firstName : possibleName[0];
-        user.public.lastName = body.lastName ? body.lastName : possibleName[1];
-        user.public.name = body.name ? body.name : possibleName[0] + " " + possibleName[1];
-        user.public.displayName = user.public.name;
-        user.credentials.password = body.password;
 
         callback(null,user);
-        /*
-        // And save the user
-        user.save(function (err, u) {
-            callback(err, u);
-        });
-        */
+            /*
+            // And save the user
+            user.save(function (err, u) {
+                callback(err, u);
+            });
+            */
     });
 }
