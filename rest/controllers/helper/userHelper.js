@@ -78,22 +78,12 @@ exports.newUserFromOAuth = function( providerUserProfile, callback ) {
     var info = {}
     info.name = providerUserProfile.email;
     info.label = providerUserProfile.displayName;
+    info.email = providerUserProfile.email;
+    info.firstName = providerUserProfile.firstName;
+    info.lastName = providerUserProfile.lastName;
+    info.name = providerUserProfile.displayName;
 
-    var user = new model.User();
-
-    user.email = providerUserProfile.email;
-    user.profile[0] = profile._id;
-    user.public.firstName = providerUserProfile.firstName;
-    user.public.lastName = providerUserProfile.lastName;
-    user.public.name = providerUserProfile.displayName;
-    user.public.displayName = providerUserProfile.displayName;
-
-
-    var p = profileHelper.newProfile(info);
-    p.displayName = user.public.displayName;
-
-    p.save(function( err, profile) {
-
+    exports.newUserFromLocal(info,function(err,user){
         var pData = {};
 
         pData.provider = providerUserProfile.provider;
@@ -111,27 +101,26 @@ exports.newUserFromOAuth = function( providerUserProfile, callback ) {
 exports.newUserFromLocal = function( body, callback ) {
 
     var user = new model.User();
+    var possibleName = body.email.split('@');
 
     user.email = body.email;
-    user.profile[0] = profile._id;
     user.public.firstName = body.firstName ? body.firstName : possibleName[0];
     user.public.lastName = body.lastName ? body.lastName : possibleName[1];
     user.public.name = body.name ? body.name : possibleName[0] + " " + possibleName[1];
     user.public.displayName = user.public.name;
     user.credentials.password = body.password;
 
-    var p = profileHelper.newProfile();
-    p.displayName = user.public.displayName;
+    var profileInfo = {};
+    profileInfo.displayName = user.public.displayName;
+    profileInfo.userName = user.email;
+    profileInfo.enterprise = user.enterprise;
 
-    p.save(function( err, profile) {
+    profileHelper.newProfile( profileInfo,function( err, p){
+        p.save(function( err, profile) {
 
+            user.profile[0] = profile._id;
 
-        callback(null,user);
-            /*
-            // And save the user
-            user.save(function (err, u) {
-                callback(err, u);
-            });
-            */
+            callback(null,user);
+        });
     });
 }

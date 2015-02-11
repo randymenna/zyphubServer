@@ -3,8 +3,9 @@
  */
 var model                   = require('../../../models/models');
 var mongoose                = require('mongoose');
+var tagHelper               = require('./tagHelper');
 
-exports.newProfile = function( info ) {
+exports.newProfile = function( info, callback ) {
     var stringId = mongoose.Types.ObjectId().toHexString();
     stringId = 'a' + stringId.substring(1);
     var _id = mongoose.Types.ObjectId( stringId );
@@ -13,10 +14,23 @@ exports.newProfile = function( info ) {
 
     var p = new model.Profile(info);
 
-    return p;
+    // create a default tag
+    var defaultTag = {}
+    defaultTag.label = info.userName;
+    defaultTag.enterprise = info.enterprise;
+    defaultTag.owner = [ info._id ];
+
+    var t = tagHelper.newTag( defaultTag );
+
+    t.save(function( err, tag){
+        if ( err ) {
+            console.log("newProfile(): Error: cannot save default tag %s",defaultTag.label);
+        }
+        callback( err, p );
+    });
 };
 
-exports.santize = function( profile ) {
+exports.sanitize = function( profile ) {
 
     delete profile.__v;
     delete profile.meta;
