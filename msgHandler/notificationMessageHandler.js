@@ -49,9 +49,14 @@ NotificationMessageHandler.prototype.handleMessagePool = function ( context, msg
                     // returns participants and notification on context;
                     msgHandlerFunction(context, function (err, context) {
 
-                        context.notification.recipientSocketIds = clientMap.getSocketList(context.notification.recipients);
+                        if ( context.notification ) {
+                            context.notification.recipientSocketIds = clientMap.getSocketList(context.notification.recipients);
 
-                        callback(err, context);
+                            callback(err, context);
+                        }
+                        else {
+                            callback("no notification",null);
+                        }
                     });
                 }
                 else {
@@ -94,7 +99,8 @@ NotificationMessageHandler.prototype.handleNew = function(context,doneCallback) 
 
     // send to: conversation.origin, members
     // send envelope, state, content
-    context.notification = self._notificationHelper.newConversationNotification(context);
+    if (context.conversation)
+        context.notification = self._notificationHelper.newConversationNotification(context);
 
     doneCallback(null,context);
 }

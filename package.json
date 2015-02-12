@@ -30,6 +30,7 @@
     "describe": "^1.2.0",
     "emailjs": "0.3.6",
     "express": "^4.11.0",
+    "forever": "^0.14.1",
     "formidable": "1.0.14",
     "fs": "0.0.2",
     "fs-extra": "0.8.1",

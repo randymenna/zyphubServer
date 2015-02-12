@@ -3,8 +3,7 @@
  */
 var cpConstants                         = require('../constants');
 var async                               = require('async');
-var ScheduleMessageHandler              = require('../msgHandler/schedulerMessageHandler');
-var ExchangePublisherFactory            = require('bus/exchangePublisherFactory');
+var ExchangePublisherFactory            = require('./bus/exchangePublisherFactory');
 var cpBus                               = require('../bus');
 var ConversationHelper                  = require('../rest/controllers/helper/conversationHelper');
 
@@ -18,7 +17,7 @@ cpBus.connection.on('error',function(err) {
 
 cpBus.connection.on('ready',function() {
 
-    var exchangePublisherFactory = new exchangePublisherFactory(cpBus.connection);
+    var exchangePublisherFactory = new ExchangePublisherFactory(cpBus.connection);
 
     exchangePublisherFactory.createConversationExchangePublisher( function(conversationPublisher) {
         ConversationPublisher = conversationPublisher;

@@ -1,24 +1,24 @@
 var async                           = require('async');
-var MessageDrivenBean               = require('./util/mdb/messageDrivenBean');
-var cpBus                           = require('./bus');
-var ExchangePublisherFactory        = require('./util/bus/exchangePublisherFactory');
+var MessageDrivenBean               = require('./../util/mdb/messageDrivenBean');
+var cpBus                           = require('./../bus/index');
+var ExchangePublisherFactory        = require('./../util/bus/exchangePublisherFactory');
 var config                          = require('config');
 var mongoose                        = require('mongoose');
-var ScheduleHelper                  = require('./util/scheduleHelper');
+var ScheduleHelper                  = require('./../util/scheduleHelper');
 var Agenda                          = require('agenda');
-var SchedulerMessageHandler         = require('./msgHandler/schedulerMessageHandler');
+var SchedulerMessageHandler         = require('./../msgHandler/schedulerMessageHandler');
 
 var messageDrivenBean = null;
 
 cpBus.connection.on('error',function(err) {
-    logger.error("unable to connect to cp bus:" + err);
+    console.log("unable to connect to cp bus:" + err);
 });
 
 // INITIALIZATION CODE
 // ONCE WE CAN CONNECT TO RABBIT MQ, TRY AND CONNECT TO MONGO, THEN START THE MDB
 cpBus.connection.on('ready',function() {
 
-    var exchangePublisherFactory = new exchangePublisherFactory(cpBus.connection);
+    var exchangePublisherFactory = new ExchangePublisherFactory(cpBus.connection);
 
     // INITIALIZATION CODE
     async.waterfall(
@@ -48,7 +48,7 @@ cpBus.connection.on('ready',function() {
 
                 console.info('Scheduler MDB: schedule helper config');
 
-                var scheduleHelper = new scheduleHelper();
+                var scheduleHelper = new ScheduleHelper();
 
                 var mongoInstance = config.mongo.host + ':' + config.mongo.port +'/' + config.mongo.agenda;
                 var agenda = new Agenda({
@@ -61,14 +61,14 @@ cpBus.connection.on('ready',function() {
                 agenda.define('handle ttl',scheduleHelper.handleTTL);
                 agenda.define('tag constraint',scheduleHelper.handleTagConstraint);
 
-                var schedulerHandler = new schedulerMessageHandler();
+                var schedulerHandler = new SchedulerMessageHandler();
                 schedulerHandler.setConversationPublisher(context.conversationPublisher);
                 schedulerHandler.setAgenda(agenda);
 
 
                 console.info('Scheduler MDB: mdb bind');
 
-                messageDrivenBean = new messageDrivenBean('Scheduler',schedulerHandler);
+                messageDrivenBean = new MessageDrivenBean('Scheduler',schedulerHandler);
 
                 console.info('Scheduler MDB: agenda start');
 

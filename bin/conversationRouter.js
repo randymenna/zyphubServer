@@ -1,11 +1,11 @@
 var async                           = require('async');
-var mongodbClient                   = require('./mongodb-client');
-var MessageDrivenBean               = require('./util/mdb/messageDrivenBean');
-var cpBus                           = require('./bus');
-var ConversationMessageHandler      = require('./msgHandler/conversationMessageHandler');
-var ExchangePublisherFactory        = require('./util/bus/exchangePublisherFactory');
+var mongodbClient                   = require('./../mongodb-client/index');
+var MessageDrivenBean               = require('./../util/mdb/messageDrivenBean');
+var cpBus                           = require('./../bus/index');
+var ConversationMessageHandler      = require('./../msgHandler/conversationMessageHandler');
+var ExchangePublisherFactory        = require('./../util/bus/exchangePublisherFactory');
 
-var ConversationHelper              = require('./rest/controllers/helper/conversationHelper');
+var ConversationHelper              = require('./../rest/controllers/helper/conversationHelper');
 var config                          = require('config');
 var mongoose                        = require('mongoose');
 

@@ -34,7 +34,7 @@ exports.getProfiles = function (req, res) {
                         context.profiles = profiles;
 
                         for (var i=0; i < profiles.length; i++ )
-                            context.profiles[i] = profileHelper.santize( profiles[i].toObject() );
+                            context.profiles[i] = profileHelper.sanitize( profiles[i].toObject() );
 
                         callback(null, context);
                     }

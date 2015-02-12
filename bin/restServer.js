@@ -1,14 +1,14 @@
 var express                 = require('express');
 var bodyParser              = require('body-parser');
 var url                     = require('url');
-var mongoDbClient           = require('./mongodb-client');
+var mongoDbClient           = require('./../mongodb-client/index');
 var https                   = require('https');
 var config                  = require('config');
 var fs                      = require('fs');
 var mongoose                = require('mongoose');
 var passport                = require('passport');
 
-require('./auth/passport')(passport);
+require('./../auth/passport')(passport);
 
 mongoDbClient.init(function(error) {
     if ( error == null ) {
@@ -117,16 +117,16 @@ function createExpressApplication() {
     app.use("/apiDoc", express.static(__dirname + '/cp-api-swager.json'));
     // Routes
 
-    app.use('/api', require('./rest/mongoService'));
-    app.use('/atrium/profiles', require('./rest/profileService'));
-    app.use('/atrium/groups', require('./rest/groupService'));
-    app.use('/atrium/conversations', require('./rest/conversationService'));
-    app.use('/atrium/escalations', require('./rest/escalationService'));
-    app.use('/atrium/auditTrail', require('./rest/auditService'));
-    app.use('/atrium/users', require('./rest/userService'));
-    app.use('/atrium/tags', require('./rest/tagService'));
-    app.use('/atrium/auth', require('./rest/authService'));
-    app.use('/auth', require('./rest/authService'));
+    app.use('/api', require('./../rest/mongoService'));
+    app.use('/atrium/profiles', require('./../rest/profileService'));
+    app.use('/atrium/groups', require('./../rest/groupService'));
+    app.use('/atrium/conversations', require('./../rest/conversationService'));
+    app.use('/atrium/escalations', require('./../rest/escalationService'));
+    app.use('/atrium/auditTrail', require('./../rest/auditService'));
+    app.use('/atrium/users', require('./../rest/userService'));
+    app.use('/atrium/tags', require('./../rest/tagService'));
+    app.use('/atrium/auth', require('./../rest/authService'));
+    app.use('/auth', require('./../rest/authService'));
 
     return app;
 }

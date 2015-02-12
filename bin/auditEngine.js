@@ -1,10 +1,10 @@
 var async                           = require('async');
-var MessageDrivenBean               = require('./util/mdb/messageDrivenBean');
-var cpBus                           = require('./bus');
-var ExchangePublisherFactory        = require('./util/bus/exchangePublisherFactory');
+var MessageDrivenBean               = require('./../util/mdb/messageDrivenBean');
+var cpBus                           = require('./../bus/index');
+var ExchangePublisherFactory        = require('./../util/bus/exchangePublisherFactory');
 var config                          = require('config');
 var mongoose                        = require('mongoose');
-var AuditMessageHandler             = require('./msgHandler/auditMessageHandler');
+var AuditMessageHandler             = require('./../msgHandler/auditMessageHandler');
 
 var messageDrivenBean = null;
 
