@@ -124,7 +124,7 @@ function createExpressApplication() {
     app.use('/atrium/escalations', require('./../rest/escalationService'));
     app.use('/atrium/auditTrail', require('./../rest/auditService'));
     app.use('/atrium/users', require('./../rest/userService'));
-    app.use('/atrium/tags', require('./../rest/tagService'));
+    app.use('/atrium/contexts', require('./../rest/contextService'));
     app.use('/atrium/auth', require('./../rest/authService'));
     app.use('/auth', require('./../rest/authService'));
 

@@ -12,8 +12,7 @@ var conversationSchema = new Schema({
         members: [
             {type: Schema.Types.ObjectId, ref: 'Profiles'}
         ],
-        tags: [String],
-        behaviors: [String],
+        context: [String],
         pattern: String,
         priority: {type: Number, default: 1},
         meta: {

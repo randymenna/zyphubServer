@@ -8,6 +8,7 @@ var escalation              = require('./escalation');
 var auditTrail              = require('./auditTrail');
 var user                    = require('./user');
 var tag                     = require('./tag');
+var context                 = require('./context');
 
 
 module.exports =  {
@@ -17,5 +18,6 @@ module.exports =  {
     Escalation : escalation.Escalation,
     AuditTrail: auditTrail.AuditTrail,
     User: user.User,
-    Tag: tag.Tag
+    Tag: tag.Tag,
+    Context: context.Context
 };

@@ -20,12 +20,12 @@ module.exports = function() {
     app.get('/:id/conversations', passport.authenticate('bearer', { session: false }), ProfileController.getConversations);
     app.get('/:id/conversations/:cid', passport.authenticate('bearer', { session: false }), ProfileController.getConversations);
 
-    app.get('/:id/tags', passport.authenticate('bearer', { session: false }), TagController.getAllByProfileId);
-    app.get('/:pid/tags/:tid', passport.authenticate('bearer', { session: false }), TagController.getOneByProfileId);
-    app.post('/:id/tags', passport.authenticate('bearer', { session: false }), TagController.newByProfileId);
-    app.put('/:pid/tags/:tid', passport.authenticate('bearer', { session: false }), TagController.updateByProfileId);
-    app.delete('/:id/tags/', passport.authenticate('bearer', { session: false }), TagController.removeAllByProfileId);
-    app.delete('/:pid/tags/:tid', passport.authenticate('bearer', { session: false }), TagController.removeOneByProfileId);
+    app.get('/:id/contexts', passport.authenticate('bearer', { session: false }), TagController.getAllByProfileId);
+    app.get('/:pid/contexts/:tid', passport.authenticate('bearer', { session: false }), TagController.getOneByProfileId);
+    app.post('/:id/contexts', passport.authenticate('bearer', { session: false }), TagController.newByProfileId);
+    app.put('/:pid/contexts/:tid', passport.authenticate('bearer', { session: false }), TagController.updateByProfileId);
+    app.delete('/:id/contexts/', passport.authenticate('bearer', { session: false }), TagController.removeAllByProfileId);
+    app.delete('/:pid/contexts/:tid', passport.authenticate('bearer', { session: false }), TagController.removeOneByProfileId);
 
     return app;
 }();

@@ -8,7 +8,7 @@ var Schema  = mongoose.Schema;
 
 var tagSchema = new Schema({
 
-    label: { type: String, index: true },
+    context: { type: String, index: true, required: true },
 
     schedule: {
         dates: [{
@@ -31,6 +31,12 @@ var tagSchema = new Schema({
 
     meta: {}
     });
+
+tagSchema.pre("save",function(next, done) {
+    var self = this;
+
+    next();
+});
 
 var _Tag = mongoose.model('Tags', tagSchema);
 
