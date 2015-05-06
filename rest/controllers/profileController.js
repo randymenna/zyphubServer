@@ -26,7 +26,7 @@ exports.getProfiles = function (req, res) {
                 callback(null, context);
             },
             function (context, callback) {
-                profile.Profile.find().exec(function( err, profiles){
+                profile.Profile.find().select('displayName memberOf enterprise presence').exec(function( err, profiles){
                     if ( err ) {
                         callback(err, null);
                     }
@@ -85,7 +85,7 @@ exports.getOneProfile = function (req, res) {
                         callback(err, null);
                     }
                     else {
-                        context.profile = profileHelper.santize( profile.toObject() );
+                        context.profile = profileHelper.sanitize( profile.toObject() );
                         callback(null, context);
                     }
                 })
@@ -122,15 +122,20 @@ exports.newProfile = function (req, res) {
                 info.name = req.body.name;
                 info.label = req.body.label;
 
-                var p = profileHelper.newProfile(info);
-
-                p.save(function( err, profile){
+                profileHelper.newProfile(info, function( err, p){
                     if ( err ) {
-                        callback(err, null);
+                        callback(Error('profile create failue'), null);
                     }
                     else {
-                        context.profile = profileHelper.santize( profile.toObject() );
-                        callback(null, context);
+                        p.save(function (err, profile) {
+                            if (err) {
+                                callback(err, null);
+                            }
+                            else {
+                                context.profile = profileHelper.santize(profile.toObject());
+                                callback(null, context);
+                            }
+                        });
                     }
                 });
             }

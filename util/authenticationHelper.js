@@ -25,8 +25,24 @@ AuthenticationHelper.prototype.validateToken = function(token) {
         console.log("AuthenticationHelper.authenticate(): %s",e);
     }
 
-    // TODO: validate the profile id decoded
+    return decoded;
+};
 
+AuthenticationHelper.prototype.validate = function(token,secret) {
+    var decoded = null;
+
+    try {
+        decoded = jwt.decode( token, secret );
+        if ( decoded.exp ) {
+            var now = moment();
+            var expires = moment(decoded.expires);
+            if ( now.isAfter(expires) )
+                decoded = null;
+        }
+    }
+    catch( e ) {
+        console.log("AuthenticationHelper.validate(): %s",e);
+    }
     return decoded;
 };
 

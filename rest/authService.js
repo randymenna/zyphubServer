@@ -35,7 +35,9 @@ module.exports = function() {
 	app.get('/login/linkedin', passport.authenticate('linkedin'));
 	app.get('/linkedin/callback', UserController.oauthCallback('linkedin'));
 
-	return app;
+    app.post('/login/graphfm', passport.authenticate('graphfm'));
+
+    return app;
 }();
 /*
 module.exports = function() {

@@ -16,7 +16,7 @@ exports.newProfile = function( info, callback ) {
 
     // create a default tag
     var defaultTag = {}
-    defaultTag.label = info.userName;
+    defaultTag.context = info.userName;
     defaultTag.enterprise = info.enterprise;
     defaultTag.owner = [ info._id ];
 

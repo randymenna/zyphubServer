@@ -33,7 +33,25 @@ exports.validateOAuthId = function( user, provider, profile, providerData ) {
         }
     }
     return false;
-}
+};
+
+exports.sanitizeForGraph = function( u ) {
+    if ( u ) {
+        u._id = undefined;
+        u.__v = undefined;
+        u.credentials = undefined;
+        u.roles = undefined;
+        u.created = undefined;
+        u.updated = undefined;
+        u.lastLogin = undefined;
+        u.resetPasswordToken = undefined;
+        u.resetPasswordExpires = undefined;
+        u.email = undefined;
+        u.public = undefined;
+    }
+
+    return u;
+};
 
 exports.sanitizeUser = function( u ) {
     if ( u ) {
@@ -49,7 +67,7 @@ exports.sanitizeUser = function( u ) {
     }
 
     return u;
-}
+};
 
 exports.sanitize = function( user ) {
 
@@ -96,7 +114,7 @@ exports.newUserFromOAuth = function( providerUserProfile, callback ) {
             callback(err, u);
         });
     });
-}
+};
 
 exports.newUserFromLocal = function( body, callback ) {
 
@@ -123,4 +141,27 @@ exports.newUserFromLocal = function( body, callback ) {
             callback(null,user);
         });
     });
-}
+};
+
+exports.newUserFromGraph = function( body, callback ) {
+    var fakeEmail = '@graph.fm';
+    var user = new model.User();
+
+    user.email = body.id + fakeEmail;
+    user.public.firstName = 'GraphFM User';
+    user.public.lastName = body.id;
+
+    var profileInfo = {};
+    profileInfo.displayName = user.public.displayName;
+    profileInfo.userName = user.email;
+    profileInfo.enterprise = 'GraphFM';
+
+    profileHelper.newProfile( profileInfo,function( err, p){
+        p.save(function( err, profile) {
+
+            user.profile[0] = profile._id;
+
+            callback(null,user);
+        });
+    });
+};

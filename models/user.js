@@ -110,6 +110,14 @@ UserSchema.methods.authenticate = function(password) {
 };
 
 /**
+ * Create instance method for authenticating user
+ */
+UserSchema.methods.validateSecret = function(secret) {
+    return true;
+};
+
+
+/**
  * Find possible not used username
  */
 UserSchema.statics.findUniqueUsername = function(username, suffix, callback) {

@@ -70,7 +70,57 @@ exports.signup = function(req, res) {
  */
 exports.signin = function(req, res, next) {
 
-	if ( req.body.provider == 'local' )
+    if ( req.route.path === '/login/graphfm' )
+        passport.authenticate('conversepoint', {session: false}, function(err, user, info) {
+            if (err) {
+                res.status(400).send(info);
+            } else
+            if (!user) {
+                if ( !req.body.id ) {
+                    res.status(400).send(info);
+                }
+                else {
+                    userHelper.newUserFromGraph(req.body, function (err, user) {
+                        req.login(user, function (err) {
+                            if (err) {
+                                res.status(400).send(err);
+                            }
+                            else {
+
+                                user.token = authHelper.createToken(user.profile[0], config.jwt.secret, {expiresInMinutes: config.jwt.ttl});
+
+                                user.save(function (err, u) {
+                                    if (err){
+                                        res.status(400).json(err);
+                                    }
+                                    else {
+                                        res.json(userHelper.sanitizeForGraph(u));
+                                    }
+                                });
+
+                            }
+                        });
+                    });
+                }
+            }
+            else {
+
+                if ( info ) {
+                    res.status(400).send(info);
+                }
+                else {
+                    user.credentials.password = req.body.password;
+                    user.token = authHelper.createToken(user.profile[0], config.jwt.secret, {expiresInMinutes: config.jwt.ttl});
+
+                    user.save(function (err, u) {
+                        res.json(userHelper.sanitizeForGraph(u));
+                    });
+                }
+            }
+        })(req, res, next);
+
+    /*
+    if ( req.body.provider == 'local' )
 		passport.authenticate('local', {session: false}, function(err, user, info) {
 			if (err) {
 				res.status(400).send(info);
@@ -146,6 +196,7 @@ exports.signin = function(req, res, next) {
 				});
 			}
 		})(req, res, next);
+		*/
 };
 
 /**

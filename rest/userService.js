@@ -18,7 +18,8 @@ module.exports = function() {
 	app.put('/:id',  passport.authenticate('bearer', { session: false }), UserController.update);
 
 	app.post('/login', UserController.signin);
-	app.post('/logout',  passport.authenticate('bearer', { session: false }), UserController.signout);
+    app.post('/login/graphfm', UserController.signin);
+    app.post('/logout',  passport.authenticate('bearer', { session: false }), UserController.signout);
 
 	app.get('/login/google', passport.authenticate('google', {
 		scope: [
@@ -29,6 +30,7 @@ module.exports = function() {
 	app.get('/login/facebook', passport.authenticate('facebook', {scope: ['email']}));
 	app.get('/login/github', passport.authenticate('github'));
 	app.get('/login/linkedin', passport.authenticate('linkedin'));
+
 
 	return app;
 }();

@@ -8,10 +8,11 @@ var AuthHelper				    = require('../../util/authenticationHelper');
 var authHelper = new AuthHelper();
 
 module.exports = function(passport) {
+    console.log("bearer");
 
     passport.use(new BearerStrategy({},
         function (token, done) {
-            console.log("bearer");
+            //console.log("bearer");
             User.findOne({
                 token: token
             },function(err, user) {
