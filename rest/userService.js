@@ -14,14 +14,16 @@ module.exports = function() {
 	var app = express();
 
 	app.get('/', passport.authenticate('bearer', { session: false }), UserController.me);
-	app.post('/',  passport.authenticate('bearer', { session: false }), UserController.signup);
+	//app.post('/',  passport.authenticate('bearer', { session: false }), UserController.signup);
 	app.put('/:id',  passport.authenticate('bearer', { session: false }), UserController.update);
 
 	app.post('/login', UserController.signin);
-    app.post('/login/graphfm', UserController.signin);
     app.post('/logout',  passport.authenticate('bearer', { session: false }), UserController.signout);
 
-	app.get('/login/google', passport.authenticate('google', {
+    app.post('/', UserController.authByKey);
+    app.post('/login/apikey', UserController.authByKey);
+
+    app.get('/login/google', passport.authenticate('google', {
 		scope: [
 			'https://www.googleapis.com/auth/userinfo.profile',
 			'https://www.googleapis.com/auth/userinfo.email'

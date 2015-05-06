@@ -65,22 +65,73 @@ exports.signup = function(req, res) {
 	});
 };
 
+exports.authByKey = function(req, res, next){
+
+    passport.authenticate('conversepoint', {session: false}, function(err, user, info) {
+        if (err) {
+            res.status(400).send(info);
+        } else
+        if (!user) {
+            if ( !req.body.id ) {
+                res.status(400).send(info);
+            }
+            else {
+                userHelper.newUserFromGraph(req.body, function (err, user) {
+                    req.login(user, function (err) {
+                        if (err) {
+                            res.status(400).send(err);
+                        }
+                        else {
+
+                            user.token = authHelper.createToken(user.profile[0], config.jwt.secret, {expiresInMinutes: config.jwt.ttl});
+
+                            user.save(function (err, u) {
+                                if (err){
+                                    res.status(400).json(err);
+                                }
+                                else {
+                                    res.json(userHelper.sanitizeForGraph(u));
+                                }
+                            });
+
+                        }
+                    });
+                });
+            }
+        }
+        else {
+
+            if ( info ) {
+                res.status(400).send(info);
+            }
+            else {
+                user.credentials.password = req.body.password;
+                user.token = authHelper.createToken(user.profile[0], config.jwt.secret, {expiresInMinutes: config.jwt.ttl});
+
+                user.save(function (err, u) {
+                    res.json(userHelper.sanitizeForGraph(u));
+                });
+            }
+        }
+    })(req, res, next);
+};
+
 /**
  * Signin after passport authentication
  */
 exports.signin = function(req, res, next) {
 
-    if ( req.route.path === '/login/graphfm' )
-        passport.authenticate('conversepoint', {session: false}, function(err, user, info) {
+    if ( req.body.provider == 'local' ) {
+        passport.authenticate('local', {session: false}, function (err, user, info) {
             if (err) {
                 res.status(400).send(info);
-            } else
-            if (!user) {
-                if ( !req.body.id ) {
+            }
+            else if (!user) {
+                if (!req.body.email || !req.body.password) {
                     res.status(400).send(info);
                 }
                 else {
-                    userHelper.newUserFromGraph(req.body, function (err, user) {
+                    userHelper.newUserFromLocal(req.body, function (err, user) {
                         req.login(user, function (err) {
                             if (err) {
                                 res.status(400).send(err);
@@ -90,12 +141,7 @@ exports.signin = function(req, res, next) {
                                 user.token = authHelper.createToken(user.profile[0], config.jwt.secret, {expiresInMinutes: config.jwt.ttl});
 
                                 user.save(function (err, u) {
-                                    if (err){
-                                        res.status(400).json(err);
-                                    }
-                                    else {
-                                        res.json(userHelper.sanitizeForGraph(u));
-                                    }
+                                    res.json(userHelper.sanitizeUser(u));
                                 });
 
                             }
@@ -105,7 +151,7 @@ exports.signin = function(req, res, next) {
             }
             else {
 
-                if ( info ) {
+                if (info) {
                     res.status(400).send(info);
                 }
                 else {
@@ -113,90 +159,49 @@ exports.signin = function(req, res, next) {
                     user.token = authHelper.createToken(user.profile[0], config.jwt.secret, {expiresInMinutes: config.jwt.ttl});
 
                     user.save(function (err, u) {
-                        res.json(userHelper.sanitizeForGraph(u));
+                        res.json(userHelper.sanitizeUser(u));
                     });
                 }
             }
         })(req, res, next);
+    }
+    else
+	if ( req.body.provider == 'github' ) {
+        passport.authenticate('github', {session: false}, function (err, user, info) {
+            if (err || !user) {
+                res.status(400).send(info);
+            }
+            else {
 
-    /*
-    if ( req.body.provider == 'local' )
-		passport.authenticate('local', {session: false}, function(err, user, info) {
-			if (err) {
-				res.status(400).send(info);
-			} else
-			if (!user) {
-				if ( !req.body.email || !req.body.password ) {
-					res.status(400).send(info);
-				}
-				else {
-					userHelper.newUserFromLocal(req.body, function (err, user) {
-						req.login(user, function (err) {
-							if (err) {
-								res.status(400).send(err);
-							}
-							else {
+                user.token = authHelper.createToken(user.profile[0], config.jwt.secret, {expiresInMinutes: config.jwt.ttl});
 
-								user.token = authHelper.createToken(user.profile[0], config.jwt.secret, {expiresInMinutes: config.jwt.ttl});
+                user.save(function (err, u) {
+                    res.json(userHelper.sanitizeUser(u));
+                });
+            }
+        })(req, res, next);
+    }
+    else
+	if ( req.body.provider == 'google' ) {
+        passport.authenticate('google', {
+            scope: [
+                'https://www.googleapis.com/auth/userinfo.profile',
+                'https://www.googleapis.com/auth/userinfo.email'
+            ]
+        }, function (err, user, info) {
+            if (err || !user) {
+                res.status(400).send(info);
+            }
+            else {
 
-								user.save(function (err, u) {
-									res.json(userHelper.sanitizeUser(u));
-								});
+                user.token = authHelper.createToken(user.profile[0], config.jwt.secret, {expiresInMinutes: config.jwt.ttl});
 
-							}
-						});
-					});
-				}
-			}
-			else {
-
-				if ( info ) {
-					res.status(400).send(info);
-				}
-				else {
-					user.credentials.password = req.body.password;
-					user.token = authHelper.createToken(user.profile[0], config.jwt.secret, {expiresInMinutes: config.jwt.ttl});
-
-					user.save(function (err, u) {
-						res.json(userHelper.sanitizeUser(u));
-					});
-				}
-			}
-		})(req, res, next);
-
-	if ( req.body.provider == 'github' )
-		passport.authenticate('github', {session: false}, function(err, user, info) {
-			if (err || !user) {
-				res.status(400).send(info);
-			} else {
-
-				user.token = authHelper.createToken(user.profile[0], config.jwt.secret,{expiresInMinutes: config.jwt.ttl});
-
-				user.save(function( err, u){
-					res.json(userHelper.sanitizeUser(u));
-				});
-			}
-		})(req, res, next);
-
-	if ( req.body.provider == 'google' )
-		passport.authenticate('google', {
-			scope: [
-				'https://www.googleapis.com/auth/userinfo.profile',
-				'https://www.googleapis.com/auth/userinfo.email'
-			]
-		}, function(err, user, info) {
-			if (err || !user) {
-				res.status(400).send(info);
-			} else {
-
-				user.token = authHelper.createToken(user.profile[0], config.jwt.secret,{expiresInMinutes: config.jwt.ttl});
-
-				user.save(function( err, u){
-					res.json(userHelper.sanitizeUser(u));
-				});
-			}
-		})(req, res, next);
-		*/
+                user.save(function (err, u) {
+                    res.json(userHelper.sanitizeUser(u));
+                });
+            }
+        })(req, res, next);
+    }
 };
 
 /**

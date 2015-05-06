@@ -148,6 +148,7 @@ exports.newUserFromGraph = function( body, callback ) {
     var user = new model.User();
 
     user.email = body.id + fakeEmail;
+    user.public.name = 'GraphFM User: ' + body.id;
     user.public.firstName = 'GraphFM User';
     user.public.lastName = body.id;
 

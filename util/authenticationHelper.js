@@ -14,9 +14,9 @@ AuthenticationHelper.prototype.validateToken = function(token) {
     try {
         decoded = jwt.decode( token, config.jwt.secret );
         console.log("AuthenticationHelper.authenticate(): " + JSON.stringify(decoded));
-        if ( decoded.expiration ) {
+        if ( decoded.exp ) {
             var now = moment();
-            var expires = moment(decoded.expires);
+            var expires = moment.unix(decoded.exp);
             if ( now.isAfter(expires) )
                 decoded = null;
         }
@@ -52,9 +52,13 @@ AuthenticationHelper.prototype.createToken = function( profileId, secret, option
     if ( options.expiresInMinutes )
         expiration = moment().add(options.expiresInMinutes,'minutes').toISOString();
 
-    var payload = {};
+    var payload = {
+        "iss": "conversepoint.com",
+        "iat":  Math.round(+new Date()/1000),
+        "exp":  Math.round(+new Date()/1000) + 31536000,    // 1 year
+        "sub": "profile id"
+    };
     payload.profileId = profileId;
-    payload.expiration = expiration;
 
     var token = jwt.encode(payload,secret);
 
