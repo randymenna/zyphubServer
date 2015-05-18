@@ -3,6 +3,7 @@
  */
 var model                   = require('../../../models/models');
 var profileHelper           = require('./profileHelper');
+var config                  = require('config');
 
 exports.userHasOAuthProvider = function( user, provider ) {
     for(var i=0; i < user.credentials.oauth.length; i++) {
@@ -143,19 +144,19 @@ exports.newUserFromLocal = function( body, callback ) {
     });
 };
 
-exports.newUserFromGraph = function( body, callback ) {
-    var fakeEmail = '@graph.fm';
+exports.newUserFromApiKey = function( body, callback ) {
+    var fakeEmail = config.users.fakeEmail;
     var user = new model.User();
 
     user.email = body.id + fakeEmail;
-    user.public.name = 'GraphFM User: ' + body.id;
-    user.public.firstName = 'GraphFM User';
+    user.public.name = 'API Key User: ' + body.id;
+    user.public.firstName = 'API Key User';
     user.public.lastName = body.id;
 
     var profileInfo = {};
     profileInfo.displayName = user.public.displayName;
     profileInfo.userName = user.email;
-    profileInfo.enterprise = 'GraphFM';
+    profileInfo.enterprise = body.enterprise;
 
     profileHelper.newProfile( profileInfo,function( err, p){
         p.save(function( err, profile) {

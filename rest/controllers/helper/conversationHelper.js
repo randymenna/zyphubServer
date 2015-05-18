@@ -226,6 +226,11 @@ ConversationHelper.prototype.requestToModel = function( context ) {
     c.envelope.origin = context.origin;
     c.envelope.members = context.members;
     c.envelope.pattern = context.pattern;
+    if (!c.envelope.meta){
+        c.envelope.meta = {};
+    }
+    c.envelope.meta.enterprise = context.enterprise;
+
     if ( context.tags )
         c.envelope.tags = context.tags;
 

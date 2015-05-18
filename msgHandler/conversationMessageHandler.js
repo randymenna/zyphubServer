@@ -120,9 +120,15 @@ ConversationMessageHandler.prototype.handleMessagePool = function (context, msgH
 
             // broadcast change
             function(context,callback) {
-                self._notificationPublisher.publish('CPNotificationQueue',context, function( err ){
+                var notification = {
+                    action: context.action,
+                    conversation: context.conversation.toObject(),
+                    origin: context.origin,
+                    enterprise: context.enterprise
+                }
+                self._notificationPublisher.publish('CPNotificationQueue',notification, function( err ){
                     if ( err ) {
-                        callback(Error("Cannot publish to SocketIO"), null);
+                        callback(Error("Cannot publish to NotificationQueue"), null);
                     }
                     else {
                         callback(null, context);

@@ -31,6 +31,7 @@ module.exports = function(passport) {
                 }
                 else {
                     user.origin = decoded.profileId;
+                    user.enterprise = decoded.aud;
 
                     return done(null, user);
                 }

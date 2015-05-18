@@ -127,6 +127,7 @@ function createExpressApplication() {
     app.use('/atrium/contexts', require('./../rest/contextService'));
     app.use('/atrium/auth', require('./../rest/authService'));
     app.use('/auth', require('./../rest/authService'));
+    app.use('/atrium/webhook', require('./../rest/webHookService'));
 
     return app;
 }

@@ -4,11 +4,14 @@
 var async                   = require("async");
 var mongoose                = require('mongoose');
 var model                   = require('../models/models');
-var clientMap               = require('../util/clientMap');
 var _                       = require('lodash');
+var request                 = require('request');
+var config                  = require('config');
 var cpConstants             = require('../constants');
 
-var NotificationMessageHandler = module.exports = function NotificationMessageHandler( context ) {
+var WebHookMessageHandler = module.exports = function WebHookMessageHandler( options ) {
+
+    this._options = options;
 
     this.setConversationHelper = function(conversationHelper) {
         this._conversationHelper = conversationHelper;
@@ -29,73 +32,55 @@ var NotificationMessageHandler = module.exports = function NotificationMessageHa
     this.msgHandleSwitch['LEAVE']       = this.handleLeave.bind(this);
     this.msgHandleSwitch['FORWARD']     = this.handleForward.bind(this);
     this.msgHandleSwitch['DELEGATE']    = this.handleDelegate.bind(this);
-
 };
 
 
-NotificationMessageHandler.prototype.handleMessagePool = function ( context, msgHandlerCallback ) {
+WebHookMessageHandler.prototype.handleMessagePool = function ( context, msgHandlerCallback ) {
     var self = this;
 
-    console.log("NotificationMessageHandler(): entered: handleMessage:" + context);
+    if (context.enterprise !== self._options.enterprise){
+        console.log("WebHookMessageHandler(): skipped: wrong enterprise",context);
+        return;
+    }
+    console.log("WebHookMessageHandler(): entered: handleMessage:",context);
 
-    async.waterfall(
-        [
-            // get a list of participants to notify
-            function (callback) {
+    var msgHandlerFunction = self.msgHandleSwitch[context.action.toUpperCase()];
 
-                var msgHandlerFunction = self.msgHandleSwitch[context.action.toUpperCase()];
+    if (msgHandlerFunction !== undefined) {
 
-                if (msgHandlerFunction !== undefined) {
+        // returns participants and notification on context;
+        msgHandlerFunction(context, function (err, context) {
 
-                    // returns participants and notification on context;
-                    msgHandlerFunction(context, function (err, context) {
+            if ( context.notification ) {
 
-                        if ( context.notification ) {
-                            context.notification.recipientSocketIds = clientMap.getSocketList(context.notification.recipients);
-
-                            callback(err, context);
-                        }
-                        else {
-                            callback("no notification",null);
-                        }
-                    });
-                }
-                else {
-                    callback(Error("No message handler for "+context.action), null);
-                }
-            },
-
-            // send the notification
-            function(context, callback) {
-
-                if (context.notification.recipientSocketIds.length) {
-                    for (var i=0; i < context.notification.recipientSocketIds.length; i++) {
-                        var socket = context.notification.recipientSocketIds[i];
-
-                        if (socket != null) {
-                            socket.send(context.notification.message.getMessage());
-                            console.log("NotificationMessageHandler(): sent to topic: " + context.notification.topic);
-                        }
+                request.post(self._options.url, {
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    json: true,
+                    body: context.notification
+                }, function(err, response, tokens) {
+                    if(err) {
+                        console.log("WebHookMessageHandler(): error: ",err, tokens);
+                    } else {
+                        console.log("WebHookMessageHandler(): exit: handleMessage");
+                        msgHandlerCallback(null);
                     }
-                    callback(null,context);
-                } else {
-                    console.log("NotificationMessageHandler(): no clients found: ");
-                    callback(null,context);
-                }
-
+                });
             }
-        ],
-
-        function (err, context) {
-
-            msgHandlerCallback(null);
-            console.log("NotificationMessageHandler(): exit: handleMessage");
-        }
-    );
+            else {
+                console.log(Error("no notification created"));
+            }
+        });
+    }
+    else {
+        console.log(Error("No message handler for "+context.action));
+    }
 };
 
+// TODO: move all this notification creation to conversationMessageHanlder
 
-NotificationMessageHandler.prototype.handleNew = function(context,doneCallback) {
+WebHookMessageHandler.prototype.handleNew = function(context,doneCallback) {
     var self = this;
 
     // send to: conversation.origin, members
@@ -106,7 +91,7 @@ NotificationMessageHandler.prototype.handleNew = function(context,doneCallback) 
     doneCallback(null,context);
 }
 
-NotificationMessageHandler.prototype.handleReply = function(context,doneCallback) {
+WebHookMessageHandler.prototype.handleReply = function(context,doneCallback) {
     var self = this;
 
     // send to: origin, members
@@ -118,7 +103,7 @@ NotificationMessageHandler.prototype.handleReply = function(context,doneCallback
 };
 
 
-NotificationMessageHandler.prototype.handleOk = function(context,doneCallback) {
+WebHookMessageHandler.prototype.handleOk = function(context,doneCallback) {
     var self = this;
 
     // send to: origin, conversation.origin
@@ -130,7 +115,7 @@ NotificationMessageHandler.prototype.handleOk = function(context,doneCallback) {
 };
 
 
-NotificationMessageHandler.prototype.handleAccept = function(context,doneCallback) {
+WebHookMessageHandler.prototype.handleAccept = function(context,doneCallback) {
     var self = this;
 
     // send to: conversation.origin, members
@@ -142,7 +127,7 @@ NotificationMessageHandler.prototype.handleAccept = function(context,doneCallbac
 };
 
 
-NotificationMessageHandler.prototype.handleReject = function(context,doneCallback) {
+WebHookMessageHandler.prototype.handleReject = function(context,doneCallback) {
     var self = this;
 
     // send to: conversation.origin, members
@@ -154,7 +139,7 @@ NotificationMessageHandler.prototype.handleReject = function(context,doneCallbac
 };
 
 
-NotificationMessageHandler.prototype.handleEscalate = function(context,doneCallback) {
+WebHookMessageHandler.prototype.handleEscalate = function(context,doneCallback) {
     var self = this;
 
     // send to: origin, members
@@ -166,7 +151,7 @@ NotificationMessageHandler.prototype.handleEscalate = function(context,doneCallb
 };
 
 
-NotificationMessageHandler.prototype.handleClose = function(context,doneCallback) {
+WebHookMessageHandler.prototype.handleClose = function(context,doneCallback) {
     var self = this;
 
     // send to: origin, members
@@ -178,7 +163,7 @@ NotificationMessageHandler.prototype.handleClose = function(context,doneCallback
 };
 
 
-NotificationMessageHandler.prototype.handleLeave = function(context,doneCallback) {
+WebHookMessageHandler.prototype.handleLeave = function(context,doneCallback) {
     var self = this;
 
     // send to: origin, members
@@ -190,7 +175,7 @@ NotificationMessageHandler.prototype.handleLeave = function(context,doneCallback
 };
 
 
-NotificationMessageHandler.prototype.handleForward = function(context,doneCallback) {
+WebHookMessageHandler.prototype.handleForward = function(context,doneCallback) {
     var self = this;
 
     // send to: origin, members
@@ -202,7 +187,7 @@ NotificationMessageHandler.prototype.handleForward = function(context,doneCallba
 };
 
 
-NotificationMessageHandler.prototype.handleDelegate = function(context,doneCallback) {
+WebHookMessageHandler.prototype.handleDelegate = function(context,doneCallback) {
     var self = this;
 
     // send to: origin, members

@@ -1,4 +1,4 @@
-//TODO: unhardcode the url
+
 var amqp    = require("amqp");
 var config  = require("config");
 

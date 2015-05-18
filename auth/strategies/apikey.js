@@ -10,10 +10,10 @@ var jwt  = require('jwt-simple');
 var moment = require('moment');
 
 
-var fakeEmail = '@graph.fm';
+var fakeEmail = config.users.fakeEmail;
 
 module.exports = function(passport) {
-    console.log('graphfm');
+    console.log('apikey');
 
     var validate = function(token,secret) {
         var decoded = null;
@@ -39,7 +39,7 @@ module.exports = function(passport) {
 		},
 		function(req, id, key, done) {
 
-            var token = validate(key, config.jwt.graphfmSecret);
+            var token = validate(key, config.jwt.apikeysecret);
 
             if (!token){
                 var msg = { message: 'Invalid ConversePoint API Key' };
@@ -49,6 +49,8 @@ module.exports = function(passport) {
                 User.findOne({
                     email: id + fakeEmail
                 },function(err, user) {
+                    req.body.enterprise = token.aud;
+
                     if (err) {
                         return done(err);
                     }

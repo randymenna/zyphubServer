@@ -6,7 +6,16 @@
 module.exports.SYSTEM_GUID = "internal-system-origin-cp-10-17-2005";
 
 module.exports.NOTIFICATION_TYPES = {
-  NEW_CONVERSATION : "new"
+  NEW : "NEW",
+    REPLY: "REPLY",
+    OK: "OK",
+    ACCEPT: "ACCEPT",
+    REJECT: "REJECT",
+    ESCALATE: "ESCALATE",
+    CLOSE: "CLOSE",
+    LEAVE: "LEAVE",
+    FORWARD: "FORWARD",
+    DELEGATE: "DELEGATE"
 };
 
 module.exports.PROFILE_CONVERSATION_STATES = {

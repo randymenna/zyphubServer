@@ -31,5 +31,5 @@ module.exports = function(passport) {
 	require('./strategies/facebook')(passport);
 	require('./strategies/google')(passport);
 	require('./strategies/linkedin')(passport);
-    require('./strategies/graphfm')(passport);
+    require('./strategies/apikey')(passport);
 };

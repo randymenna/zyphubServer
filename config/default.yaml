@@ -6,7 +6,7 @@ logs:
 
 jwt:
   secret: 'aboard.about.above.across.after.against.amid.among.anti'
-  graphfmSecret: 'thefatbrownfoxjumpedoverthequicksilverdoveanddrovehomeinanewpickip37truck'
+  apikeysecret: 'thefatbrownfoxjumpedoverthequicksilverdoveanddrovehomeinanewpickip37truck'
   ttl: -1
 
 mongo:
@@ -70,3 +70,10 @@ linkedin:
 
 graphfm:
   token: 'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJjb252ZXJzZXBvaW50LmNvbSIsImlhdCI6MTQzMDg3ODk0OCwiZXhwIjoxNDYyNDE0OTQ5LCJhdWQiOiJncmFwaC5mbSIsInN1YiI6ImFwaSBrZXkifQ.-JL3M0se0ZwzYDFbp6EcW_1WJc6O2WXyK-ltAxGrScw'
+
+webhook:
+  url: 'http://localhost:19690/webhook/loopback'
+  enterprise: 'graph.fm'
+
+users:
+  fakeEmail: '@apikey.fak'

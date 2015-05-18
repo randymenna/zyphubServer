@@ -46,7 +46,7 @@ AuthenticationHelper.prototype.validate = function(token,secret) {
     return decoded;
 };
 
-AuthenticationHelper.prototype.createToken = function( profileId, secret, options ) {
+AuthenticationHelper.prototype.createToken = function( profileId, enterprise, secret, options ) {
     var expiration = 0;
 
     if ( options.expiresInMinutes )
@@ -56,7 +56,8 @@ AuthenticationHelper.prototype.createToken = function( profileId, secret, option
         "iss": "conversepoint.com",
         "iat":  Math.round(+new Date()/1000),
         "exp":  Math.round(+new Date()/1000) + 31536000,    // 1 year
-        "sub": "profile id"
+        "sub": "profile id",
+        "aud": enterprise
     };
     payload.profileId = profileId;
 

@@ -139,6 +139,7 @@ exports.newConversation = function (req, res) {
                 var context = {};
                 context.action = "new";
                 context.origin = req.user.origin;
+                context.enterprise = req.user.enterprise;
 
                 context = _conversationHelper.decorateContext(context, req.body);
 
@@ -194,6 +195,7 @@ exports.updateConversation = function (req, res) {
                 var context = {};
 
                 context.origin = req.user.origin;
+                context.enterprise = req.user.enterprise;
 
                 context.conversationId = req.params.id;
                 context.action = req.params.action;

@@ -9,6 +9,7 @@ var auditTrail              = require('./auditTrail');
 var user                    = require('./user');
 var tag                     = require('./tag');
 var context                 = require('./context');
+var integration             = require('./webhooks');
 
 
 module.exports =  {
@@ -19,5 +20,6 @@ module.exports =  {
     AuditTrail: auditTrail.AuditTrail,
     User: user.User,
     Tag: tag.Tag,
-    Context: context.Context
+    Context: context.Context,
+    Webhook: integration.Webhook
 };

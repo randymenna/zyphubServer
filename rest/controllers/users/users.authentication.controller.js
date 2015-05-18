@@ -76,14 +76,14 @@ exports.authByKey = function(req, res, next){
                 res.status(400).send(info);
             }
             else {
-                userHelper.newUserFromGraph(req.body, function (err, user) {
+                userHelper.newUserFromApiKey(req.body, function (err, user) {
                     req.login(user, function (err) {
                         if (err) {
                             res.status(400).send(err);
                         }
                         else {
 
-                            user.token = authHelper.createToken(user.profile[0], config.jwt.secret, {expiresInMinutes: config.jwt.ttl});
+                            user.token = authHelper.createToken(user.profile[0], req.body.enterprise, config.jwt.secret, {expiresInMinutes: config.jwt.ttl});
 
                             user.save(function (err, u) {
                                 if (err){
@@ -106,7 +106,7 @@ exports.authByKey = function(req, res, next){
             }
             else {
                 user.credentials.password = req.body.password;
-                user.token = authHelper.createToken(user.profile[0], config.jwt.secret, {expiresInMinutes: config.jwt.ttl});
+                user.token = authHelper.createToken(user.profile[0], req.body.enterprise, config.jwt.secret, {expiresInMinutes: config.jwt.ttl});
 
                 user.save(function (err, u) {
                     res.json(userHelper.sanitizeForGraph(u));
@@ -138,7 +138,7 @@ exports.signin = function(req, res, next) {
                             }
                             else {
 
-                                user.token = authHelper.createToken(user.profile[0], config.jwt.secret, {expiresInMinutes: config.jwt.ttl});
+                                user.token = authHelper.createToken(user.profile[0], req.body.enterprise, config.jwt.secret, {expiresInMinutes: config.jwt.ttl});
 
                                 user.save(function (err, u) {
                                     res.json(userHelper.sanitizeUser(u));
@@ -156,7 +156,7 @@ exports.signin = function(req, res, next) {
                 }
                 else {
                     user.credentials.password = req.body.password;
-                    user.token = authHelper.createToken(user.profile[0], config.jwt.secret, {expiresInMinutes: config.jwt.ttl});
+                    user.token = authHelper.createToken(user.profile[0], req.body.enterprise, config.jwt.secret, {expiresInMinutes: config.jwt.ttl});
 
                     user.save(function (err, u) {
                         res.json(userHelper.sanitizeUser(u));
@@ -173,7 +173,7 @@ exports.signin = function(req, res, next) {
             }
             else {
 
-                user.token = authHelper.createToken(user.profile[0], config.jwt.secret, {expiresInMinutes: config.jwt.ttl});
+                user.token = authHelper.createToken(user.profile[0], req.body.enterprise, config.jwt.secret, {expiresInMinutes: config.jwt.ttl});
 
                 user.save(function (err, u) {
                     res.json(userHelper.sanitizeUser(u));
@@ -194,7 +194,7 @@ exports.signin = function(req, res, next) {
             }
             else {
 
-                user.token = authHelper.createToken(user.profile[0], config.jwt.secret, {expiresInMinutes: config.jwt.ttl});
+                user.token = authHelper.createToken(user.profile[0], req.body.enterprise, config.jwt.secret, {expiresInMinutes: config.jwt.ttl});
 
                 user.save(function (err, u) {
                     res.json(userHelper.sanitizeUser(u));
@@ -238,7 +238,7 @@ exports.oauthCallback = function(strategy) {
 							// TODO: make this configurable
 							// user.token = authHelper.createToken(user.profile[0], config.jwt.secret,{expiresInMinutes: config.jwt.ttl});
 
-							user.token = authHelper.createToken(user.profile[0], config.jwt.secret,{});
+							user.token = authHelper.createToken(user.profile[0], req.body.enterprise, config.jwt.secret,{});
 
 							user.save(function (err, u) {
 

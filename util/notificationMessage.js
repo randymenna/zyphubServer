@@ -3,32 +3,39 @@
  */
 var NotificationMessage = module.exports = function NotificationMessage() {
     this._notification = {};
-}
+};
+
+NotificationMessage.prototype.setEnterprise = function( enterprise ) {
+    this._notification.enterprise = enterprise;
+};
 
 NotificationMessage.prototype.setConversationId = function( id ) {
     this._notification.conversation = id;
-}
+};
 
-NotificationMessage.prototype.setType = function( type, origin ) {
-    this._notification.notification = {};
-    this._notification.notification.type = type;
-    this._notification.notification.origin = origin;
-}
+NotificationMessage.prototype.setTypeAndOrigin = function( type, origin ) {
+    this._notification.type = type;
+    this._notification.origin = origin;
+};
 
 NotificationMessage.prototype.setEnvelope = function( envelope ) {
     this._notification.envelope = {};
     this._notification.envelope.origin = envelope.origin._id;
-    this._notification.envelope.members = envelope.members.slice(0);
+    if (this._notification.envelope.members) {
+        this._notification.envelope.members = envelope.members.slice(0);
+    }
     this._notification.envelope.messageType = envelope.pattern;
     this._notification.envelope.priority = envelope.priority;
-    this._notification.envelope.tags = envelope.tags.slice(0);
-}
+    if (this._notification.envelope.tags) {
+        this._notification.envelope.tags = envelope.tags.slice(0);
+    }
+};
 
 NotificationMessage.prototype.setContent = function( content ) {
     this._notification.content = {};
     this._notification.content.message = content.message;
     this._notification.content.replies = content.replies.slice(0);
-}
+};
 
 NotificationMessage.prototype.setState = function( state ) {
     this._notification.state = {};
@@ -42,9 +49,15 @@ NotificationMessage.prototype.setState = function( state ) {
     this._notification.state.rejects                = state.rejects;
     this._notification.state.accepts                = state.accepts;
     this._notification.state.maxAccepts             = state.maxAccepts;
-    this._notification.state.members                = state.members.slice(0);
+    if (state.members) {
+        this._notification.state.members = state.members.slice(0);
+    }
+};
+
+NotificationMessage.prototype.getNotification = function() {
+    return this._notification;
 }
 
 NotificationMessage.prototype.getMessage = function() {
     return JSON.stringify(this._notification);
-}
+};
