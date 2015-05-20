@@ -12,8 +12,8 @@ module.exports = function() {
 
     app.get('/',  passport.authenticate('bearer', { session: false }), GroupController.getGroups);
     app.post('/',  passport.authenticate('bearer', { session: false }), GroupController.newGroup);
-    app.put('/:id', GroupController.update);
-    app.delete('/:id', GroupController.remove);
+    app.put('/:id', passport.authenticate('bearer', { session: false }), GroupController.update);
+    app.delete('/:id', passport.authenticate('bearer', { session: false }), GroupController.remove);
     app.get('/:id',  passport.authenticate('bearer', { session: false }), GroupController.getOneGroup);
     app.put('/:id/join',  passport.authenticate('bearer', { session: false }), GroupController.joinGroup);
     app.put('/:id/leave',  passport.authenticate('bearer', { session: false }), GroupController.leaveGroup);

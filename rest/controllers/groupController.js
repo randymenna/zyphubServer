@@ -170,6 +170,8 @@ exports.update = function (req, res) {
                     context.update.members = req.body.members;
                 if (req.body.enterprise)
                     context.update.enterprise = req.body.enterprise;
+                if (req.body.owner)
+                    context.update.owner = req.body.owner;
 
                 callback(null, context);
             },
