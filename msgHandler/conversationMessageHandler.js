@@ -120,13 +120,8 @@ ConversationMessageHandler.prototype.handleMessagePool = function (context, msgH
 
             // broadcast change
             function(context,callback) {
-                var notification = {
-                    action: context.action,
-                    conversation: context.conversation.toObject(),
-                    origin: context.origin,
-                    enterprise: context.enterprise
-                }
-                self._notificationPublisher.publish('CPNotificationQueue',notification, function( err ){
+
+                self._notificationPublisher.publish('CPNotificationQueue',context, function( err ){
                     if ( err ) {
                         callback(Error("Cannot publish to NotificationQueue"), null);
                     }
@@ -306,7 +301,7 @@ ConversationMessageHandler.prototype.handleNew = function(context,doneCallback) 
                 }
             },
 
-            // socket io notifier
+            // notifier
             function(context, callback) {
 
                 context.action = "new";

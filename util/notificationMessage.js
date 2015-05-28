@@ -1,6 +1,9 @@
 /**
  * Created by randy on 1/22/15.
  */
+var _                       = require('lodash');
+var cpConstants             = require('../constants');
+
 var NotificationMessage = module.exports = function NotificationMessage() {
     this._notification = {};
 };
@@ -52,6 +55,73 @@ NotificationMessage.prototype.setState = function( state ) {
     if (state.members) {
         this._notification.state.members = state.members.slice(0);
     }
+};
+
+NotificationMessage.prototype.setRecipients = function( context, build ) {
+    this._notification.recipients = [];
+
+    var parts = build.split(' ');
+
+    for (var i=0; i < parts.length; i++) {
+        switch(parts[i]) {
+            case 'owner':
+                this._notification.recipients.push(context.conversation.envelope.origin._id);
+                break;
+
+            case 'origin':
+                this._notification.recipients.push(context.origin);
+                break;
+
+            case 'members':
+                this._notification.recipients = this._notification.recipients.concat(_.pluck( context.conversation.envelope.members, '_id' ));
+                break;
+        }
+    }
+
+};
+
+NotificationMessage.prototype.setTerminateConversation = function( context, build ) {
+    this._notification.terminateConversation = [];
+
+    var parts = build.split(' ');
+
+    for (var i=0; i < parts.length; i++) {
+        switch(parts[i]) {
+            case 'owner':
+                this._notification.terminateConversation.push(context.conversation.envelope.origin._id);
+                break;
+
+            case 'origin':
+                this._notification.terminateConversation.push(context.origin);
+                break;
+
+            case 'members':
+                this._notification.terminateConversation = this._notification.terminateConversation.concat(_.pluck( context.conversation.envelope.members, '_id' ));
+                break;
+
+            case 'members-not-origin-owner':
+                var tmp = this._notification.terminateConversation.concat(_.pluck( context.conversation.envelope.members, '_id' ));
+                var i = tmp.indexOf(context.conversation.envelope.origin._id);
+                if (i !== -1) {
+                    tmp.splice(i,1);
+                }
+                i = tmp.indexOf(context.origin);
+                if (i !== -1) {
+                    tmp.splice(i,1);
+                }
+                this._notification.terminateConversation = this._notification.terminateConversation.concat(tmp);
+
+            case 'members-not-owner':
+                var tmp = this._notification.terminateConversation.concat(_.pluck( context.conversation.envelope.members, '_id' ));
+                var i = tmp.indexOf(context.conversation.envelope.origin._id);
+                if (i !== -1) {
+                    tmp.splice(i,1);
+                }
+                this._notification.terminateConversation = this._notification.terminateConversation.concat(tmp);
+                break;
+        }
+    }
+
 };
 
 NotificationMessage.prototype.getNotification = function() {

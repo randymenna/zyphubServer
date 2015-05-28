@@ -78,15 +78,16 @@ WebHookMessageHandler.prototype.handleMessagePool = function ( context, msgHandl
     }
 };
 
-// TODO: move all this notification creation to conversationMessageHanlder
+// TODO: move all this notification creation to conversationMessageHandlder
 
 WebHookMessageHandler.prototype.handleNew = function(context,doneCallback) {
     var self = this;
 
     // send to: conversation.origin, members
     // send envelope, state, content
-    if (context.conversation)
+    if (context.conversation) {
         context.notification = self._notificationHelper.createNotification(context, cpConstants.NOTIFICATION_TYPES.NEW, 'state content envelope');
+    }
 
     doneCallback(null,context);
 }
@@ -99,7 +100,7 @@ WebHookMessageHandler.prototype.handleReply = function(context,doneCallback) {
     if (context.conversation)
         context.notification = self._notificationHelper.createNotification(context, cpConstants.NOTIFICATION_TYPES.REPLY, 'state content');
 
-    doneCallback(err,context);
+    doneCallback(null,context);
 };
 
 
@@ -111,7 +112,7 @@ WebHookMessageHandler.prototype.handleOk = function(context,doneCallback) {
     if (context.conversation)
         context.notification = self._notificationHelper.createNotification(context, cpConstants.NOTIFICATION_TYPES.OK, 'state');
 
-    doneCallback(err,context);
+    doneCallback(null,context);
 };
 
 
@@ -123,7 +124,7 @@ WebHookMessageHandler.prototype.handleAccept = function(context,doneCallback) {
     if (context.conversation)
         context.notification = self._notificationHelper.createNotification(context, cpConstants.NOTIFICATION_TYPES.ACCEPT, 'state');
 
-    doneCallback(err,context);
+    doneCallback(null,context);
 };
 
 
@@ -135,7 +136,7 @@ WebHookMessageHandler.prototype.handleReject = function(context,doneCallback) {
     if (context.conversation)
         context.notification = self._notificationHelper.createNotification(context, cpConstants.NOTIFICATION_TYPES.REJECT, 'state');
 
-    doneCallback(err,context);
+    doneCallback(null,context);
 };
 
 
@@ -147,7 +148,7 @@ WebHookMessageHandler.prototype.handleEscalate = function(context,doneCallback) 
     if (context.conversation)
         context.notification = self._notificationHelper.createNotification(context, cpConstants.NOTIFICATION_TYPES.ESCALATE, 'state envelope');
 
-    doneCallback(err,context);
+    doneCallback(null,context);
 };
 
 
@@ -159,7 +160,7 @@ WebHookMessageHandler.prototype.handleClose = function(context,doneCallback) {
     if (context.conversation)
         context.notification = self._notificationHelper.createNotification(context, cpConstants.NOTIFICATION_TYPES.CLOSE, 'state');
 
-    doneCallback(err,context);
+    doneCallback(null,context);
 };
 
 
@@ -171,7 +172,7 @@ WebHookMessageHandler.prototype.handleLeave = function(context,doneCallback) {
     if (context.conversation)
         context.notification = self._notificationHelper.createNotification(context, cpConstants.NOTIFICATION_TYPES.LEAVE, 'state');
 
-    doneCallback(err,context);
+    doneCallback(null,context);
 };
 
 
@@ -183,7 +184,7 @@ WebHookMessageHandler.prototype.handleForward = function(context,doneCallback) {
     if (context.conversation)
         context.notification = self._notificationHelper.createNotification(context, cpConstants.NOTIFICATION_TYPES.FORWARD, 'state envelope');
 
-    doneCallback(err,context);
+    doneCallback(null,context);
 };
 
 
@@ -195,7 +196,7 @@ WebHookMessageHandler.prototype.handleDelegate = function(context,doneCallback) 
     if (context.conversation)
         context.notification = self._notificationHelper.createNotification(context, cpConstants.NOTIFICATION_TYPES.DELEGATE, 'state envelope');
 
-    doneCallback(err,context);
+    doneCallback(null,context);
 };
 
 

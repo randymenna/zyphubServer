@@ -11,6 +11,7 @@ module.exports = function() {
     var express = require('express');
     var app = express();
 
+    app.get('/url', IntegrationController.getWebHookUrl);
     app.post('/url', IntegrationController.setWebHookUrl);
     app.post('/loopback', IntegrationController.justEcho);
 
