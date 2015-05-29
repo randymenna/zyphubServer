@@ -23,6 +23,7 @@ var WebHookMessageHandler = module.exports = function WebHookMessageHandler( opt
 
     this.msgHandleSwitch                = {};
     this.msgHandleSwitch['NEW']         = this.handleNew.bind(this);
+    this.msgHandleSwitch['READ']         = this.handleRead.bind(this);
     this.msgHandleSwitch['REPLY']       = this.handleReply.bind(this);
     this.msgHandleSwitch['OK']          = this.handleOk.bind(this);
     this.msgHandleSwitch['ACCEPT']      = this.handleAccept.bind(this);
@@ -90,7 +91,18 @@ WebHookMessageHandler.prototype.handleNew = function(context,doneCallback) {
     }
 
     doneCallback(null,context);
-}
+};
+
+WebHookMessageHandler.prototype.handleRead = function(context,doneCallback) {
+    var self = this;
+
+    // send to: owner
+    // send: state
+    if (context.conversation)
+        context.notification = self._notificationHelper.createNotification(context, cpConstants.NOTIFICATION_TYPES.REPLY, 'state');
+
+    doneCallback(null,context);
+};
 
 WebHookMessageHandler.prototype.handleReply = function(context,doneCallback) {
     var self = this;
