@@ -194,6 +194,30 @@ exports.updateConversation = function (req, res) {
             function (callback) {
                 var context = {};
 
+                model.Conversation.findOne({'_id': req.params.id})
+                    .exec(function( err, conversation ){
+                        if ( err ) {
+                            callback(err, null);
+                        }
+                        else {
+                            if ( conversation ) {
+
+                                if (conversation.state.open) {
+                                    callback(null, context);
+                                }
+                                else {
+                                    callback({message: 'conversation closed'}, null);
+                                }
+                            }
+                            else {
+                                callback({message: 'conversation not found'}, null);
+                            }
+                        }
+                    });
+            },
+
+            function (context, callback) {
+
                 context.origin = req.user.origin;
                 context.enterprise = req.user.enterprise;
 

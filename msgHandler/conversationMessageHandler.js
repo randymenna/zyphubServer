@@ -12,6 +12,10 @@ var ConversationMessageHandler = module.exports = function ConversationMessageHa
         this._notificationPublisher = notificationPublisher;
     };
 
+    this.setNotificationHelper = function(notificationHelper) {
+        this._notificationHelper = notificationHelper;
+    };
+
     this.setAuditTrailPublisher = function(auditTrailPublisher) {
         this._auditTrailPublisher = auditTrailPublisher;
     };
@@ -42,22 +46,8 @@ ConversationMessageHandler.prototype.handleMessagePool = function (context, msgH
 
     async.waterfall(
         [
-            // get from db
-            function (callback) {
-
-                model.Conversation.findOne({_id: context.conversationId}, function (err, conversation) {
-                    if (err) {
-                        callback(err, null);
-                    }
-                    else {
-                        context.conversation = conversation;
-                        callback(null, context);
-                    }
-                });
-            },
-
             // call update fn
-            function (context, callback) {
+            function (/*context,*/ callback) {
 
                 var msgHandlerFunction = self.msgHandleSwitch[context.action.toUpperCase()];
 
@@ -121,7 +111,9 @@ ConversationMessageHandler.prototype.handleMessagePool = function (context, msgH
             // broadcast change
             function(context,callback) {
 
-                self._notificationPublisher.publish('CPNotificationQueue',context, function( err ){
+                var notification = self._notificationHelper.createNotification(context);
+
+                self._notificationPublisher.publish('CPNotificationQueue',notification, function( err ){
                     if ( err ) {
                         callback(Error("Cannot publish to NotificationQueue"), null);
                     }
@@ -299,33 +291,6 @@ ConversationMessageHandler.prototype.handleNew = function(context,doneCallback) 
                 else {
                     callback(null, context);
                 }
-            },
-
-            // notifier
-            function(context, callback) {
-
-                context.action = "new";
-
-                self._notificationPublisher.publish('CPNotification',context, function( error ){
-                    if ( error )
-                        callback(Error("NotificationServer Publish Failed"), null);
-                    else
-                        callback(null, context);
-                });
-            },
-
-            // audit trail
-            function(context, callback) {
-
-                context.action = "new";
-
-                self._auditTrailPublisher.publish('AuditTrailQueue',context, function( error ){
-                    if ( error )
-                        callback(Error("AuditQueue Publish Failed"), null);
-                    else
-                        callback(null, context);
-                });
-
             }
         ],
 

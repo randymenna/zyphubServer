@@ -23,9 +23,13 @@ NotificationMessage.prototype.setTypeAndOrigin = function( type, origin ) {
 
 NotificationMessage.prototype.setEnvelope = function( envelope ) {
     this._notification.envelope = {};
-    this._notification.envelope.origin = envelope.origin._id;
-    if (this._notification.envelope.members) {
+    this._notification.envelope.origin = envelope.origin._id.toString();
+    if (envelope.members) {
         this._notification.envelope.members = envelope.members.slice(0);
+
+        for (var i=0; i < this._notification.envelope.members.length; i++ ){
+            this._notification.envelope.members[i] = this._notification.envelope.members[i]._id.toString();
+        }
     }
     this._notification.envelope.messageType = envelope.pattern;
     this._notification.envelope.priority = envelope.priority;
@@ -54,6 +58,10 @@ NotificationMessage.prototype.setState = function( state ) {
     this._notification.state.maxAccepts             = state.maxAccepts;
     if (state.members) {
         this._notification.state.members = state.members.slice(0);
+
+        for(var i=0; i < this._notification.state.members.length; i++){
+            this._notification.state.members[i].member = this._notification.state.members[i].member._id.toString();
+        }
     }
 };
 
@@ -65,7 +73,7 @@ NotificationMessage.prototype.setRecipients = function( context, build ) {
     for (var i=0; i < parts.length; i++) {
         switch(parts[i]) {
             case 'owner':
-                this._notification.recipients.push(context.conversation.envelope.origin._id);
+                this._notification.recipients.push(context.conversation.envelope.origin._id.toString());
                 break;
 
             case 'origin':
@@ -74,6 +82,16 @@ NotificationMessage.prototype.setRecipients = function( context, build ) {
 
             case 'members':
                 this._notification.recipients = this._notification.recipients.concat(_.pluck( context.conversation.envelope.members, '_id' ));
+                for (var i=0; i < this._notification.recipients.length; i++){
+                    this._notification.recipients[i] = this._notification.recipients[i].toString();
+                }
+                break;
+
+            case 'original-members':
+                for (var i=0; i< context.conversation.envelope.meta.originalMembers.length; i++){
+                    this._notification.recipients.push(context.conversation.envelope.meta.originalMembers[i].toString());
+                }
+                this._notification.recipients.push(context.conversation.envelope.origin._id.toString());
                 break;
         }
     }
@@ -88,7 +106,7 @@ NotificationMessage.prototype.setTerminateConversation = function( context, buil
     for (var i=0; i < parts.length; i++) {
         switch(parts[i]) {
             case 'owner':
-                this._notification.terminateConversation.push(context.conversation.envelope.origin._id);
+                this._notification.terminateConversation.push(context.conversation.envelope.origin._id.toString());
                 break;
 
             case 'origin':
@@ -97,11 +115,26 @@ NotificationMessage.prototype.setTerminateConversation = function( context, buil
 
             case 'members':
                 this._notification.terminateConversation = this._notification.terminateConversation.concat(_.pluck( context.conversation.envelope.members, '_id' ));
+                for (var i=0; i < this._notification.terminateConversation.length; i++){
+                    this._notification.terminateConversation[i] = this._notification.terminateConversation[i].toString();
+                }
+                break;
+
+            case 'original-members':
+                for (var i=0; i< context.conversation.envelope.meta.originalMembers.length; i++){
+                    this._notification.terminateConversation.push(context.conversation.envelope.meta.originalMembers[i].toString());
+                }
+                this._notification.terminateConversation.push(context.conversation.envelope.origin._id.toString());
                 break;
 
             case 'members-not-origin-owner':
                 var tmp = this._notification.terminateConversation.concat(_.pluck( context.conversation.envelope.members, '_id' ));
-                var i = tmp.indexOf(context.conversation.envelope.origin._id);
+
+                for (var i=0; i < this._notification.terminateConversation.length; i++){
+                    this._notification.terminateConversation[i] = this._notification.terminateConversation[i].toString();
+                }
+
+                var i = tmp.indexOf(context.conversation.envelope.origin._id.toString());
                 if (i !== -1) {
                     tmp.splice(i,1);
                 }
@@ -113,7 +146,12 @@ NotificationMessage.prototype.setTerminateConversation = function( context, buil
 
             case 'members-not-owner':
                 var tmp = this._notification.terminateConversation.concat(_.pluck( context.conversation.envelope.members, '_id' ));
-                var i = tmp.indexOf(context.conversation.envelope.origin._id);
+
+                for (var i=0; i < this._notification.terminateConversation.length; i++){
+                    this._notification.terminateConversation[i] = this._notification.terminateConversation[i].toString();
+                }
+
+                var i = tmp.indexOf(context.conversation.envelope.origin._id.toString());
                 if (i !== -1) {
                     tmp.splice(i,1);
                 }
@@ -125,8 +163,10 @@ NotificationMessage.prototype.setTerminateConversation = function( context, buil
 };
 
 NotificationMessage.prototype.getNotification = function() {
-    return this._notification;
-}
+    var tmp = JSON.parse(JSON.stringify(this._notification));
+
+    return tmp;
+};
 
 NotificationMessage.prototype.getMessage = function() {
     return JSON.stringify(this._notification);

@@ -4,6 +4,7 @@ var MessageDrivenBean               = require('./../util/mdb/messageDrivenBean')
 var cpBus                           = require('./../bus/index');
 var ConversationMessageHandler      = require('./../msgHandler/conversationMessageHandler');
 var ExchangePublisherFactory        = require('./../util/bus/exchangePublisherFactory');
+var NotificicationHelper            = require('./../util/notificationHelper');
 
 var ConversationHelper              = require('./../rest/controllers/helper/conversationHelper');
 var config                          = require('config');
@@ -51,6 +52,12 @@ cpBus.connection.on('ready',function() {
 
             function(context, callback) {
 
+                context.notificationHelper = new NotificicationHelper();
+                callback(null,context);
+            },
+
+            function(context, callback) {
+
                 exchangePublisherFactory.createSchedulerExchangePublisher(function(schedulerPublisher) {
                     context.schedulerPublisher = schedulerPublisher;
                     callback(null,context);
@@ -62,6 +69,7 @@ cpBus.connection.on('ready',function() {
                 var conversationHandler = new ConversationMessageHandler();
                 conversationHandler.setAuditTrailPublisher(context.auditTrailPublisher);
                 conversationHandler.setNotificationPublisher(context.notificationPublisher);
+                conversationHandler.setNotificationHelper(context.notificationHelper);
                 conversationHandler.setSchedulerPublisher(context.schedulerPublisher);
                 conversationHandler.setConversationHelper( conversationHelper );
 
