@@ -13,7 +13,7 @@ echo '=======================================';
 atriumExecutables=(
                     auditEngine.js
                     conversationRouter.js
-                    notificationServer.js
+                    webhookServer.js
                     restServer.js
                     scheduler.js
                     )
