@@ -1022,7 +1022,7 @@ ConversationHelper.prototype.sanitize = function( conversation, user ) {
 
         delete c.envelope.meta;
 
-        if ( !c.envelope.tags.length )
+        if ( !c.envelope.tags || !c.envelope.tags.length )
             delete c.envelope.tags;
 
         if (c.envelope.origin._id.toHexString() == user)

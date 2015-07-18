@@ -7,6 +7,9 @@ var config                  = require('config');
 var fs                      = require('fs');
 var mongoose                = require('mongoose');
 var passport                = require('passport');
+var logger                  = require('../util/logger');
+
+logger.startLogger('restServer');
 
 require('./../auth/passport')(passport);
 
@@ -24,7 +27,7 @@ mongoDbClient.init(function(error) {
         }
     }
     else {
-        // TODO:
+        console.log(error);
     }
 });
 

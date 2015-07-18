@@ -10,7 +10,7 @@ jwt:
   ttl: -1
 
 mongo:
-  host: 'localhost'
+  host: 'mongo'
   port: 27017
   dbName: 'cp'
   agenda: 'agenda'
@@ -27,7 +27,7 @@ socketio:
     caCertsFile     : './bin/ssl/privatekey.pem'   # this is not needed when self-signed so we assign to privatekey for dev
 
 rabbitmq:
-  host: 'localhost'
+  host: 'rabbit'
   login: 'guest'
   password: 'guest'
   authMechanism: 'AMQPLAIN'

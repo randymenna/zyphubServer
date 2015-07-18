@@ -5,6 +5,9 @@ var ExchangePublisherFactory        = require('./../util/bus/exchangePublisherFa
 var config                          = require('config');
 var mongoose                        = require('mongoose');
 var AuditMessageHandler             = require('./../msgHandler/auditMessageHandler');
+var logger                          = require('../util/logger');
+
+logger.startLogger('auditEngine');
 
 var messageDrivenBean = null;
 

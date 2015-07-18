@@ -24,6 +24,8 @@ module.exports = function() {
 
     cpBus.connection.on('ready',function() {
 
+        console.log('connected to cp bus');
+
         var exchangePublisherFactory = new ExchangePublisherFactory(cpBus.connection);
 
         exchangePublisherFactory.createConversationExchangePublisher( function(conversationPublisher) {

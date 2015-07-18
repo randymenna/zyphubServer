@@ -9,6 +9,9 @@ var NotificicationHelper            = require('./../util/notificationHelper');
 var ConversationHelper              = require('./../rest/controllers/helper/conversationHelper');
 var config                          = require('config');
 var mongoose                        = require('mongoose');
+var logger                          = require('../util/logger');
+
+logger.startLogger('conversationRouter');
 
 var messageDrivenBean = null;
 var conversationHelper = new ConversationHelper();
@@ -29,6 +32,7 @@ cpBus.connection.on('ready',function() {
                 mongodbClient.init(function(error) {
 
                     var context = {};
+                    console.log('conversationRouter(): mongodb Client init');
 
                     callback(error,context);
                 });
@@ -37,6 +41,7 @@ cpBus.connection.on('ready',function() {
             function(context, callback) {
 
                 exchangePublisherFactory.createAuditTrailExchangePublisher(function(auditTrailPublisher) {
+                    console.log('conversationRouter(): auditTrailPublisher');
                     context.auditTrailPublisher = auditTrailPublisher;
                     callback(null,context);
                 });
@@ -45,6 +50,7 @@ cpBus.connection.on('ready',function() {
             function(context, callback) {
 
                 exchangePublisherFactory.createNotificationExchangePublisher(function(notificationPublisher) {
+                    console.log('conversationRouter(): notificationPublisher');
                     context.notificationPublisher = notificationPublisher;
                     callback(null,context);
                 });
@@ -52,6 +58,7 @@ cpBus.connection.on('ready',function() {
 
             function(context, callback) {
 
+                console.log('conversationRouter(): NotificicationHelper');
                 context.notificationHelper = new NotificicationHelper();
                 callback(null,context);
             },
@@ -59,6 +66,7 @@ cpBus.connection.on('ready',function() {
             function(context, callback) {
 
                 exchangePublisherFactory.createSchedulerExchangePublisher(function(schedulerPublisher) {
+                    console.log('conversationRouter(): schedulerPublisher');
                     context.schedulerPublisher = schedulerPublisher;
                     callback(null,context);
                 });
@@ -75,8 +83,12 @@ cpBus.connection.on('ready',function() {
 
                 mongoose.connect(config.mongo.host, config.mongo.dbName, config.mongo.port, {auto_reconnect: true});
 
-                messageDrivenBean = new MessageDrivenBean('ConversationEngine',conversationHandler);
-                callback(null,'done');
+                try {
+                    messageDrivenBean = new MessageDrivenBean('ConversationEngine', conversationHandler);
+                    callback(null, 'done');
+                } catch(exception){
+                    console.log('conversationRouter(): mdb.exception', exception);
+                }
             }
         ],
         function(err,result) {

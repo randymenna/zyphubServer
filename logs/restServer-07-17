@@ -1,0 +1,188 @@
+2015-07-18T00:21:35.570Z - info: winston logging started
+2015-07-18T00:21:35.730Z - info: local
+2015-07-18T00:21:35.796Z - info: bearer
+2015-07-18T00:21:36.565Z - info: github
+2015-07-18T00:21:36.744Z - info: facebook
+2015-07-18T00:21:36.981Z - info: google
+2015-07-18T00:21:37.267Z - info: apikey
+2015-07-18T00:21:37.267Z - info: ========================================================================================
+2015-07-18T00:21:37.267Z - info: =  Please ensure that you set the default write concern for the database by setting    =
+2015-07-18T00:21:37.268Z - info: =   one of the options                                                                 =
+2015-07-18T00:21:37.268Z - info: =                                                                                      =
+2015-07-18T00:21:37.268Z - info: =     w: (value of > -1 or the string 'majority'), where < 1 means                     =
+2015-07-18T00:21:37.268Z - info: =        no write acknowledgement                                                       =
+2015-07-18T00:21:37.269Z - info: =     journal: true/false, wait for flush to journal before acknowledgement             =
+2015-07-18T00:21:37.269Z - info: =     fsync: true/false, wait for flush to file system before acknowledgement           =
+2015-07-18T00:21:37.269Z - info: =                                                                                      =
+2015-07-18T00:21:37.269Z - info: =  For backward compatibility safe is still supported and                              =
+2015-07-18T00:21:37.270Z - info: =   allows values of [true | false | {j:true} | {w:n, wtimeout:n} | {fsync:true}]      =
+2015-07-18T00:21:37.270Z - info: =   the default value is false which means the driver receives does not                =
+2015-07-18T00:21:37.270Z - info: =   return the information of the success/error of the insert/update/remove            =
+2015-07-18T00:21:37.270Z - info: =                                                                                      =
+2015-07-18T00:21:37.271Z - info: =   ex: new Db(new Server('localhost', 27017), {safe:false})                           =
+2015-07-18T00:21:37.271Z - info: =                                                                                      =
+2015-07-18T00:21:37.271Z - info: =   http://www.mongodb.org/display/DOCS/getLastError+Command                           =
+2015-07-18T00:21:37.271Z - info: =                                                                                      =
+2015-07-18T00:21:37.271Z - info: =  The default of no acknowledgement will change in the very near future                =
+2015-07-18T00:21:37.272Z - info: =                                                                                      =
+2015-07-18T00:21:37.272Z - info: =  This message will disappear when the default safe is set on the driver Db           =
+2015-07-18T00:21:37.272Z - info: ========================================================================================
+2015-07-18T00:21:37.297Z - info: FAILED to Connect to cp database
+2015-07-18T00:21:37.298Z - info:  Error: failed to connect to [mongo:27017]
+    at Server.connect.connectionPool.on.server._serverState (/Users/randy/Development/new_conversepoint/atrium-server/node_modules/mongodb/lib/mongodb/connection/server.js:553:25)
+    at emit (events.js:106:17)
+    at connection.on._self._poolState (/Users/randy/Development/new_conversepoint/atrium-server/node_modules/mongodb/lib/mongodb/connection/connection_pool.js:140:15)
+    at emit (events.js:98:17)
+    at Socket.errorHandler (/Users/randy/Development/new_conversepoint/atrium-server/node_modules/mongodb/lib/mongodb/connection/connection.js:512:10)
+    at Socket.emit (events.js:95:17)
+    at Socket.connect.require.lookup.addressType (net.js:833:16)
+    at process._tickCallback (node.js:419:13)
+2015-07-18T00:23:08.986Z - info: winston logging started
+2015-07-18T00:23:09.216Z - info: local
+2015-07-18T00:23:09.301Z - info: bearer
+2015-07-18T00:23:10.066Z - info: github
+2015-07-18T00:23:10.272Z - info: facebook
+2015-07-18T00:23:10.536Z - info: google
+2015-07-18T00:23:10.865Z - info: apikey
+2015-07-18T00:23:10.866Z - info: ========================================================================================
+2015-07-18T00:23:10.866Z - info: =  Please ensure that you set the default write concern for the database by setting    =
+2015-07-18T00:23:10.866Z - info: =   one of the options                                                                 =
+2015-07-18T00:23:10.866Z - info: =                                                                                      =
+2015-07-18T00:23:10.866Z - info: =     w: (value of > -1 or the string 'majority'), where < 1 means                     =
+2015-07-18T00:23:10.867Z - info: =        no write acknowledgement                                                       =
+2015-07-18T00:23:10.867Z - info: =     journal: true/false, wait for flush to journal before acknowledgement             =
+2015-07-18T00:23:10.867Z - info: =     fsync: true/false, wait for flush to file system before acknowledgement           =
+2015-07-18T00:23:10.867Z - info: =                                                                                      =
+2015-07-18T00:23:10.868Z - info: =  For backward compatibility safe is still supported and                              =
+2015-07-18T00:23:10.868Z - info: =   allows values of [true | false | {j:true} | {w:n, wtimeout:n} | {fsync:true}]      =
+2015-07-18T00:23:10.868Z - info: =   the default value is false which means the driver receives does not                =
+2015-07-18T00:23:10.868Z - info: =   return the information of the success/error of the insert/update/remove            =
+2015-07-18T00:23:10.868Z - info: =                                                                                      =
+2015-07-18T00:23:10.869Z - info: =   ex: new Db(new Server('localhost', 27017), {safe:false})                           =
+2015-07-18T00:23:10.869Z - info: =                                                                                      =
+2015-07-18T00:23:10.869Z - info: =   http://www.mongodb.org/display/DOCS/getLastError+Command                           =
+2015-07-18T00:23:10.869Z - info: =                                                                                      =
+2015-07-18T00:23:10.869Z - info: =  The default of no acknowledgement will change in the very near future                =
+2015-07-18T00:23:10.870Z - info: =                                                                                      =
+2015-07-18T00:23:10.870Z - info: =  This message will disappear when the default safe is set on the driver Db           =
+2015-07-18T00:23:10.870Z - info: ========================================================================================
+2015-07-18T00:24:06.281Z - info: winston logging started
+2015-07-18T00:24:06.466Z - info: local
+2015-07-18T00:24:06.545Z - info: bearer
+2015-07-18T00:24:07.259Z - info: github
+2015-07-18T00:24:07.445Z - info: facebook
+2015-07-18T00:24:07.690Z - info: google
+2015-07-18T00:24:07.963Z - info: apikey
+2015-07-18T00:24:07.963Z - info: ========================================================================================
+2015-07-18T00:24:07.964Z - info: =  Please ensure that you set the default write concern for the database by setting    =
+2015-07-18T00:24:07.964Z - info: =   one of the options                                                                 =
+2015-07-18T00:24:07.964Z - info: =                                                                                      =
+2015-07-18T00:24:07.964Z - info: =     w: (value of > -1 or the string 'majority'), where < 1 means                     =
+2015-07-18T00:24:07.965Z - info: =        no write acknowledgement                                                       =
+2015-07-18T00:24:07.965Z - info: =     journal: true/false, wait for flush to journal before acknowledgement             =
+2015-07-18T00:24:07.965Z - info: =     fsync: true/false, wait for flush to file system before acknowledgement           =
+2015-07-18T00:24:07.965Z - info: =                                                                                      =
+2015-07-18T00:24:07.965Z - info: =  For backward compatibility safe is still supported and                              =
+2015-07-18T00:24:07.966Z - info: =   allows values of [true | false | {j:true} | {w:n, wtimeout:n} | {fsync:true}]      =
+2015-07-18T00:24:07.966Z - info: =   the default value is false which means the driver receives does not                =
+2015-07-18T00:24:07.966Z - info: =   return the information of the success/error of the insert/update/remove            =
+2015-07-18T00:24:07.966Z - info: =                                                                                      =
+2015-07-18T00:24:07.967Z - info: =   ex: new Db(new Server('localhost', 27017), {safe:false})                           =
+2015-07-18T00:24:07.967Z - info: =                                                                                      =
+2015-07-18T00:24:07.967Z - info: =   http://www.mongodb.org/display/DOCS/getLastError+Command                           =
+2015-07-18T00:24:07.967Z - info: =                                                                                      =
+2015-07-18T00:24:07.967Z - info: =  The default of no acknowledgement will change in the very near future                =
+2015-07-18T00:24:07.968Z - info: =                                                                                      =
+2015-07-18T00:24:07.968Z - info: =  This message will disappear when the default safe is set on the driver Db           =
+2015-07-18T00:24:07.968Z - info: ========================================================================================
+2015-07-18T00:24:08.500Z - info: MongoService: Connected to cp bus
+2015-07-18T00:24:08.500Z - info: connected to cp bus
+2015-07-18T00:24:08.506Z - info: Connected to cp database
+2015-07-18T00:24:07.975Z - info: Connected to cp database
+2015-07-18T00:24:08.029Z - info: ========================================================================================
+2015-07-18T00:24:08.029Z - info: =  Please ensure that you set the default write concern for the database by setting    =
+2015-07-18T00:24:08.029Z - info: =   one of the options                                                                 =
+2015-07-18T00:24:08.029Z - info: =                                                                                      =
+2015-07-18T00:24:08.030Z - info: =     w: (value of > -1 or the string 'majority'), where < 1 means                     =
+2015-07-18T00:24:08.030Z - info: =        no write acknowledgement                                                       =
+2015-07-18T00:24:08.030Z - info: =     journal: true/false, wait for flush to journal before acknowledgement             =
+2015-07-18T00:24:08.030Z - info: =     fsync: true/false, wait for flush to file system before acknowledgement           =
+2015-07-18T00:24:08.031Z - info: =                                                                                      =
+2015-07-18T00:24:08.031Z - info: =  For backward compatibility safe is still supported and                              =
+2015-07-18T00:24:08.031Z - info: =   allows values of [true | false | {j:true} | {w:n, wtimeout:n} | {fsync:true}]      =
+2015-07-18T00:24:08.031Z - info: =   the default value is false which means the driver receives does not                =
+2015-07-18T00:24:08.031Z - info: =   return the information of the success/error of the insert/update/remove            =
+2015-07-18T00:24:08.032Z - info: =                                                                                      =
+2015-07-18T00:24:08.032Z - info: =   ex: new Db(new Server('localhost', 27017), {safe:false})                           =
+2015-07-18T00:24:08.032Z - info: =                                                                                      =
+2015-07-18T00:24:08.032Z - info: =   http://www.mongodb.org/display/DOCS/getLastError+Command                           =
+2015-07-18T00:24:08.033Z - info: =                                                                                      =
+2015-07-18T00:24:08.033Z - info: =  The default of no acknowledgement will change in the very near future                =
+2015-07-18T00:24:08.033Z - info: =                                                                                      =
+2015-07-18T00:24:08.033Z - info: =  This message will disappear when the default safe is set on the driver Db           =
+2015-07-18T00:24:08.033Z - info: ========================================================================================
+2015-07-18T00:24:08.496Z - info: Listening on :19690
+2015-07-18T00:48:32.005Z - info: express interceptor
+2015-07-18T00:49:14.326Z - info: express interceptor
+2015-07-18T00:49:14.387Z - info: newConversation(): exiting: err=null,result=%s action=new, origin=a55957d2044f200000bc34df, enterprise=graph.fm, originalMembers=[a4d96c3ee8281d354edaf291], members=[a4d96c3ee8281d354edaf291, a55957d2044f200000bc34df], pattern=STANDARD, ttl=undefined, tags=undefined, escalation=undefined, text=This is a test message, _bsontype=ObjectID, id=U©¢B®á°ä
+2015-07-18T00:49:41.279Z - info: express interceptor
+2015-07-18T00:49:14.329Z - info: AuthenticationHelper.authenticate(): {"iss":"conversepoint.com","iat":1437180512,"exp":1468716512,"sub":"profile id","aud":"graph.fm","profileId":"a55957d2044f200000bc34df"}
+2015-07-18T00:49:14.329Z - info: newConversation(): entered
+2015-07-18T00:50:02.282Z - info: express interceptor
+2015-07-18T00:50:55.613Z - info: winston logging started
+2015-07-18T00:50:55.814Z - info: local
+2015-07-18T00:50:55.899Z - info: bearer
+2015-07-18T00:50:56.666Z - info: github
+2015-07-18T00:50:56.877Z - info: facebook
+2015-07-18T00:50:57.180Z - info: google
+2015-07-18T00:50:57.451Z - info: apikey
+2015-07-18T00:50:57.452Z - info: ========================================================================================
+2015-07-18T00:50:57.452Z - info: =  Please ensure that you set the default write concern for the database by setting    =
+2015-07-18T00:50:57.452Z - info: =   one of the options                                                                 =
+2015-07-18T00:50:57.452Z - info: =                                                                                      =
+2015-07-18T00:50:57.453Z - info: =     w: (value of > -1 or the string 'majority'), where < 1 means                     =
+2015-07-18T00:50:57.453Z - info: =        no write acknowledgement                                                       =
+2015-07-18T00:50:57.453Z - info: =     journal: true/false, wait for flush to journal before acknowledgement             =
+2015-07-18T00:50:57.453Z - info: =     fsync: true/false, wait for flush to file system before acknowledgement           =
+2015-07-18T00:50:57.454Z - info: =                                                                                      =
+2015-07-18T00:50:57.454Z - info: =  For backward compatibility safe is still supported and                              =
+2015-07-18T00:50:57.454Z - info: =   allows values of [true | false | {j:true} | {w:n, wtimeout:n} | {fsync:true}]      =
+2015-07-18T00:50:57.454Z - info: =   the default value is false which means the driver receives does not                =
+2015-07-18T00:50:57.455Z - info: =   return the information of the success/error of the insert/update/remove            =
+2015-07-18T00:50:57.455Z - info: =                                                                                      =
+2015-07-18T00:50:57.455Z - info: =   ex: new Db(new Server('localhost', 27017), {safe:false})                           =
+2015-07-18T00:50:57.455Z - info: =                                                                                      =
+2015-07-18T00:50:57.455Z - info: =   http://www.mongodb.org/display/DOCS/getLastError+Command                           =
+2015-07-18T00:50:57.456Z - info: =                                                                                      =
+2015-07-18T00:50:57.456Z - info: =  The default of no acknowledgement will change in the very near future                =
+2015-07-18T00:50:57.456Z - info: =                                                                                      =
+2015-07-18T00:50:57.456Z - info: =  This message will disappear when the default safe is set on the driver Db           =
+2015-07-18T00:50:57.457Z - info: ========================================================================================
+2015-07-18T00:50:57.977Z - info: MongoService: Connected to cp bus
+2015-07-18T00:50:57.977Z - info: connected to cp bus
+2015-07-18T00:50:57.983Z - info: Connected to cp database
+2015-07-18T00:50:57.464Z - info: Connected to cp database
+2015-07-18T00:50:57.520Z - info: ========================================================================================
+2015-07-18T00:50:57.520Z - info: =  Please ensure that you set the default write concern for the database by setting    =
+2015-07-18T00:50:57.520Z - info: =   one of the options                                                                 =
+2015-07-18T00:50:57.520Z - info: =                                                                                      =
+2015-07-18T00:50:57.521Z - info: =     w: (value of > -1 or the string 'majority'), where < 1 means                     =
+2015-07-18T00:50:57.521Z - info: =        no write acknowledgement                                                       =
+2015-07-18T00:50:57.521Z - info: =     journal: true/false, wait for flush to journal before acknowledgement             =
+2015-07-18T00:50:57.521Z - info: =     fsync: true/false, wait for flush to file system before acknowledgement           =
+2015-07-18T00:50:57.521Z - info: =                                                                                      =
+2015-07-18T00:50:57.522Z - info: =  For backward compatibility safe is still supported and                              =
+2015-07-18T00:50:57.522Z - info: =   allows values of [true | false | {j:true} | {w:n, wtimeout:n} | {fsync:true}]      =
+2015-07-18T00:50:57.522Z - info: =   the default value is false which means the driver receives does not                =
+2015-07-18T00:50:57.522Z - info: =   return the information of the success/error of the insert/update/remove            =
+2015-07-18T00:50:57.523Z - info: =                                                                                      =
+2015-07-18T00:50:57.523Z - info: =   ex: new Db(new Server('localhost', 27017), {safe:false})                           =
+2015-07-18T00:50:57.523Z - info: =                                                                                      =
+2015-07-18T00:50:57.523Z - info: =   http://www.mongodb.org/display/DOCS/getLastError+Command                           =
+2015-07-18T00:50:57.524Z - info: =                                                                                      =
+2015-07-18T00:50:57.524Z - info: =  The default of no acknowledgement will change in the very near future                =
+2015-07-18T00:50:57.524Z - info: =                                                                                      =
+2015-07-18T00:50:57.524Z - info: =  This message will disappear when the default safe is set on the driver Db           =
+2015-07-18T00:50:57.524Z - info: ========================================================================================
+2015-07-18T00:50:57.973Z - info: Listening on :19690
+2015-07-18T00:51:05.340Z - info: express interceptor

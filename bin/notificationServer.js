@@ -17,6 +17,9 @@ var ConversationHelper                      = require('./../rest/controllers/hel
 var AuthenticationHelper                    = require('./../util/authenticationHelper');
 var NotificationHelper                      = require('./../util/notificationHelper');
 var RFC6455Server                           = require('./../util/websocket/rfc6455Server');
+var logger                  = require('../util/logger');
+
+logger.startLogger('notificationServer');
 
 cpBus.connection.on('error',function(err) {
     console.log("unable to connect to cp bus:" + err);

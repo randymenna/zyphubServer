@@ -7,6 +7,9 @@ var mongoose                        = require('mongoose');
 var ScheduleHelper                  = require('./../util/scheduleHelper');
 var Agenda                          = require('agenda');
 var SchedulerMessageHandler         = require('./../msgHandler/schedulerMessageHandler');
+var logger                          = require('../util/logger');
+
+logger.startLogger('scheduler');
 
 var messageDrivenBean = null;
 

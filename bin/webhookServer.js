@@ -16,6 +16,9 @@ var ConversationHelper                      = require('./../rest/controllers/hel
 var AuthenticationHelper                    = require('./../util/authenticationHelper');
 var NotificationHelper                      = require('./../util/notificationHelper');
 var model                                   = require('./../models/models');
+var logger                                  = require('../util/logger');
+
+logger.startLogger('webhookServer');
 
 cpBus.connection.on('error',function(err) {
     console.log("unable to connect to cp bus:" + err);
@@ -58,7 +61,9 @@ cpBus.connection.on('ready',function() {
                             console.log( Error("Can't find enterprise",enterprise) );
                         }
                         else {
-                            webHookUrl = webhook.url;
+                            if (webhook) {
+                                webHookUrl = webhook.url;
+                            }
                         }
 
                         context.options = {
