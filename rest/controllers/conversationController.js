@@ -44,8 +44,7 @@ exports.getConversations = function (req, res) {
             function (callback) {
                 var context = {};
                 context.origin = req.user.origin;
-
-                context.profileId = req.params.profileId;
+                console.log("getConversations(): origin ",context.origin);
 
                 callback(null, context);
             },
@@ -55,9 +54,11 @@ exports.getConversations = function (req, res) {
                 model.Profile.findOne({'_id': context.origin}, {_id: 0, inbox: 1})
                     .exec(function (err, profile) {
                         if ( err ) {
+                            console.log("getConversations(): error ",err);
                             callback(err, null);
                         }
                         else {
+                            console.log("getConversations(): inbox ",profile.toObject().inbox);
                             context.inbox = profile.toObject().inbox;
                             callback(null, context);
                         }
@@ -70,15 +71,12 @@ exports.getConversations = function (req, res) {
             }
         ],
 
-        //TODO: express deprecated res.json(status, obj): Use res.status(status).json(obj) instead at rest/controllers/conversationController.js
-
         function (err, context) {
-            console.log("getConversations(): exiting: err=%s,result=%s", err, context);
+            console.log("getConversations(): exiting: err=", err, "context=", context);
             if (!err) {
-                //res.json(200, context.conversations);
-                res.status(200).json(context.conversations);
+                res.status(200).json(context.conversation);
             } else {
-                res.json(401, err.message);
+                res.status(401).json(err.message);
             }
         }
     );

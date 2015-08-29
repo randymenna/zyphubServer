@@ -27,11 +27,11 @@ socketio:
     caCertsFile     : './bin/ssl/privatekey.pem'   # this is not needed when self-signed so we assign to privatekey for dev
 
 rabbitmq:
-  host: 'localhost' #owl.rmq.cloudamqp.com #'localhost'
-  login: 'guest' #zzqealbp #'guest'
-  password: 'guest' # 7VuC5MbcMnU-HMxbnSuq_rbq-ywh-61a  #'guest'
+  host: localhost # owl.rmq.cloudamqp.com #'localhost'
+  login: guest # zzqealbp #'guest'
+  password: guest #7VuC5MbcMnU-HMxbnSuq_rbq-ywh-61a  #'guest'
   authMechanism: 'AMQPLAIN'
-  vhost: '/' #zzqealbp #'/'
+  vhost: / #zzqealbp #'/'
   reconnect: true
   reconnectBackoffStrategy: 'linear'
   reconnectExponentialLimit: 120000

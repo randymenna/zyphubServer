@@ -81,7 +81,14 @@ cpBus.connection.on('ready',function() {
                 conversationHandler.setSchedulerPublisher(context.schedulerPublisher);
                 conversationHandler.setConversationHelper( conversationHelper );
 
-                mongoose.connect(config.mongo.host, config.mongo.dbName, config.mongo.port, {auto_reconnect: true});
+                mongoose.connect(config.mongo.host, config.mongo.dbName, config.mongo.port, {auto_reconnect: true},function(err){
+                    if (err){
+                        console.log('conversationRouter(): mongoose error: ', err);
+                    }
+                    else {
+                        console.log('conversationRouter(): mongoose.connect ',config.mongo.dbName,'@',config.mongo.host,':',config.mongo.port);
+                    }
+                });
 
                 try {
                     messageDrivenBean = new MessageDrivenBean('ConversationEngine', conversationHandler);
