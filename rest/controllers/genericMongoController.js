@@ -88,7 +88,7 @@ exports.getSubset = function(req, res) {
                 sendError(res,err);
             } else {
                 //console.log('getSubset(): exiting. returning: ' + JSON.stringify(data));
-                res.json(200,data);
+                res.status(200).json(data);
             }
         }
     )
@@ -135,7 +135,7 @@ exports.findById = function(req, res) {
             } else {
                 delete itemInDB.accountId;
                 console.log('findById(): exiting. returning: ' + JSON.stringify(itemInDB));
-                res.json(200,itemInDB);
+                res.status(200).json(itemInDB);
             }
         }
     )
@@ -176,7 +176,7 @@ exports.findAll = function(req, res) {
                 for (var i=0;i<items.length;i++) {
                     delete items[i].accountId;
                 }
-                res.json(200,items);
+                res.status(200).json(items);
             }
         }
     )
@@ -216,7 +216,7 @@ exports.findByQuery = function(req, res) {
                 for (var i=0;i<items.length;i++) {
                     delete items[i].accountId;
                 }
-                res.json(200,items);
+                res.status(200).json(items);
             }
         }
     )
@@ -281,7 +281,7 @@ exports.addEntity = function(req, res) {
             } else {
                 delete result[0].accountId;
                 console.log('addEntity(): exiting. returning: ' + JSON.stringify(result[0]));
-                res.json(201,result[0]);
+                res.status(200).json(result[0]);
             }
         }
     )
@@ -357,7 +357,7 @@ exports.updateEntity = function(req, res) {
                 console.log('updateEntity(): exiting. returning: ' + JSON.stringify(entityToUpdate));
                 if ( result != null )
                     delete result.accountId;
-                res.json(200,result);
+                res.status(200).json(result);
             }
         }
     )
@@ -443,9 +443,9 @@ exports.extractAccountId = function(req) {
 
 function sendError(res,err) {
     if ( err.number != null && err.number != 0) {
-        res.json(err.number, {error : err.message});
+        res.status(err.number).json({error : err.message});
     } else {
-        res.json(500, {error : err.message});
+        res.status(500).json({error : err.message});
     }
 }
 

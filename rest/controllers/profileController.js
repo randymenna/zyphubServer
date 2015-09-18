@@ -58,9 +58,9 @@ exports.getProfiles = function (req, res) {
         function (err, context) {
             console.log("getProfiles(): exiting: err=%s,result=%s", err, context);
             if (!err) {
-                res.json(200, context);
+                res.status(200).json(context);
             } else {
-                res.json(401, err);
+                res.status(401).json(err);
             }
         }
     );
@@ -95,9 +95,9 @@ exports.getOneProfile = function (req, res) {
         function (err, context) {
             console.log("getOneProfile(): exiting: err=%s,result=%s", err, context);
             if (!err) {
-                res.json(200, context.profile);
+                res.status(200).json(context.profile);
             } else {
-                res.json(401, err);
+                res.status(401).json(err);
             }
         }
     );
@@ -144,9 +144,9 @@ exports.newProfile = function (req, res) {
         function (err, context) {
             console.log("newProfile(): exiting: err=%s,result=%s", err, context);
             if (!err) {
-                res.json(200, context.profile);
+                res.status(200).json(context.profile);
             } else {
-                res.json(400, err.message);
+                res.status(400).json(err.message);
             }
         }
     );
@@ -209,9 +209,9 @@ exports.getConversations = function (req, res) {
         function (err, context) {
             console.log("getConversations(): exiting: err=%s,result=%s", err, context);
             if (!err) {
-                res.json(200, context.conversations);
+                res.status(200).json(context.conversations);
             } else {
-                res.json(401, err.message);
+                res.status(400).json(err.message);
             }
         }
     );
@@ -247,9 +247,9 @@ exports.update = function (req, res) {
         function (err, context) {
             console.log("profile.update(): exiting: err=%s,result=%s", err, context);
             if (!err) {
-                res.json(200, context.profile);
+                res.status(200).json(context.profile);
             } else {
-                res.json(401, err);
+                res.status(401).json(err);
             }
         }
     );
@@ -284,9 +284,9 @@ exports.remove = function (req, res) {
         function (err, context) {
             console.log("profile.remove(): exiting: err=%s,result=%s", err, context);
             if (!err) {
-                res.json(200, context.tag);
+                res.status(200).json(context.tag);
             } else {
-                res.json(401, err);
+                res.status(401).json(err);
             }
         }
     );

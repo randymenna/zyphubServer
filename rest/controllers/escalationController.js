@@ -83,9 +83,9 @@ exports.newEscalation = function (req, res) {
         function (err, context) {
             console.log("newEscalation(): exiting: err=%s,result=%s", err, context);
             if (!err) {
-                res.json(200, context.escalation);
+                res.status(200).json(context.escalation);
             } else {
-                res.json(400, err.message);
+                res.status(400).json(err.message);
             }
         }
     );
@@ -126,9 +126,9 @@ exports.getEscalations = function (req, res) {
         function (err, context) {
             console.log("getEscalations(): exiting: err=%s,result=%s", err, context);
             if (!err) {
-                res.json(200, context.escalations);
+                res.status(200).json(context.escalations);
             } else {
-                res.json(401, err.message);
+                res.jstatus(401).json(err.message);
             }
         }
     );

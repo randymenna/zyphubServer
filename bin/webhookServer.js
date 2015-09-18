@@ -17,14 +17,11 @@ var AuthenticationHelper                    = require('./../util/authenticationH
 var NotificationHelper                      = require('./../util/notificationHelper');
 var model                                   = require('./../models/models');
 var logger                                  = require('../util/logger');
+var CONSTANTS                               = require('../constants');
 
 logger.startLogger('webhookServer');
 
-cpBus.connection.on('error',function(err) {
-    console.log("unable to connect to cp bus:" + err);
-});
-
-cpBus.connection.on('ready',function() {
+cpBus.promise.then(function(con){
 
     var enterprise = config.webhook.enterprise;
     var webHookUrl;
@@ -41,7 +38,16 @@ cpBus.connection.on('ready',function() {
 
             function(context, callback) {
 
-                mongoose.connect(config.mongo.host, config.mongo.dbName, config.mongo.port, {auto_reconnect: true});
+                //mongoose.connect(config.mongo.host, config.mongo.dbName, config.mongo.port, {auto_reconnect: true});
+                mongoose.connect('mongodb://cpadmin:cpadmin@ds047802.mongolab.com:47802/cp', {auto_reconnect: true},function(err){
+                    if (err){
+                        console.log('webhookServer(): mongoose error: ', err);
+                    }
+                    else {
+                        console.log('webhookServer(): mongoose.connect mongodb://cpadmin:cpadmin@ds047802.mongolab.com:47802/cp');
+                    }
+                });
+
                 var db = mongoose.connection;
                 db.on('error', function(err){
                     console.error.bind(console, 'connection error:');
@@ -81,7 +87,12 @@ cpBus.connection.on('ready',function() {
                 webHookHandler.setConversationHelper( new ConversationHelper() );
                 webHookHandler.setNotificationHelper( new NotificationHelper() );
 
-                messageDrivenBean = new MessageDrivenBean('CPNotification',webHookHandler, 1);
+                try {
+                    var messageDrivenBean = new MessageDrivenBean(cpBus.connection, CONSTANTS.BUS.FANOUT, CONSTANTS.BUS.NOTIFIER, webHookHandler, 0);
+                    messageDrivenBean.start();
+                } catch(exception){
+                    console.log('conversationRouter(): mdb.exception', exception);
+                }
 
                 callback(null,'done');
             }

@@ -5,6 +5,7 @@ var mongoose                = require('mongoose');
 var async                   = require('async');
 var restHelper              = require('./helper/restHelper');
 var model                   = require('../../models/models');
+var CONSTANTS               = require('../../constants');
 
 var _conversationPublisher = null;
 var _schedulerPublisher = null;
@@ -14,27 +15,27 @@ var _conversationHelper = null;
 
 exports.setConversationPublisher = function( conversationPublisher ) {
     _conversationPublisher = conversationPublisher;
-}
+};
 
 exports.setSchedulerPublisher = function( schedulerPublisher ) {
     _schedulerPublisher = schedulerPublisher;
     if ( _conversationHelper )
         _conversationHelper.setSchedulerPublisher(schedulerPublisher);
-}
+};
 
 exports.setNotificationPublisher = function( schedulerPublisher ) {
     _notificationPublisher = schedulerPublisher;
-}
+};
 
 exports.setAuditTrailPublisher = function( auditTrailPublisher ) {
     _auditTrailPublisher = auditTrailPublisher;
-}
+};
 
 exports.setConversationHelper = function( conversationHelper ) {
     _conversationHelper = conversationHelper;
     if ( _schedulerPublisher )
         _conversationHelper.setSchedulerPublisher(_schedulerPublisher);
-}
+};
 
 exports.getConversations = function (req, res) {
 
@@ -117,9 +118,9 @@ exports.getOneConversation = function(req, res) {
         function (err, context) {
             console.log("getOneConversation(): exiting: err=%s,result=%s", err, context);
             if (!err) {
-                res.json(200, context.conversation);
+                res.status(200).json(context.conversation);
             } else {
-                res.json(401, err.message);
+                res.status(401).json(err.message);
             }
         }
     );
@@ -164,21 +165,22 @@ exports.newConversation = function (req, res) {
             // send it to the conversation router
             function (context, callback) {
 
-                _conversationPublisher.publish('ConversationEngineQueue',context, function( error ){
-                    if ( error )
-                        callback(Error("Publish Failed"), null);
-                    else
-                        callback(null, context);
-                });
+                //_conversationPublisher.publish('ConversationEngineQueue',context, function( error ){
+                var routingKey = parseInt(context.conversationId) % CONSTANTS.BUS.CONVERSATION_WORKERS;
+                var published = _conversationPublisher.publish(routingKey, context);
+                if ( !published )
+                    callback(Error("Publish Failed"), null);
+                else
+                    callback(null, context);
             }
         ],
 
         function (err, context) {
             console.log("newConversation(): exiting: err=%s,result=%s", err, context);
             if (!err) {
-                res.json(200, context.conversationId);
+                res.status(200).json(context.conversationId);
             } else {
-                res.json(400, err.message);
+                res.status(400).json(err.message);
             }
         }
     );
@@ -235,21 +237,29 @@ exports.updateConversation = function (req, res) {
 
             function (context, callback) {
 
+                var routingKey = parseInt(context.conversationId) % CONSTANTS.BUS.CONVERSATION_WORKERS;
+                var published = _conversationPublisher.publish(routingKey, context);
+                if ( !published )
+                    callback(Error("Publish Failed"), null);
+                else
+                    callback(null, context);
+                /*
                 _conversationPublisher.publish('ConversationEngineQueue',context, function( error ){
                     if ( error )
                         callback(Error("Publish Failed"), null);
                     else
                         callback(null, context);
                 });
+                */
             }
         ],
 
         function (err, context) {
             console.log("updateConversation(): exiting: err=%s,result=%s", err, context);
             if (!err) {
-                res.json(200, context.conversationId);
+                res.status(200).json(context.conversationId);
             } else {
-                res.json(400, err.message);
+                res.status(400).json(err.message);
             }
         }
     );

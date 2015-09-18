@@ -285,7 +285,7 @@ exports.updateByProfileId = function (req, res) {
         function (err, context) {
             console.log("tag.updateByProfileId(): exiting: err=%s,result=%s", err, context);
             if (!err) {
-                res.json(200, context.tag);
+                res.status(200).json(context.tag);
             } else {
                 res.status(400).json(err);
             }

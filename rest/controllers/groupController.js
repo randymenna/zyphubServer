@@ -40,9 +40,9 @@ exports.getGroups = function (req, res) {
         function (err, context) {
             console.log("getGroups(): exiting: err=%s,result=%s", err, context);
             if (!err) {
-                res.json(200, context.groups);
+                res.status(200).json(context.groups);
             } else {
-                res.json(400, err);
+                res.status(400).json(err);
             }
         }
     );
@@ -83,9 +83,9 @@ exports.getOneGroup = function (req, res) {
         function (err, context) {
             console.log("getOneGroup(): exiting: err=%s,result=%s", err, context);
             if (!err) {
-                res.json(200, context.group);
+                res.status(200).json(context.group);
             } else {
-                res.json(400, err);
+                res.status(400).json(err);
             }
         }
     );
@@ -144,9 +144,9 @@ exports.newGroup = function (req, res) {
         function (err, context) {
             console.log("newGroup(): exiting: err=%s,result=%s", err, context);
             if (!err) {
-                res.json(200, context.group);
+                res.status(200).json(context.group);
             } else {
-                res.json(400, err.message);
+                res.status(400).json(err.message);
             }
         }
     );
@@ -191,9 +191,9 @@ exports.update = function (req, res) {
         function (err, context) {
             console.log("groups.update(): exiting: err=%s,result=%s", err, context);
             if (!err) {
-                res.json(200, context.group);
+                res.status(200).json(context.group);
             } else {
-                res.json(400, err);
+                res.status(400).json(err);
             }
         }
     );
@@ -236,9 +236,9 @@ exports.remove = function (req, res) {
         function (err, context) {
             console.log("groups.remove(): exiting: err=%s,result=%s", err, context);
             if (!err) {
-                res.json(200, context.group);
+                res.status(200).json(context.group);
             } else {
-                res.json(400, err);
+                res.status(400).json(err);
             }
         }
     );
@@ -348,9 +348,9 @@ exports.joinGroup = function (req, res) {
         function (err, context) {
             console.log("joinGroup(): exiting: err=%s,result=%s", err, context);
             if (!err) {
-                res.json(200, groupHelper.santize(context.group.toObject()));
+                res.status(200).json(groupHelper.santize(context.group.toObject()));
             } else {
-                res.json(400, err.message);
+                res.status(400).json(err.message);
             }
         }
     );

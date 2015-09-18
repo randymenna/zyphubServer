@@ -56,11 +56,13 @@ NotificationMessage.prototype.setState = function( state ) {
     this._notification.state.rejects                = state.rejects;
     this._notification.state.accepts                = state.accepts;
     this._notification.state.maxAccepts             = state.maxAccepts;
-    if (state.members) {
+    if (state.members.length) {
         this._notification.state.members = state.members.slice(0);
 
         for(var i=0; i < this._notification.state.members.length; i++){
-            this._notification.state.members[i].member = this._notification.state.members[i].member._id.toString();
+            if (this._notification.state.members[i].member) {
+                this._notification.state.members[i].member = this._notification.state.members[i].member._id.toString();
+            }
         }
     }
 };

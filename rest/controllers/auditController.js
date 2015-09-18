@@ -42,9 +42,9 @@ exports.getOneAuditTrail = function (req, res) {
         function (err, context) {
             console.log("getOneAuditTrail(): exiting: err=%s,result=%s", err, context);
             if (!err) {
-                res.json(200, context.auditTrail);
+                res.status(200).json(context.auditTrail);
             } else {
-                res.json(401, err);
+                res.status(401).json(err);
             }
         }
     );

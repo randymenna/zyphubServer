@@ -24,14 +24,19 @@ module.exports = function(){
     app.delete('/:collection/:id'           ,  passport.authenticate('bearer', { session: false }), genericMongoController.deleteEntity);
 
 
+    /*
     cpbus.connection.on('error',function(err) {
         console.error("MongoService: Unable to connect to cp bus:" + err);
     });
+    */
 
-    cpbus.connection.on('ready',function() {
+    //cpbus.connection.on('ready',function() {
+    cpbus.promise.then('ready',function() {
 
         console.log("MongoService: Connected to cp bus");
         //exchangePublisherFactory = new ExchangePublisherFactory(cpbus.connection);
+    },function(err){
+        console.error("MongoService: Unable to connect to cp bus:" + err);
     });
 
     return app;

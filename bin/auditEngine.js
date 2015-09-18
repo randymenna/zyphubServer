@@ -6,18 +6,14 @@ var config                          = require('config');
 var mongoose                        = require('mongoose');
 var AuditMessageHandler             = require('./../msgHandler/auditMessageHandler');
 var logger                          = require('../util/logger');
+var CONSTANTS                       = require('../constants');
 
 logger.startLogger('auditEngine');
 
-var messageDrivenBean = null;
-
-cpBus.connection.on('error',function(err) {
-    console.log("unable to connect to cp bus:" + err);
-});
 
 // INITIALIZATION CODE
 // ONCE WE CAN CONNECT TO RABBIT MQ, TRY AND CONNECT TO MONGO, THEN START THE MDB
-cpBus.connection.on('ready',function() {
+cpBus.promise.then(function(con){
 
     var exchangePublisherFactory = new ExchangePublisherFactory(cpBus.connection);
 
@@ -30,9 +26,17 @@ cpBus.connection.on('ready',function() {
 
                 console.info('Auditor MDB: mongoose connect');
 
-                mongoose.connect(config.mongo.host, config.mongo.dbName, config.mongo.port, {auto_reconnect: true});
-
-                callback(null,context);
+                //mongoose.connect(config.mongo.host, config.mongo.dbName, config.mongo.port, {auto_reconnect: true});
+                mongoose.connect('mongodb://cpadmin:cpadmin@ds047802.mongolab.com:47802/cp', {auto_reconnect: true},function(err){
+                    if (err){
+                        console.log('webhookServer(): mongoose error: ', err);
+                        callback(err, null);
+                    }
+                    else {
+                        console.log('webhookServer(): mongoose.connect mongodb://cpadmin:cpadmin@ds047802.mongolab.com:47802/cp');
+                        callback(null,context);
+                    }
+                });
             },
 
             function(context, callback) {
@@ -41,9 +45,12 @@ cpBus.connection.on('ready',function() {
 
                 var auditHandler = new AuditMessageHandler();
 
-                console.info('Auditor MDB: mdb bind');
-
-                messageDrivenBean = new MessageDrivenBean('AuditTrail',auditHandler);
+                try {
+                    var messageDrivenBean = new MessageDrivenBean(cpBus.connection, CONSTANTS.BUS.DIRECT, CONSTANTS.BUS.AUDITTRAIL, auditHandler, CONSTANTS.BUS.AUDIT_WORKERS);
+                    messageDrivenBean.start();
+                } catch(exception){
+                    console.log('Auditor: mdb.exception', exception);
+                }
 
                 callback(null,'done');
             }

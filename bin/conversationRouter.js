@@ -10,20 +10,25 @@ var ConversationHelper              = require('./../rest/controllers/helper/conv
 var config                          = require('config');
 var mongoose                        = require('mongoose');
 var logger                          = require('../util/logger');
+var CONSTANTS                       = require('../constants');
 
 logger.startLogger('conversationRouter');
 
 var messageDrivenBean = null;
 var conversationHelper = new ConversationHelper();
 
+/*
 cpBus.connection.on('error',function(err) {
     console.log("unable to connect to cp bus:" + err);
 });
+*/
 
 // INITIALIZATION CODE
 // ONCE WE CAN CONNECT TO RABBIT MQ, TRY AND CONNECT TO MONGO, THEN START THE MDB
-cpBus.connection.on('ready',function() {
+//cpBus.connection.on('ready',function() {
+cpBus.promise.then(function(con){
 
+    console.log('Connected to CP Bus');
     var exchangePublisherFactory = new ExchangePublisherFactory(cpBus.connection);
 
     async.waterfall(
@@ -81,7 +86,8 @@ cpBus.connection.on('ready',function() {
                 conversationHandler.setSchedulerPublisher(context.schedulerPublisher);
                 conversationHandler.setConversationHelper( conversationHelper );
 
-                mongoose.connect(config.mongo.host, config.mongo.dbName, config.mongo.port, {auto_reconnect: true},function(err){
+                //mongoose.connect(config.mongo.host, config.mongo.dbName, config.mongo.port, {auto_reconnect: true},function(err){
+                mongoose.connect('mongodb://cpadmin:cpadmin@ds047802.mongolab.com:47802/cp', {auto_reconnect: true},function(err){
                     if (err){
                         console.log('conversationRouter(): mongoose error: ', err);
                     }
@@ -91,11 +97,12 @@ cpBus.connection.on('ready',function() {
                 });
 
                 try {
-                    messageDrivenBean = new MessageDrivenBean('ConversationEngine', conversationHandler);
-                    callback(null, 'done');
+                    var messageDrivenBean = new MessageDrivenBean(cpBus.connection, CONSTANTS.BUS.DIRECT, CONSTANTS.BUS.CONVERSATION_ROUTER, conversationHandler, CONSTANTS.BUS.CONVERSATION_WORKERS);
+                    messageDrivenBean.start();
                 } catch(exception){
                     console.log('conversationRouter(): mdb.exception', exception);
                 }
+                callback(null, 'done');
             }
         ],
         function(err,result) {
@@ -107,4 +114,6 @@ cpBus.connection.on('ready',function() {
             }
         }
     )
+}, function(err){
+    console.log("unable to connect to cp bus:" + err);
 });

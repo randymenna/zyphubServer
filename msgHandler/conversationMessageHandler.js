@@ -39,16 +39,16 @@ var ConversationMessageHandler = module.exports = function ConversationMessageHa
 
 };
 
-ConversationMessageHandler.prototype.handleMessagePool = function (context, msgHandlerCallback) {
+ConversationMessageHandler.prototype.onMessage = function (msg, msgHandlerCallback) {
     var self = this;
 
-    console.log("ConversationMessageHandler.handleMessage() entered: message: " + JSON.stringify(context));
+    console.log("ConversationMessageHandler.handleMessage() entered: message: " + JSON.stringify(msg.content.toString()));
 
     async.waterfall(
         [
             // call update fn
             function (/*context,*/ callback) {
-
+                var context = JSON.parse(msg.content.toString());
                 var msgHandlerFunction = self.msgHandleSwitch[context.action.toUpperCase()];
 
                 if (msgHandlerFunction !== undefined) {
@@ -78,12 +78,21 @@ ConversationMessageHandler.prototype.handleMessagePool = function (context, msgH
             // send to auditor
             function(context, callback) {
 
+                var routingKey = 0;
+                var published = self._auditTrailPublisher.publish(routingKey, context);
+                if ( !published )
+                    callback(Error("AuditQueue Publish Failed"), null);
+                else
+                    callback(null, context);
+
+                /*
                 self._auditTrailPublisher.publish('AuditTrailQueue',context, function( error ){
                     if ( error )
                         callback(Error("AuditQueue Publish Failed"), null);
                     else
                         callback(null, context);
                 });
+                */
 
             },
 
@@ -113,6 +122,13 @@ ConversationMessageHandler.prototype.handleMessagePool = function (context, msgH
 
                 var notification = self._notificationHelper.createNotification(context);
 
+                var routingKey = 0;
+                var published = self._notificationPublisher.publish(routingKey, notification);
+                if ( !published )
+                    callback(Error("NotificationQueue Publish Failed"), null);
+                else
+                    callback(null, context);
+                /*
                 self._notificationPublisher.publish('CPNotificationQueue',notification, function( err ){
                     if ( err ) {
                         callback(Error("Cannot publish to NotificationQueue"), null);
@@ -120,13 +136,15 @@ ConversationMessageHandler.prototype.handleMessagePool = function (context, msgH
                     else {
                         callback(null, context);
                     }
-                })
+                });
+                */
             }
         ],
 
         function (err, context) {
 
-            msgHandlerCallback(err, context);
+            console.log("ConversationMessageHandler.handleMessage() exit: message: " + JSON.stringify(msg.content.toString()));
+            msgHandlerCallback(err, msg);
         }
     );
 };
@@ -181,11 +199,22 @@ ConversationMessageHandler.prototype.handleNew = function(context,doneCallback) 
                 context.conversation.state.startMemberCount = context.conversation.envelope.members.length;
                 context.conversation.state.curMemberCount = context.conversation.envelope.members.length;
 
+                // if the message gets replayed we want to start fresh, so if it has any members in state at this point we want to get rid of them
+                var len = context.conversation.state.members.length;
+                for (var i=0; i < len; i++){
+                    context.conversation.state.members.splice(i,1);
+                }
+
+                // now populate it correctly
                 for (var i=0; i< context.conversation.envelope.members.length; i++) {
                     var tmp = {
-                        member : mongoose.Types.ObjectId(context.conversation.envelope.members[i]),
                         state: "UNOPENED"
                     };
+                    if (typeof context.conversation.envelope.members[i] === 'string' || context.conversation.envelope.members[i] instanceof String){
+                        tmp.member = mongoose.Types.ObjectId(context.conversation.envelope.members[i]);
+                    } else {
+                        tmp.member = context.conversation.envelope.members[i];
+                    }
 
                     context.conversation.state.members.push(tmp);
                 }
@@ -234,12 +263,23 @@ ConversationMessageHandler.prototype.handleNew = function(context,doneCallback) 
                 if ( context.ttl ) {
 
                     context.action = "setTTL";
+
+                    var routingKey = 0;
+                    var published = self._schedulerPublisher.publish(routingKey, context);
+                    if ( !published ) {
+                        callback(Error("Scheduler Publish Failed"), null);
+                    }
+                    else {
+                        callback(null, context);
+                    }
+                    /*
                     self._schedulerPublisher.publish('SchedulerQueue', context, function (error) {
                         if (error)
                             callback(Error("Scheduler Publish Failed: setTTL"), null);
                         else
                             callback(null, context);
                     });
+                    */
                 }
                 else {
                     callback(null, context);
@@ -253,12 +293,22 @@ ConversationMessageHandler.prototype.handleNew = function(context,doneCallback) 
                 if (context.conversation.escalation && context.conversation.escalation.id && context.conversation.escalation.id.length ) {
 
                     context.action = "setEscalation";
+                    var routingKey = 0;
+                    var published = self._schedulerPublisher.publish(routingKey, context);
+                    if ( !published ) {
+                        callback(Error("Scheduler Publish Failed"), null);
+                    }
+                    else {
+                        callback(null, context);
+                    }
+                    /*
                     self._schedulerPublisher.publish('SchedulerQueue', context, function (error) {
                         if (error)
                             callback(Error("Scheduler Publish Failed: setEscalation"), null);
                         else
                             callback(null, context);
                     });
+                    */
                 }
                 else {
                     callback(null, context);
@@ -279,10 +329,20 @@ ConversationMessageHandler.prototype.handleNew = function(context,doneCallback) 
                             ctx.constraint = context.tags[i].constraint;
                             ctx.conversationId = context.conversationId;
 
+                            var routingKey = 0;
+                            var published = self._schedulerPublisher.publish(routingKey, context);
+                            if ( !published ) {
+                                callback(Error("Scheduler Publish Failed"), null);
+                            }
+                            else {
+                                callback(null, context);
+                            }
+                            /*
                             self._schedulerPublisher.publish('SchedulerQueue', ctx, function (error) {
                                 if (error)
                                     console.log("Scheduler Publish Failed: tagConstraint");
                             });
+                            */
                         }
                         callback(null, context);
                     }
@@ -295,7 +355,7 @@ ConversationMessageHandler.prototype.handleNew = function(context,doneCallback) 
         ],
 
         function (err, context) {
-            console.log("newConversation(): exiting: err=%s,result=%s", err, context);
+            //console.log("newConversation(): exiting: err=%s,result=%s", err, context);
 
             doneCallback(err,context);
         });

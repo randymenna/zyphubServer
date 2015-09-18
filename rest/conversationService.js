@@ -7,6 +7,7 @@ var ConversationController          = require('./controllers/conversationControl
 var cpBus                           = require('../bus');
 var ConversationHelper              = require('./controllers/helper/conversationHelper');
 var passport                        = require('passport');
+var async                           = require('async');
 
 module.exports = function() {
 
@@ -18,35 +19,56 @@ module.exports = function() {
     app.post('/', passport.authenticate('bearer', { session: false }), ConversationController.newConversation);
     app.put('/:id/:action', passport.authenticate('bearer', { session: false }), ConversationController.updateConversation);
 
+    /*
     cpBus.connection.on('error',function(err) {
         console.error("Conversation Controller: Unable to connect to bus: " + err);
     });
+    */
 
-    cpBus.connection.on('ready',function() {
+    //cpBus.connection.on('ready',function() {
+    cpBus.promise.then(function(conn) {
 
-        console.log('connected to cp bus');
-
+        console.log('conversationService: connected to cp bus');
         var exchangePublisherFactory = new ExchangePublisherFactory(cpBus.connection);
 
-        exchangePublisherFactory.createConversationExchangePublisher( function(conversationPublisher) {
-            ConversationController.setConversationPublisher(conversationPublisher);
-        });
+        async.waterfall(
+            [
+                function(callback) {
+                    exchangePublisherFactory.createConversationExchangePublisher( function(conversationPublisher) {
+                        ConversationController.setConversationPublisher(conversationPublisher);
+                        console.log('conversationService: set conversation publisher');
+                        callback();
+                    });
+                },
+                function(callback) {
+                    exchangePublisherFactory.createSchedulerExchangePublisher( function(schedulerPublisher) {
+                        ConversationController.setSchedulerPublisher(schedulerPublisher);
+                        console.log('conversationService: set scheduler publisher');
+                        callback();
+                    });
+                },
+                function(callback) {
+                    exchangePublisherFactory.createNotificationExchangePublisher( function(notificationPublisher) {
+                        ConversationController.setNotificationPublisher(notificationPublisher);
+                        console.log('conversationService: set notifier publisher');
+                        callback();
+                    });
+                },
+                function(callback) {
+                    exchangePublisherFactory.createAuditTrailExchangePublisher( function(auditTrailPublisher) {
+                        console.log('conversationService: set audit trail publisher');
+                        ConversationController.setAuditTrailPublisher(auditTrailPublisher);
+                        callback();
+                    });
+                }
+            ],
+            function() {
+                var conversationHelper = new ConversationHelper();
+                ConversationController.setConversationHelper(conversationHelper);
+            });
 
-        exchangePublisherFactory.createSchedulerExchangePublisher( function(schedulerPublisher) {
-            ConversationController.setSchedulerPublisher(schedulerPublisher);
-        });
-
-        exchangePublisherFactory.createNotificationExchangePublisher( function(notificationPublisher) {
-            ConversationController.setNotificationPublisher(notificationPublisher);
-        });
-
-        exchangePublisherFactory.createAuditTrailExchangePublisher( function(auditTrailPublisher) {
-            ConversationController.setAuditTrailPublisher(auditTrailPublisher);
-        });
-
-        var conversationHelper = new ConversationHelper();
-        ConversationController.setConversationHelper(conversationHelper);
-
+    },function(err){
+        console.error("Conversation Controller: Unable to connect to bus: " + err);
     });
 
     return app;

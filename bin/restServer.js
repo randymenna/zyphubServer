@@ -18,8 +18,15 @@ mongoDbClient.init(function(error) {
         var app = createExpressApplication();
         if (config.restServer.isUnSecurePortEnabled) {
 
-            mongoose.connect(config.mongo.host, config.mongo.dbName, config.mongo.port, {auto_reconnect: true});
-            runRestServer(app);
+            //mongoose.connect(config.mongo.host, config.mongo.dbName, config.mongo.port, {auto_reconnect: true});
+            mongoose.connect('mongodb://cpadmin:cpadmin@ds047802.mongolab.com:47802/cp', {auto_reconnect: true},function(err){
+                if (err){
+                    console.log('rest server(): mongoose error: ', err);
+                }
+                else {
+                    runRestServer(app);
+                }
+            });
         }
         else
         if (config.restServer.isSecurePortEnabled) {

@@ -326,7 +326,7 @@ exports.updateByProfileId = function (req, res) {
         function (err, context) {
             console.log("ctx.updateByProfileId(): exiting: err=%s,result=%s", err, context);
             if (!err) {
-                res.json(200, context.ctx);
+                res.status(200).json(context.ctx);
             } else {
                 res.status(400).json(err);
             }

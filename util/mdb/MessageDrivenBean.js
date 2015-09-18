@@ -1,110 +1,317 @@
 /**
  * Created by randy on 12/19/13.
  */
-var config          = require('config');
-var WorkerPool      = require('../pool/workerPool');
+var config                      = require('config');
+var ExchangePublisherFactory    = require('../bus/exchangePublisherFactory');
+var q                           = require('q');
+var async                       = require('async');
+var CONSTANTS                   = require('../../constants');
 
-var MessageDrivenBean = module.exports = function MessageDrivenBean(baseName,messageHandler, instance) {
+var epf = new ExchangePublisherFactory();
+
+var MessageDrivenBean = module.exports = function MessageDrivenBean(connection, type, baseName, messageHandler, workers) {
     this.baseName       = baseName;
     this.messageHandler = messageHandler;
-    this.instance       = instance;
-    this.workerPool     = new WorkerPool.WorkerPool(this.getWorkerPoolOptions());
+    this.workers        = workers;
+    this.connection     = connection;
+    this.type           = type;
+    this.channel        = null;
 };
 
-MessageDrivenBean.prototype.start = function () {
-    this.workerPool.start();
-};
-
-MessageDrivenBean.prototype.onMessage = function (message) {
-    var self = this;
-    try {
-        console.log(this.baseName+".onMessage(): entered: message="+JSON.stringify(message));
-        this.messageHandler.handleMessage(message);
-    }
-    catch (exception) {
-        console.log(this.baseName+".onMessage(): caught exception", exception);
-        throw exception;
-    } finally {
-        console.log(this.baseName+".onMessage(): exiting");
-    }
-};
-
-MessageDrivenBean.prototype.onMessagePool = function(msg, state, callback) {
-    var payload       = msg.payload;
-    var message       = msg.message;
-    var deliveryInfo  = msg.deliveryInfo;
-
-    var self = this;
-    console.log(this.baseName+'.onMessage(): entered', 'message='+JSON.stringify(payload));
-
-    try {
-        self.messageHandler.handleMessagePool(payload, function(err) {
-            self.notifyMessageBroker(err,message,deliveryInfo);
-            callback(undefined, state);
-            delete payload.notification;
-            console.log(self.baseName+'.onMessage(): exiting', 'message='+JSON.stringify(payload));
-        });
-    } catch (exception) {
-        console.log(self.baseName+'.onMessage():' , ' exception occurred: ' + exception);
-        self.notifyMessageBroker(exception,message,deliveryInfo);
-        callback(undefined, state);
-    }
-}
-
-MessageDrivenBean.prototype.notifyMessageBroker = function (err, message, deliveryInfo) {
-    var self = this;
-    try {
-        if (err == null) {
-            console.log(self.baseName + '.onMessage():', 'acknowledging message');
-            message.acknowledge(false);
-        }
-        else {
-            if (deliveryInfo.redelivered) {
-                console.log(self.baseName + '.onMessage():', 'dlqing message');
-                message.reject(false);
+function createQueues( channel, name, options ) {
+    return function(callback) {
+        channel.assertQueue(name, options, function(err, ok){
+            if (err) {
+                console.log(err);
+                callback(err, null);
             }
             else {
-                console.log(self.baseName + '.onMessage():', 'requeueing message');
-                message.reject(true);
+                callback(null, ok.queue);
             }
-        }
-    } catch(exception) {
-        console.log(self.baseName + '.notifyMessageBroker():', exception);
-        message.reject(true);
+        });
     }
 }
 
-MessageDrivenBean.prototype.getWorkerPoolOptions = function() {
+function bindQueues(channel, exchange, queue, route) {
+    return function(callback) {
+        channel.bindQueue(queue, exchange, route, {}, function(err, ok){
+            if (err) {
+                console.log(err);
+                callback(err);
+            }
+            else {
+                callback();
+            }
+        });
+    }
+}
 
+function consumeQueue(channel, queue, handler){
+    return function(callback) {
+        channel.prefetch(1);
+        channel.consume(queue, handler, {}, function (err, ok) {
+            if (err) {
+                callback(err. null);
+            } else {
+                callback(null, ok);
+            }
+        });
+    }
+}
+
+function createDirectTopology( bean, ch, done ) {
+    var DEAD_LETTER = {
+        deadLetterExchange: bean.baseName+'Exchange.dead',
+        deadLetterRoutingKey: bean.baseName+'Queue.dead'
+    };
+
+    async.waterfall([
+            function( callback ){
+                ch.assertExchange(bean.baseName+'Exchange', 'direct', epf.getExchangeOptions(), function(err, ok) {
+                    if (err) {
+                        console.log(err);
+                        callback(err);
+                    }
+                    else {
+                        callback();
+                    }
+                });
+            },
+
+            function( callback ){
+                ch.assertExchange(bean.baseName+'Exchange.dead', 'direct', epf.getExchangeOptions(), function(err, ok) {
+                    if (err) {
+                        console.log(err);
+                        callback(err);
+                    }
+                    else {
+                        callback();
+                    }
+                });
+            },
+
+            function( callback ){
+                var functions = [];
+                for (var i=0; i < bean.workers; i++){
+                    functions.push((createQueues)(ch, bean.baseName+'Queue'+i, DEAD_LETTER));
+                }
+                if (functions.length) {
+                    async.parallel(functions,function(err, queues){
+                        callback(null, queues);
+                    });
+                } else {
+                    callback('No Queues');
+                }
+            },
+
+            function( queues, callback ){
+                ch.assertQueue(bean.baseName+'Queue.dead', {}, function(err, ok){
+                    if (err) {
+                        console.log(err);
+                        callback(err);
+                    }
+                    else {
+                        callback(null, queues);
+                    }
+                });
+            },
+
+            function( queues, callback  ){
+                var functions = [];
+                for (var i=0; i < queues.length; i++) {
+                    functions.push((bindQueues)(ch,  bean.baseName+'Exchange', queues[i], bean.baseName+i));
+                }
+                if (functions.length){
+                    async.parallel(functions, function(){
+                        callback();
+                    });
+                } else {
+                    callback('No bindings');
+                }
+            },
+
+            function( callback ) {
+                ch.bindQueue(bean.baseName + 'Queue.dead', bean.baseName + 'Exchange.dead', bean.baseName+'Queue.dead', {}, function (err, ok) {
+                    if (err) {
+                        console.log(err);
+                        callback(err);
+                    }
+                    else {
+                        callback();
+                    }
+                });
+            }
+        ],
+
+        function(err){
+            if (err){
+                console.log(err);
+            }
+            done(err);
+        });
+}
+
+function createFanoutTopology( bean, ch, done ) {
+    var DEAD_LETTER = {
+        deadLetterExchange: bean.baseName+'Exchange.dead',
+        deadLetterRoutingKey: bean.baseName+'Queue.dead'
+    };
+
+    async.waterfall([
+            function( callback ){
+                ch.assertExchange(bean.baseName+'Exchange', 'fanout', epf.getExchangeOptions(), function(err, ok) {
+                    if (err) {
+                        console.log(err);
+                        callback(err);
+                    }
+                    else {
+                        callback();
+                    }
+                });
+            },
+
+            function( callback ){
+                ch.assertExchange(bean.baseName+'Exchange.dead', 'direct', epf.getExchangeOptions(), function(err, ok) {
+                    if (err) {
+                        console.log(err);
+                        callback(err);
+                    }
+                    else {
+                        callback();
+                    }
+                });
+            },
+
+            function( callback ){
+                ch.assertQueue(bean.baseName+'Queue'+bean.instance, DEAD_LETTER, function(err, ok){
+                    if (err) {
+                        console.log(err);
+                        callback(err);
+                    }
+                    else {
+                        callback();
+                    }
+                });
+            },
+
+            function( callback ){
+                ch.assertQueue(bean.baseName+'Queue.dead', {}, function(err, ok){
+                    if (err) {
+                        console.log(err);
+                        callback(err);
+                    }
+                    else {
+                        callback();
+                    }
+                });
+            },
+
+            function( callback ){
+                ch.bindQueue(bean.baseName+'Queue'+bean.instance, bean.baseName+'Exchange', bean.baseName+bean.instance, {}, function(err, ok){
+                    if (err) {
+                        console.log(err);
+                        callback(err);
+                    }
+                    else {
+                        callback();
+                    }
+                });
+            },
+
+            function( callback ) {
+                ch.bindQueue(bean.baseName + 'Queue.dead', bean.baseName + 'Exchange.dead', bean.baseName+'Queue.dead', {}, function (err, ok) {
+                    if (err) {
+                        console.log(err);
+                        callback(err);
+                    }
+                    else {
+                        callback();
+                    }
+                });
+            }
+        ],
+
+        function(err){
+            if (err){
+                console.log(err);
+            }
+            done(err);
+        });
+}
+
+function listenOnQueue(bean, ch, done){
+    var functions = [];
+    for(var i=0; i < bean.workers; i++) {
+        functions.push((consumeQueue)(ch, bean.baseName+'Queue'+i, bean.onMessageWrapper.bind(bean)));
+    }
+
+    if (functions.length){
+        async.parallel(functions, function(err, result){
+            done();
+        });
+    } else {
+        done('No consumers');
+    }
+}
+
+function messageDone(err, message){
     var self = this;
 
-    var queueName = self.baseName;
-    //if ( self.instance )
-      //  queueName += self.instance;
-
-    var workerPoolOptions = {
-        name: self.baseName + 'Pool',
-        debug: true,
-        concurrency: 1,
-        logger: console.log,
-        mqOptions: {
-            host: config.rabbitmq.host,
-            login: config.rabbitmq.login,
-            password: config.rabbitmq.password,
-            authMechanism: config.rabbitmq.authMechanism,
-            vhost: config.rabbitmq.vhost,
-            reconnect: config.rabbitmq.reconnect,
-            reconnectBackoffStrategy: config.rabbitmq.reconnectBackoffStrategy,
-            reconnectExponentialLimit: config.rabbitmq.reconnectExponentialLimit,
-            reconnectBackoffTime: config.rabbitmq.reconnectBackoffTime,
-            exchangeName: self.baseName + 'Exchange',
-            queueName:    queueName + 'Queue',
-            routingKey:   self.baseName,
-            retryTimeout: 20000
-        },
-        minionTaskHandler: function(msg,state,callback) {self.onMessagePool(msg,state,callback)},
-        poolEnd: function() {
+    if (err) {
+        if (message.fields.redelivered) {
+            self.channel.nack(message, false, false);
+            console.log('DLQ message');
+        } else {
+            self.channel.nack(message, false, true);
+            console.log('Retry message');
         }
-    };
-    return workerPoolOptions;
+    } else {
+        self.channel.ack(message);
+    }
 }
+
+MessageDrivenBean.prototype.start = function () {
+    var deferred = q.defer();
+    var self = this;
+
+    function on_channel_open(err, ch){
+        if (err) {
+            console.log(err);
+            return;
+        }
+        self.channel = ch;
+
+        if (self.type === CONSTANTS.BUS.DIRECT) {
+            createDirectTopology( self, ch, function(err){
+                if (!err){
+                    listenOnQueue(self, ch, function(err){
+                        if (!err){
+                            console.log('mdb ' + self.baseName + ' started');
+                        }
+                    });
+                }
+            });
+        }
+        else if (self.type === CONSTANTS.BUS.FANOUT) {
+            createFanoutTopology( self, ch, function(err){
+                if (!err){
+                    listenOnQueue(self, ch, function(err){
+                        if (!err){
+                            console.log('mdb ' + self.baseName + ' started');
+                        }
+                    });
+                }
+            });
+        }
+    }
+
+    self.connection.createChannel(on_channel_open);
+
+    return deferred.promise;
+};
+
+MessageDrivenBean.prototype.onMessageWrapper = function(message) {
+    var self = this;
+
+    self.messageHandler.onMessage(message, messageDone.bind(self));
+};

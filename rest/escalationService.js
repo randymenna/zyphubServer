@@ -15,12 +15,14 @@ module.exports = function() {
     //app.put('/', EscalationController.updateEscalation);
     //app.delete('/', EscalationController.removeEscalation);
 
+    /*
     cpBus.connection.on('error',function(err) {
         console.error("Escalation Controller: Unable to connect to bus: " + err);
     });
 
     cpBus.connection.on('ready',function() {
     });
+    */
 
     return app;
 }();

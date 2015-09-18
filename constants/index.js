@@ -28,4 +28,16 @@ module.exports.PROFILE_CONVERSATION_STATES = {
   CLOSED: 'CLOSED',
   DELEGATED: 'DELEGATED',
   REMOVED: 'REMOVED'
-}
+};
+
+module.exports.BUS = {
+  DIRECT                : 'direct',
+  FANOUT                : 'fanout',
+  CONVERSATION_WORKERS  : 1,
+  AUDIT_WORKERS         : 1,
+  SCHEDULE_WORKERS      : 1,
+  CONVERSATION_ROUTER   : 'ConversationRouter',
+  SCHEDULER             : 'Scheduler',
+  NOTIFIER              : 'Notifier',
+  AUDITTRAIL            : 'AuditTrai'
+};
