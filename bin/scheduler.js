@@ -1,14 +1,14 @@
 var async                           = require('async');
-var MessageDrivenBean               = require('./../util/mdb/messageDrivenBean');
-var cpBus                           = require('./../bus/index');
-var ExchangePublisherFactory        = require('./../util/bus/exchangePublisherFactory');
 var config                          = require('config');
 var mongoose                        = require('mongoose');
-var ScheduleHelper                  = require('./../util/scheduleHelper');
 var Agenda                          = require('agenda');
-var SchedulerMessageHandler         = require('./../msgHandler/schedulerMessageHandler');
-var logger                          = require('../util/logger');
-var CONSTANTS                       = require('../constants');
+var MessageDrivenBean               = require('../src/util/mdb/messageDrivenBean');
+var cpBus                           = require('../src/bus');
+var SchedulerMessageHandler         = require('../src/msgHandler/schedulerMessageHandler');
+var ExchangePublisherFactory        = require('../src/util/bus/exchangePublisherFactory');
+var ScheduleHelper                  = require('../src/util/scheduleHelper');
+var logger                          = require('../src/util/logger');
+var CONSTANTS                       = require('../src/constants');
 
 logger.startLogger('scheduler');
 
@@ -40,13 +40,13 @@ cpBus.promise.then(function(con){
                 console.info('Scheduler MDB: mongoose connect');
 
                 //mongoose.connect(config.mongo.host, config.mongo.dbName, config.mongo.port, {auto_reconnect: true});
-                mongoose.connect('mongodb://cpadmin:cpadmin@ds047802.mongolab.com:47802/cp', {auto_reconnect: true},function(err){
+                mongoose.connect(config.mongo.url, {auto_reconnect: true},function(err){
                     if (err){
                         console.log('scheduler(): mongoose error: ', err);
                         callback(err,null);
                     }
                     else {
-                        console.log('scheduler(): mongoose.connect mongodb://cpadmin:cpadmin@ds047802.mongolab.com:47802/cp');
+                        console.log('scheduler(): mongoose.connect',config.mongo.url);
                         callback(null,context);
                     }
                 });
@@ -59,7 +59,7 @@ cpBus.promise.then(function(con){
                 var scheduleHelper = new ScheduleHelper();
 
                 //var mongoInstance = config.mongo.host + ':' + config.mongo.port +'/' + config.mongo.agenda;
-                var mongoInstance = 'mongodb://cpadmin:cpadmin@ds047802.mongolab.com:47802/cp';
+                var mongoInstance = config.mongo.url;
 
                     var agenda = new Agenda({
                                         maxConcurrency: 100

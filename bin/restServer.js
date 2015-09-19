@@ -1,17 +1,17 @@
 var express                 = require('express');
 var bodyParser              = require('body-parser');
 var url                     = require('url');
-var mongoDbClient           = require('./../mongodb-client/index');
+var mongoDbClient           = require('../src/mongodb-client/index');
 var https                   = require('https');
 var config                  = require('config');
 var fs                      = require('fs');
 var mongoose                = require('mongoose');
 var passport                = require('passport');
-var logger                  = require('../util/logger');
+var logger                  = require('../src/util/logger');
 
 logger.startLogger('restServer');
 
-require('./../auth/passport')(passport);
+require('../src/auth/passport')(passport);
 
 mongoDbClient.init(function(error) {
     if ( error == null ) {
@@ -19,11 +19,12 @@ mongoDbClient.init(function(error) {
         if (config.restServer.isUnSecurePortEnabled) {
 
             //mongoose.connect(config.mongo.host, config.mongo.dbName, config.mongo.port, {auto_reconnect: true});
-            mongoose.connect('mongodb://cpadmin:cpadmin@ds047802.mongolab.com:47802/cp', {auto_reconnect: true},function(err){
+            mongoose.connect(config.mongo.url, {auto_reconnect: true},function(err){
                 if (err){
                     console.log('rest server(): mongoose error: ', err);
                 }
                 else {
+                    console.log('restServer(): mongoose connected:',config.mongo.url);
                     runRestServer(app);
                 }
             });
@@ -127,17 +128,17 @@ function createExpressApplication() {
     app.use("/apiDoc", express.static(__dirname + '/cp-api-swager.json'));
     // Routes
 
-    app.use('/api', require('./../rest/mongoService'));
-    app.use('/atrium/profiles', require('./../rest/profileService'));
-    app.use('/atrium/groups', require('./../rest/groupService'));
-    app.use('/atrium/conversations', require('./../rest/conversationService'));
-    app.use('/atrium/escalations', require('./../rest/escalationService'));
-    app.use('/atrium/auditTrail', require('./../rest/auditService'));
-    app.use('/atrium/users', require('./../rest/userService'));
-    app.use('/atrium/contexts', require('./../rest/contextService'));
-    app.use('/atrium/auth', require('./../rest/authService'));
-    app.use('/auth', require('./../rest/authService'));
-    app.use('/atrium/webhook', require('./../rest/webHookService'));
+    app.use('/api', require('../src/rest/mongoService'));
+    app.use('/atrium/profiles', require('../src/rest/profileService'));
+    app.use('/atrium/groups', require('../src/rest/groupService'));
+    app.use('/atrium/conversations', require('../src/rest/conversationService'));
+    app.use('/atrium/escalations', require('../src/rest/escalationService'));
+    app.use('/atrium/auditTrail', require('../src/rest/auditService'));
+    app.use('/atrium/users', require('../src/rest/userService'));
+    app.use('/atrium/contexts', require('../src/rest/contextService'));
+    app.use('/atrium/auth', require('../src/rest/authService'));
+    app.use('/auth', require('../src/rest/authService'));
+    app.use('/atrium/webhook', require('../src/rest/webHookService'));
 
     return app;
 }

@@ -1,23 +1,19 @@
-/**
- * Created by randy
- */
-var mongodbClient                           = require('./../mongodb-client/index');
-var cpBus                                   = require('./../bus/index');
-var async                                   = require('async');
-var https                                   = require('https');
-var fs                                      = require('fs');
-var config                                  = require('config');
-var mongoose                                = require('mongoose');
-var request                                 = require('request');
-
-var MessageDrivenBean                       = require('./../util/mdb/messageDrivenBean');
-var WebHookMessageHandler                   = require('./../msgHandler/webHookMessageHandler');
-var ConversationHelper                      = require('./../rest/controllers/helper/conversationHelper');
-var AuthenticationHelper                    = require('./../util/authenticationHelper');
-var NotificationHelper                      = require('./../util/notificationHelper');
-var model                                   = require('./../models/models');
-var logger                                  = require('../util/logger');
-var CONSTANTS                               = require('../constants');
+var async                           = require('async');
+var config                          = require('config');
+var mongoose                        = require('mongoose');
+var https                           = require('https');
+var fs                              = require('fs');
+var request                         = require('request');
+var model                           = require('../src/models/models');
+var mongodbClient                   = require('../src/mongodb-client/index');
+var MessageDrivenBean               = require('../src/util/mdb/messageDrivenBean');
+var cpBus                           = require('../src/bus');
+var WebHookMessageHandler           = require('../src/msgHandler/webHookMessageHandler');
+var AuthenticationHelper            = require('../src/util/authenticationHelper');
+var NotificationHelper              = require('../src/util/notificationHelper');
+var ConversationHelper              = require('../src/rest/controllers/helper/conversationHelper');
+var logger                          = require('../src/util/logger');
+var CONSTANTS                       = require('../src/constants');
 
 logger.startLogger('webhookServer');
 
@@ -39,12 +35,12 @@ cpBus.promise.then(function(con){
             function(context, callback) {
 
                 //mongoose.connect(config.mongo.host, config.mongo.dbName, config.mongo.port, {auto_reconnect: true});
-                mongoose.connect('mongodb://cpadmin:cpadmin@ds047802.mongolab.com:47802/cp', {auto_reconnect: true},function(err){
+                mongoose.connect(config.mongo.url, {auto_reconnect: true},function(err){
                     if (err){
                         console.log('webhookServer(): mongoose error: ', err);
                     }
                     else {
-                        console.log('webhookServer(): mongoose.connect mongodb://cpadmin:cpadmin@ds047802.mongolab.com:47802/cp');
+                        console.log('webhookServer(): mongoose.connect:',config.mongo.url);
                     }
                 });
 

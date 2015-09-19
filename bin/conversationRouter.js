@@ -1,31 +1,23 @@
 var async                           = require('async');
-var mongodbClient                   = require('./../mongodb-client/index');
-var MessageDrivenBean               = require('./../util/mdb/messageDrivenBean');
-var cpBus                           = require('./../bus/index');
-var ConversationMessageHandler      = require('./../msgHandler/conversationMessageHandler');
-var ExchangePublisherFactory        = require('./../util/bus/exchangePublisherFactory');
-var NotificicationHelper            = require('./../util/notificationHelper');
-
-var ConversationHelper              = require('./../rest/controllers/helper/conversationHelper');
 var config                          = require('config');
 var mongoose                        = require('mongoose');
-var logger                          = require('../util/logger');
-var CONSTANTS                       = require('../constants');
+var mongodbClient                   = require('../src/mongodb-client/index');
+var MessageDrivenBean               = require('../src/util/mdb/messageDrivenBean');
+var cpBus                           = require('../src/bus');
+var ConversationMessageHandler      = require('../src/msgHandler/conversationMessageHandler');
+var ExchangePublisherFactory        = require('../src/util/bus/exchangePublisherFactory');
+var NotificicationHelper            = require('../src/util/notificationHelper');
+var ConversationHelper              = require('../src/rest/controllers/helper/conversationHelper');
+var logger                          = require('../src/util/logger');
+var CONSTANTS                       = require('../src/constants');
 
 logger.startLogger('conversationRouter');
 
 var messageDrivenBean = null;
 var conversationHelper = new ConversationHelper();
 
-/*
-cpBus.connection.on('error',function(err) {
-    console.log("unable to connect to cp bus:" + err);
-});
-*/
-
 // INITIALIZATION CODE
 // ONCE WE CAN CONNECT TO RABBIT MQ, TRY AND CONNECT TO MONGO, THEN START THE MDB
-//cpBus.connection.on('ready',function() {
 cpBus.promise.then(function(con){
 
     console.log('Connected to CP Bus');
@@ -87,12 +79,12 @@ cpBus.promise.then(function(con){
                 conversationHandler.setConversationHelper( conversationHelper );
 
                 //mongoose.connect(config.mongo.host, config.mongo.dbName, config.mongo.port, {auto_reconnect: true},function(err){
-                mongoose.connect('mongodb://cpadmin:cpadmin@ds047802.mongolab.com:47802/cp', {auto_reconnect: true},function(err){
+                mongoose.connect(config.mongo.url, {auto_reconnect: true},function(err){
                     if (err){
                         console.log('conversationRouter(): mongoose error: ', err);
                     }
                     else {
-                        console.log('conversationRouter(): mongoose.connect ',config.mongo.dbName,'@',config.mongo.host,':',config.mongo.port);
+                        console.log('conversationRouter(): mongoose.connect ',config.mongo.url);
                     }
                 });
 

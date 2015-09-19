@@ -1,31 +1,20 @@
-/**
- * Created by randy
- */
-var mongodbClient                           = require('./../mongodb-client/index');
-var cpBus                                   = require('./../bus/index');
-var async                                   = require('async');
-var SocketIO                                = require('socket.io');
-var jwt                                     = require('jwt-simple');
-var https                                   = require('https');
-var fs                                      = require('fs');
-var config                                  = require('config');
-var mongoose                                = require('mongoose');
-
-var MessageDrivenBean                       = require('./../util/mdb/messageDrivenBean');
-var NotificationMessageHandler              = require('./../msgHandler/notificationMessageHandler');
-var ConversationHelper                      = require('./../rest/controllers/helper/conversationHelper');
-var AuthenticationHelper                    = require('./../util/authenticationHelper');
-var NotificationHelper                      = require('./../util/notificationHelper');
-var RFC6455Server                           = require('./../util/websocket/rfc6455Server');
-var logger                  = require('../util/logger');
+var async                           = require('async');
+var config                          = require('config');
+var mongoose                        = require('mongoose');
+var https                           = require('https');
+var fs                              = require('fs');
+var MessageDrivenBean               = require('../src/util/mdb/messageDrivenBean');
+var cpBus                           = require('../src/bus');
+var NotificationMessageHandler      = require('../src/msgHandler/notificationMessageHandler');
+var AuthenticationHelper            = require('../src/util/authenticationHelper');
+var ConversationHelper              = require('../src/rest/controllers/helper/conversationHelper');
+var logger                          = require('../src/util/logger');
+var CONSTANTS                       = require('../src/constants');
+var RFC6455Server                   = require('../src/util/websocket/rfc6455Server');
 
 logger.startLogger('notificationServer');
 
-cpBus.connection.on('error',function(err) {
-    console.log("unable to connect to cp bus:" + err);
-});
-
-cpBus.connection.on('ready',function() {
+cpBus.promise.then(function() {
 
     var notificationHandler = new NotificationMessageHandler();
     notificationHandler.setConversationHelper( new ConversationHelper() );

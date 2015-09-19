@@ -1,12 +1,12 @@
 var async                           = require('async');
-var MessageDrivenBean               = require('./../util/mdb/messageDrivenBean');
-var cpBus                           = require('./../bus/index');
-var ExchangePublisherFactory        = require('./../util/bus/exchangePublisherFactory');
 var config                          = require('config');
 var mongoose                        = require('mongoose');
-var AuditMessageHandler             = require('./../msgHandler/auditMessageHandler');
-var logger                          = require('../util/logger');
-var CONSTANTS                       = require('../constants');
+var MessageDrivenBean               = require('../src/util/mdb/messageDrivenBean');
+var cpBus                           = require('../src/bus');
+var AuditMessageHandler             = require('../src/msgHandler/auditMessageHandler');
+var ExchangePublisherFactory        = require('../src/util/bus/exchangePublisherFactory');
+var logger                          = require('../src/util/logger');
+var CONSTANTS                       = require('../src/constants');
 
 logger.startLogger('auditEngine');
 
@@ -26,14 +26,13 @@ cpBus.promise.then(function(con){
 
                 console.info('Auditor MDB: mongoose connect');
 
-                //mongoose.connect(config.mongo.host, config.mongo.dbName, config.mongo.port, {auto_reconnect: true});
-                mongoose.connect('mongodb://cpadmin:cpadmin@ds047802.mongolab.com:47802/cp', {auto_reconnect: true},function(err){
+                mongoose.connect(config.mongo.url, {auto_reconnect: true},function(err){
                     if (err){
                         console.log('webhookServer(): mongoose error: ', err);
                         callback(err, null);
                     }
                     else {
-                        console.log('webhookServer(): mongoose.connect mongodb://cpadmin:cpadmin@ds047802.mongolab.com:47802/cp');
+                        console.log('webhookServer(): connected',config.mongo.url);
                         callback(null,context);
                     }
                 });
