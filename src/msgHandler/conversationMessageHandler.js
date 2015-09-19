@@ -2,7 +2,7 @@ var async                   = require('async');
 var mongoose                = require('mongoose');
 var model                   = require('../models/models');
 
-var ConversationMessageHandler = module.exports = function ConversationMessageHandler( context ) {
+var ConversationMessageHandler = module.exports = function ConversationMessageHandler() {
 
     this.setConversationHelper = function(conversationHelper) {
         this._conversationHelper = conversationHelper;
@@ -72,7 +72,7 @@ ConversationMessageHandler.prototype.onMessage = function (msg, msgHandlerCallba
                     else {
                         callback(null, context);
                     }
-                })
+                });
             },
 
             // send to auditor
@@ -80,20 +80,12 @@ ConversationMessageHandler.prototype.onMessage = function (msg, msgHandlerCallba
 
                 var routingKey = 0;
                 var published = self._auditTrailPublisher.publish(routingKey, context);
-                if ( !published )
+                if ( !published ) {
                     callback(Error('AuditQueue Publish Failed'), null);
-                else
+                }
+                else {
                     callback(null, context);
-
-                /*
-                self._auditTrailPublisher.publish('AuditTrailQueue',context, function( error ){
-                    if ( error )
-                        callback(Error('AuditQueue Publish Failed'), null);
-                    else
-                        callback(null, context);
-                });
-                */
-
+                }
             },
 
             // get a populated model
@@ -124,20 +116,12 @@ ConversationMessageHandler.prototype.onMessage = function (msg, msgHandlerCallba
 
                 var routingKey = 0;
                 var published = self._notificationPublisher.publish(routingKey, notification);
-                if ( !published )
+                if ( !published ) {
                     callback(Error('NotificationQueue Publish Failed'), null);
-                else
+                }
+                else {
                     callback(null, context);
-                /*
-                self._notificationPublisher.publish('CPNotificationQueue',notification, function( err ){
-                    if ( err ) {
-                        callback(Error('Cannot publish to NotificationQueue'), null);
-                    }
-                    else {
-                        callback(null, context);
-                    }
-                });
-                */
+                }
             }
         ],
 
