@@ -10,18 +10,14 @@ var EnterpriseSchema = new Schema({
     created: Date,
     modified: Date,
     apiKey: { type: String },
-    details: {
-        name: String,
-        contact: String
-    }
+    name: {type: String},
+    contact: {type: String}
 });
 
 EnterpriseSchema.pre('save', function (next) {
-    
     if (!this.created){
         this.created = new Date();
     }
-
     this.modified = new Date();
     next();
 });

@@ -17,7 +17,7 @@ module.exports = function() {
 
     /*
     cpBus.connection.on('error',function(err) {
-        console.error("Escalation Controller: Unable to connect to bus: " + err);
+        console.error('Escalation Controller: Unable to connect to bus: ' + err);
     });
 
     cpBus.connection.on('ready',function() {

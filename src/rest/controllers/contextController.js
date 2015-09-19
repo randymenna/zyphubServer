@@ -12,7 +12,7 @@ var ObjectId = mongoose.Types.ObjectId;
 
 exports.newContext = function (req, res) {
 
-    console.log("newContext(): entered");
+    console.log('newContext(): entered');
     async.waterfall(
         [
             function (callback) {
@@ -32,7 +32,7 @@ exports.newContext = function (req, res) {
                     }
                     else {
                         if (ctx)
-                            callback({error: "Context Label already exists"}, null);
+                            callback({error: 'Context Label already exists'}, null);
                         else
                             callback(null, context);
                     }
@@ -57,7 +57,7 @@ exports.newContext = function (req, res) {
         ],
 
         function (err, context) {
-            console.log("newContext(): exiting: err=%s,result=%s", err, context);
+            console.log('newContext(): exiting: err=%s,result=%s', err, context);
             if (!err) {
                 res.status(200).json(context.ctx);
             } else {
@@ -69,7 +69,7 @@ exports.newContext = function (req, res) {
 
 exports.newByProfileId = function (req, res) {
 
-    console.log("newByProfileId(): entered");
+    console.log('newByProfileId(): entered');
     async.waterfall(
         [
             function (callback) {
@@ -97,7 +97,7 @@ exports.newByProfileId = function (req, res) {
         ],
 
         function (err, context) {
-            console.log("newByProfileId(): exiting: err=%s,result=%s", err, context);
+            console.log('newByProfileId(): exiting: err=%s,result=%s', err, context);
             if (!err) {
                 res.status(200).json(context.ctx);
             } else {
@@ -109,13 +109,13 @@ exports.newByProfileId = function (req, res) {
 
 exports.getAll = function (req, res) {
 
-    console.log("ctx.getAll(): entered");
+    console.log('ctx.getAll(): entered');
     async.waterfall(
         [
             function (callback) {
                 var context = {};
 
-                context.search = {}
+                context.search = {};
                 context.search.owner = req.user.origin;
 
                 if ( req.body.enterprise ) {
@@ -131,7 +131,7 @@ exports.getAll = function (req, res) {
         ],
 
         function (err, context) {
-            console.log("ctx.getAll(): exiting: err=%s,result=%s", err, context);
+            console.log('ctx.getAll(): exiting: err=%s,result=%s', err, context);
             if (!err) {
                 res.status(200).json(context.ctx);
             } else {
@@ -143,13 +143,13 @@ exports.getAll = function (req, res) {
 
 exports.getAllByProfileId = function (req, res) {
 
-    console.log("ctx.getAllByProfileId(): entered");
+    console.log('ctx.getAllByProfileId(): entered');
     async.waterfall(
         [
             function (callback) {
                 var context = {};
 
-                context.search = {}
+                context.search = {};
                 context.search.owner = req.params.id;
 
                 if ( req.body.enterprise ) {
@@ -165,7 +165,7 @@ exports.getAllByProfileId = function (req, res) {
         ],
 
         function (err, context) {
-            console.log("ctx.getAllByProfileId(): exiting: err=%s,result=%s", err, context);
+            console.log('ctx.getAllByProfileId(): exiting: err=%s,result=%s', err, context);
             if (!err) {
                 res.status(200).json(context.ctx);
             } else {
@@ -177,13 +177,13 @@ exports.getAllByProfileId = function (req, res) {
 
 exports.getOneByProfileId = function (req, res) {
 
-    console.log("ctx.getAllByProfileId(): entered");
+    console.log('ctx.getAllByProfileId(): entered');
     async.waterfall(
         [
             function (callback) {
                 var context = {};
 
-                context.search = {}
+                context.search = {};
                 context.search.owner = req.params.pid;
                 context.search._id = req.params.tid;
 
@@ -200,7 +200,7 @@ exports.getOneByProfileId = function (req, res) {
         ],
 
         function (err, context) {
-            console.log("ctx.getAllByProfileId(): exiting: err=%s,result=%s", err, context);
+            console.log('ctx.getAllByProfileId(): exiting: err=%s,result=%s', err, context);
             if (!err) {
                 res.status(200).json(context.ctx);
             } else {
@@ -212,7 +212,7 @@ exports.getOneByProfileId = function (req, res) {
 
 exports.getOne = function (req, res) {
 
-    console.log("ctx.getOne(): entered");
+    console.log('ctx.getOne(): entered');
     async.waterfall(
         [
             function (callback) {
@@ -231,7 +231,7 @@ exports.getOne = function (req, res) {
         ],
 
         function (err, context) {
-            console.log("ctx.getOne(): exiting: err=%s,result=%s", err, context);
+            console.log('ctx.getOne(): exiting: err=%s,result=%s', err, context);
             if (!err) {
                 res.status(200).json(context.ctx);
             } else {
@@ -243,7 +243,7 @@ exports.getOne = function (req, res) {
 
 exports.getOneByProfileId = function (req, res) {
 
-    console.log("ctx.getOneByProfileId(): entered");
+    console.log('ctx.getOneByProfileId(): entered');
     async.waterfall(
         [
             function (callback) {
@@ -262,7 +262,7 @@ exports.getOneByProfileId = function (req, res) {
         ],
 
         function (err, context) {
-            console.log("ctx.getOneByProfileId(): exiting: err=%s,result=%s", err, context);
+            console.log('ctx.getOneByProfileId(): exiting: err=%s,result=%s', err, context);
             if (!err) {
                 res.status(200).json(context.ctx);
             } else {
@@ -274,7 +274,7 @@ exports.getOneByProfileId = function (req, res) {
 
 exports.update = function (req, res) {
 
-    console.log("ctx.update(): entered");
+    console.log('ctx.update(): entered');
     async.waterfall(
         [
             function (callback) {
@@ -293,7 +293,7 @@ exports.update = function (req, res) {
         ],
 
         function (err, context) {
-            console.log("ctx.update(): exiting: err=%s,result=%s", err, context);
+            console.log('ctx.update(): exiting: err=%s,result=%s', err, context);
             if (!err) {
                 res.status(200).json(context.ctx);
             } else {
@@ -305,7 +305,7 @@ exports.update = function (req, res) {
 
 exports.updateByProfileId = function (req, res) {
 
-    console.log("ctx.updateByProfileId(): entered");
+    console.log('ctx.updateByProfileId(): entered');
     async.waterfall(
         [
             function (callback) {
@@ -324,7 +324,7 @@ exports.updateByProfileId = function (req, res) {
         ],
 
         function (err, context) {
-            console.log("ctx.updateByProfileId(): exiting: err=%s,result=%s", err, context);
+            console.log('ctx.updateByProfileId(): exiting: err=%s,result=%s', err, context);
             if (!err) {
                 res.status(200).json(context.ctx);
             } else {
@@ -336,7 +336,7 @@ exports.updateByProfileId = function (req, res) {
 
 exports.remove = function (req, res) {
 
-    console.log("ctx.remove(): entered");
+    console.log('ctx.remove(): entered');
     async.waterfall(
         [
             function (callback) {
@@ -354,7 +354,7 @@ exports.remove = function (req, res) {
         ],
 
         function (err, context) {
-            console.log("ctx.remove(): exiting: err=%s,result=%s", err, context);
+            console.log('ctx.remove(): exiting: err=%s,result=%s', err, context);
             if (!err) {
                 res.status(200).json(context.ctx);
             } else {
@@ -366,7 +366,7 @@ exports.remove = function (req, res) {
 
 exports.removeAllByProfileId = function (req, res) {
 
-    console.log("ctx.remove(): entered");
+    console.log('ctx.remove(): entered');
     async.waterfall(
         [
             function (callback) {
@@ -384,7 +384,7 @@ exports.removeAllByProfileId = function (req, res) {
         ],
 
         function (err, context) {
-            console.log("ctx.remove(): exiting: err=%s,result=%s", err, context);
+            console.log('ctx.remove(): exiting: err=%s,result=%s', err, context);
             if (!err) {
                 res.status(200).json(context.ctx);
             } else {
@@ -396,7 +396,7 @@ exports.removeAllByProfileId = function (req, res) {
 
 exports.removeOneByProfileId = function (req, res) {
 
-    console.log("ctx.remove(): entered");
+    console.log('ctx.remove(): entered');
     async.waterfall(
         [
             function (callback) {
@@ -415,7 +415,7 @@ exports.removeOneByProfileId = function (req, res) {
         ],
 
         function (err, context) {
-            console.log("ctx.remove(): exiting: err=%s,result=%s", err, context);
+            console.log('ctx.remove(): exiting: err=%s,result=%s', err, context);
             if (!err) {
                 res.status(200).json(context.ctx);
             } else {

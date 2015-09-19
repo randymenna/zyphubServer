@@ -12,7 +12,7 @@ var ObjectId = mongoose.Types.ObjectId;
 
 exports.newByProfileId = function (req, res) {
 
-    console.log("newByProfileId(): entered");
+    console.log('newByProfileId(): entered');
     async.waterfall(
         [
             function (callback) {
@@ -30,7 +30,7 @@ exports.newByProfileId = function (req, res) {
                         callback(err,null);
                     else
                     if ( !ctx.ctx )
-                        callback({error:"Context not found"},null);
+                        callback({error:'Context not found'},null);
                     else
                         callback(null,context);
                 });
@@ -54,7 +54,7 @@ exports.newByProfileId = function (req, res) {
         ],
 
         function (err, context) {
-            console.log("newByProfileId(): exiting: err=%s,result=%s", err, context);
+            console.log('newByProfileId(): exiting: err=%s,result=%s', err, context);
             if (!err) {
                 res.status(200).json(context.tag);
             } else {
@@ -66,13 +66,13 @@ exports.newByProfileId = function (req, res) {
 
 exports.getAll = function (req, res) {
 
-    console.log("tag.getAll(): entered");
+    console.log('tag.getAll(): entered');
     async.waterfall(
         [
             function (callback) {
                 var context = {};
 
-                context.search = {}
+                context.search = {};
                 context.search.owner = ObjectId(req.user.origin);
 
                 if ( req.body.enterprise ) {
@@ -88,7 +88,7 @@ exports.getAll = function (req, res) {
         ],
 
         function (err, context) {
-            console.log("tag.getAll(): exiting: err=%s,result=%s", err, context);
+            console.log('tag.getAll(): exiting: err=%s,result=%s', err, context);
             if (!err) {
                 res.status(200).json(context.tag);
             } else {
@@ -100,13 +100,13 @@ exports.getAll = function (req, res) {
 
 exports.getAllByProfileId = function (req, res) {
 
-    console.log("tag.getAllByProfileId(): entered");
+    console.log('tag.getAllByProfileId(): entered');
     async.waterfall(
         [
             function (callback) {
                 var context = {};
 
-                context.search = {}
+                context.search = {};
                 context.search.owner = [ ObjectId(req.params.id) ];
 
                 if ( req.body.enterprise ) {
@@ -122,7 +122,7 @@ exports.getAllByProfileId = function (req, res) {
         ],
 
         function (err, context) {
-            console.log("tag.getAllByProfileId(): exiting: err=%s,result=%s", err, context);
+            console.log('tag.getAllByProfileId(): exiting: err=%s,result=%s', err, context);
             if (!err) {
                 res.status(200).json(context.tags);
             } else {
@@ -134,13 +134,13 @@ exports.getAllByProfileId = function (req, res) {
 
 exports.getOneByProfileId = function (req, res) {
 
-    console.log("tag.getAllByProfileId(): entered");
+    console.log('tag.getAllByProfileId(): entered');
     async.waterfall(
         [
             function (callback) {
                 var context = {};
 
-                context.search = {}
+                context.search = {};
                 context.search.owner = ObjectId(req.params.pid);
                 context.search._id = ObjectId(req.params.tid);
 
@@ -157,7 +157,7 @@ exports.getOneByProfileId = function (req, res) {
         ],
 
         function (err, context) {
-            console.log("tag.getAllByProfileId(): exiting: err=%s,result=%s", err, context);
+            console.log('tag.getAllByProfileId(): exiting: err=%s,result=%s', err, context);
             if (!err) {
                 res.status(200).json(context.tag);
             } else {
@@ -169,7 +169,7 @@ exports.getOneByProfileId = function (req, res) {
 
 exports.getOne = function (req, res) {
 
-    console.log("tag.getOne(): entered");
+    console.log('tag.getOne(): entered');
     async.waterfall(
         [
             function (callback) {
@@ -188,7 +188,7 @@ exports.getOne = function (req, res) {
         ],
 
         function (err, context) {
-            console.log("tag.getOne(): exiting: err=%s,result=%s", err, context);
+            console.log('tag.getOne(): exiting: err=%s,result=%s', err, context);
             if (!err) {
                 res.status(200).json(context.tag);
             } else {
@@ -200,7 +200,7 @@ exports.getOne = function (req, res) {
 
 exports.getOneByProfileId = function (req, res) {
 
-    console.log("tag.getOneByProfileId(): entered");
+    console.log('tag.getOneByProfileId(): entered');
     async.waterfall(
         [
             function (callback) {
@@ -219,7 +219,7 @@ exports.getOneByProfileId = function (req, res) {
         ],
 
         function (err, context) {
-            console.log("tag.getOneByProfileId(): exiting: err=%s,result=%s", err, context);
+            console.log('tag.getOneByProfileId(): exiting: err=%s,result=%s', err, context);
             if (!err) {
                 res.status(200).json(context.tag);
             } else {
@@ -231,7 +231,7 @@ exports.getOneByProfileId = function (req, res) {
 
 exports.update = function (req, res) {
 
-    console.log("tag.update(): entered");
+    console.log('tag.update(): entered');
     async.waterfall(
         [
             function (callback) {
@@ -250,7 +250,7 @@ exports.update = function (req, res) {
         ],
 
         function (err, context) {
-            console.log("tag.update(): exiting: err=%s,result=%s", err, context);
+            console.log('tag.update(): exiting: err=%s,result=%s', err, context);
             if (!err) {
                 res.status(200).json(context.tag);
             } else {
@@ -262,7 +262,7 @@ exports.update = function (req, res) {
 
 exports.updateByProfileId = function (req, res) {
 
-    console.log("tag.updateByProfileId(): entered");
+    console.log('tag.updateByProfileId(): entered');
     async.waterfall(
         [
             function (callback) {
@@ -282,7 +282,7 @@ exports.updateByProfileId = function (req, res) {
         ],
 
         function (err, context) {
-            console.log("tag.updateByProfileId(): exiting: err=%s,result=%s", err, context);
+            console.log('tag.updateByProfileId(): exiting: err=%s,result=%s', err, context);
             if (!err) {
                 res.status(200).json(context.tag);
             } else {
@@ -294,7 +294,7 @@ exports.updateByProfileId = function (req, res) {
 
 exports.remove = function (req, res) {
 
-    console.log("tag.remove(): entered");
+    console.log('tag.remove(): entered');
     async.waterfall(
         [
             function (callback) {
@@ -312,7 +312,7 @@ exports.remove = function (req, res) {
         ],
 
         function (err, context) {
-            console.log("tag.remove(): exiting: err=%s,result=%s", err, context);
+            console.log('tag.remove(): exiting: err=%s,result=%s', err, context);
             if (!err) {
                 res.status(200).json(context.tag);
             } else {
@@ -324,7 +324,7 @@ exports.remove = function (req, res) {
 
 exports.removeAllByProfileId = function (req, res) {
 
-    console.log("tag.remove(): entered");
+    console.log('tag.remove(): entered');
     async.waterfall(
         [
             function (callback) {
@@ -342,7 +342,7 @@ exports.removeAllByProfileId = function (req, res) {
         ],
 
         function (err, context) {
-            console.log("tag.remove(): exiting: err=%s,result=%s", err, context);
+            console.log('tag.remove(): exiting: err=%s,result=%s', err, context);
             if (!err) {
                 res.status(200).json(context.tag);
             } else {
@@ -354,7 +354,7 @@ exports.removeAllByProfileId = function (req, res) {
 
 exports.removeOneByProfileId = function (req, res) {
 
-    console.log("tag.remove(): entered");
+    console.log('tag.remove(): entered');
     async.waterfall(
         [
             function (callback) {
@@ -373,7 +373,7 @@ exports.removeOneByProfileId = function (req, res) {
         ],
 
         function (err, context) {
-            console.log("tag.remove(): exiting: err=%s,result=%s", err, context);
+            console.log('tag.remove(): exiting: err=%s,result=%s', err, context);
             if (!err) {
                 res.status(200).json(context.tag);
             } else {

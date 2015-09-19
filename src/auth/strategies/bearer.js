@@ -8,11 +8,11 @@ var AuthHelper				    = require('../../util/authenticationHelper');
 var authHelper = new AuthHelper();
 
 module.exports = function(passport) {
-    console.log("bearer");
+    console.log('bearer');
 
     passport.use(new BearerStrategy({},
         function (token, done) {
-            //console.log("bearer");
+            //console.log('bearer');
             User.findOne({
                 token: token
             },function(err, user) {
@@ -32,6 +32,7 @@ module.exports = function(passport) {
                 else {
                     user.origin = decoded.profileId;
                     user.enterprise = decoded.aud;
+                    user.enterpriseId = decoded.jti;
 
                     return done(null, user);
                 }
@@ -39,4 +40,4 @@ module.exports = function(passport) {
             });
         }
     ));
-}
+};

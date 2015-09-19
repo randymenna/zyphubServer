@@ -15,7 +15,7 @@ var RFC6455Server = module.exports = function RFC6455Server( context ) {
 RFC6455Server.prototype.startUnsecureServer = function () {
     var self = this;
 
-    console.log("RFC6455Server.startServer(): unsecure");
+    console.log('RFC6455Server.startServer(): unsecure');
 
     var WebSocketServer = require('ws').Server;
     var http = require('http');
@@ -50,7 +50,7 @@ RFC6455Server.prototype.startUnsecureServer = function () {
         });
 
         ws.on('error', function(e){
-            console.log("websocket error: " + e);
+            console.log('websocket error: ' + e);
             clientMap.removeClient(ws);
         });
     });

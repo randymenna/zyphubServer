@@ -27,12 +27,12 @@ var tagSchema = new Schema({
     expires: Date,
 
     owner: [{type: Schema.Types.ObjectId, ref: 'Profiles', index: true}],
-    enterprise: {type: String, default: "ConversePoint"},
+    enterprise: {type: String, default: 'ConversePoint'},
 
     meta: {}
     });
 
-tagSchema.pre("save",function(next, done) {
+tagSchema.pre('save',function(next, done) {
     var self = this;
 
     next();

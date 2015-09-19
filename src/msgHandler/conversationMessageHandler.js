@@ -1,4 +1,4 @@
-var async                   = require("async");
+var async                   = require('async');
 var mongoose                = require('mongoose');
 var model                   = require('../models/models');
 
@@ -42,7 +42,7 @@ var ConversationMessageHandler = module.exports = function ConversationMessageHa
 ConversationMessageHandler.prototype.onMessage = function (msg, msgHandlerCallback) {
     var self = this;
 
-    console.log("ConversationMessageHandler.handleMessage() entered: message: " + JSON.stringify(msg.content.toString()));
+    console.log('ConversationMessageHandler.handleMessage() entered: message: ' + JSON.stringify(msg.content.toString()));
 
     async.waterfall(
         [
@@ -59,7 +59,7 @@ ConversationMessageHandler.prototype.onMessage = function (msg, msgHandlerCallba
                     });
                 }
                 else {
-                    callback(Error("No message handler for "+context.action), null);
+                    callback(Error('No message handler for '+context.action), null);
                 }
             },
 
@@ -81,14 +81,14 @@ ConversationMessageHandler.prototype.onMessage = function (msg, msgHandlerCallba
                 var routingKey = 0;
                 var published = self._auditTrailPublisher.publish(routingKey, context);
                 if ( !published )
-                    callback(Error("AuditQueue Publish Failed"), null);
+                    callback(Error('AuditQueue Publish Failed'), null);
                 else
                     callback(null, context);
 
                 /*
                 self._auditTrailPublisher.publish('AuditTrailQueue',context, function( error ){
                     if ( error )
-                        callback(Error("AuditQueue Publish Failed"), null);
+                        callback(Error('AuditQueue Publish Failed'), null);
                     else
                         callback(null, context);
                 });
@@ -125,13 +125,13 @@ ConversationMessageHandler.prototype.onMessage = function (msg, msgHandlerCallba
                 var routingKey = 0;
                 var published = self._notificationPublisher.publish(routingKey, notification);
                 if ( !published )
-                    callback(Error("NotificationQueue Publish Failed"), null);
+                    callback(Error('NotificationQueue Publish Failed'), null);
                 else
                     callback(null, context);
                 /*
                 self._notificationPublisher.publish('CPNotificationQueue',notification, function( err ){
                     if ( err ) {
-                        callback(Error("Cannot publish to NotificationQueue"), null);
+                        callback(Error('Cannot publish to NotificationQueue'), null);
                     }
                     else {
                         callback(null, context);
@@ -143,7 +143,7 @@ ConversationMessageHandler.prototype.onMessage = function (msg, msgHandlerCallba
 
         function (err, context) {
 
-            console.log("ConversationMessageHandler.handleMessage() exit: message: " + JSON.stringify(msg.content.toString()));
+            console.log('ConversationMessageHandler.handleMessage() exit: message: ' + JSON.stringify(msg.content.toString()));
             msgHandlerCallback(err, msg);
         }
     );
@@ -152,7 +152,7 @@ ConversationMessageHandler.prototype.onMessage = function (msg, msgHandlerCallba
 ConversationMessageHandler.prototype.handleNew = function(context,doneCallback) {
     var self = this;
 
-    console.log("newConversation(): enter: context=%", context);
+    console.log('newConversation(): enter: context=%', context);
 
     async.waterfall(
         [
@@ -170,7 +170,7 @@ ConversationMessageHandler.prototype.handleNew = function(context,doneCallback) 
                                 callback(null, context);
                             }
                             else {
-                                callback(Error("handleNew(): Cannot find conversation: " + context.conversationId), null);
+                                callback(Error('handleNew(): Cannot find conversation: ' + context.conversationId), null);
                             }
                         }
                     });
@@ -208,7 +208,7 @@ ConversationMessageHandler.prototype.handleNew = function(context,doneCallback) 
                 // now populate it correctly
                 for (var i=0; i< context.conversation.envelope.members.length; i++) {
                     var tmp = {
-                        state: "UNOPENED"
+                        state: 'UNOPENED'
                     };
                     if (typeof context.conversation.envelope.members[i] === 'string' || context.conversation.envelope.members[i] instanceof String){
                         tmp.member = mongoose.Types.ObjectId(context.conversation.envelope.members[i]);
@@ -262,12 +262,12 @@ ConversationMessageHandler.prototype.handleNew = function(context,doneCallback) 
 
                 if ( context.ttl ) {
 
-                    context.action = "setTTL";
+                    context.action = 'setTTL';
 
                     var routingKey = 0;
                     var published = self._schedulerPublisher.publish(routingKey, context);
                     if ( !published ) {
-                        callback(Error("Scheduler Publish Failed"), null);
+                        callback(Error('Scheduler Publish Failed'), null);
                     }
                     else {
                         callback(null, context);
@@ -275,7 +275,7 @@ ConversationMessageHandler.prototype.handleNew = function(context,doneCallback) 
                     /*
                     self._schedulerPublisher.publish('SchedulerQueue', context, function (error) {
                         if (error)
-                            callback(Error("Scheduler Publish Failed: setTTL"), null);
+                            callback(Error('Scheduler Publish Failed: setTTL'), null);
                         else
                             callback(null, context);
                     });
@@ -292,11 +292,11 @@ ConversationMessageHandler.prototype.handleNew = function(context,doneCallback) 
 
                 if (context.conversation.escalation && context.conversation.escalation.id && context.conversation.escalation.id.length ) {
 
-                    context.action = "setEscalation";
+                    context.action = 'setEscalation';
                     var routingKey = 0;
                     var published = self._schedulerPublisher.publish(routingKey, context);
                     if ( !published ) {
-                        callback(Error("Scheduler Publish Failed"), null);
+                        callback(Error('Scheduler Publish Failed'), null);
                     }
                     else {
                         callback(null, context);
@@ -304,7 +304,7 @@ ConversationMessageHandler.prototype.handleNew = function(context,doneCallback) 
                     /*
                     self._schedulerPublisher.publish('SchedulerQueue', context, function (error) {
                         if (error)
-                            callback(Error("Scheduler Publish Failed: setEscalation"), null);
+                            callback(Error('Scheduler Publish Failed: setEscalation'), null);
                         else
                             callback(null, context);
                     });
@@ -324,7 +324,7 @@ ConversationMessageHandler.prototype.handleNew = function(context,doneCallback) 
                     for(var i=0; i<context.tags.length; i++) {
                         if ( context.tags[i].constraint ) {
                             var ctx = {};
-                            ctx.action = "tagConstraint";
+                            ctx.action = 'tagConstraint';
                             ctx.tag = context.tags[i].toObject();
                             ctx.constraint = context.tags[i].constraint;
                             ctx.conversationId = context.conversationId;
@@ -332,7 +332,7 @@ ConversationMessageHandler.prototype.handleNew = function(context,doneCallback) 
                             var routingKey = 0;
                             var published = self._schedulerPublisher.publish(routingKey, context);
                             if ( !published ) {
-                                callback(Error("Scheduler Publish Failed"), null);
+                                callback(Error('Scheduler Publish Failed'), null);
                             }
                             else {
                                 callback(null, context);
@@ -340,7 +340,7 @@ ConversationMessageHandler.prototype.handleNew = function(context,doneCallback) 
                             /*
                             self._schedulerPublisher.publish('SchedulerQueue', ctx, function (error) {
                                 if (error)
-                                    console.log("Scheduler Publish Failed: tagConstraint");
+                                    console.log('Scheduler Publish Failed: tagConstraint');
                             });
                             */
                         }
@@ -355,11 +355,11 @@ ConversationMessageHandler.prototype.handleNew = function(context,doneCallback) 
         ],
 
         function (err, context) {
-            //console.log("newConversation(): exiting: err=%s,result=%s", err, context);
+            //console.log('newConversation(): exiting: err=%s,result=%s', err, context);
 
             doneCallback(err,context);
         });
-}
+};
 
 ConversationMessageHandler.prototype.handleReply = function(context,doneCallback) {
     var self = this;

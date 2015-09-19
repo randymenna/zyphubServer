@@ -4,12 +4,11 @@
 
 var async                   = require('async');
 var model                   = require('../../models/models');
-var restHelper              = require('./helper/restHelper');
 
 
 exports.getOneAuditTrail = function (req, res) {
 
-    console.log("getOneAuditTrail(): entered");
+    console.log('getOneAuditTrail(): entered');
     async.waterfall(
         [
             function (callback) {
@@ -18,7 +17,7 @@ exports.getOneAuditTrail = function (req, res) {
 
                 context.conversationId = req.params.id;
 
-                console.log("getOneAuditTrail(): origin=%s", context.origin);
+                console.log('getOneAuditTrail(): origin=%s', context.origin);
                 callback(null, context);
             },
 
@@ -40,7 +39,7 @@ exports.getOneAuditTrail = function (req, res) {
         ],
 
         function (err, context) {
-            console.log("getOneAuditTrail(): exiting: err=%s,result=%s", err, context);
+            console.log('getOneAuditTrail(): exiting: err=%s,result=%s', err, context);
             if (!err) {
                 res.status(200).json(context.auditTrail);
             } else {

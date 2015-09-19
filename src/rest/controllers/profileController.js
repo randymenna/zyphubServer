@@ -3,26 +3,24 @@
  */
 
 var async                   = require('async');
-var genericMongoController  = require('./genericMongoController');
 var profile                 = require('../../models/profile');
 var model                   = require('../../models/models');
 var mongoose                = require('mongoose');
 var profileHelper           = require('./helper/profileHelper');
 var ConversationHelper      = require('./helper/conversationHelper');
 
-var ObjectId = mongoose.Types.ObjectId;
 var conversationHelper = new ConversationHelper();
 
 exports.getProfiles = function (req, res) {
 
-    console.log("getProfiles(): entered");
+    console.log('getProfiles(): entered');
     async.waterfall(
         [
             function (callback) {
                 var context = {};
-                var accountId = genericMongoController.extractAccountId(req);
+                var accountId = req.user.origin;
                 context.accountId = accountId;
-                console.log("getProfiles(): accountId=%s", accountId);
+                console.log('getProfiles(): accountId=%s', accountId);
                 callback(null, context);
             },
             function (context, callback) {
@@ -33,12 +31,13 @@ exports.getProfiles = function (req, res) {
                     else {
                         context.profiles = profiles;
 
-                        for (var i=0; i < profiles.length; i++ )
-                            context.profiles[i] = profileHelper.sanitize( profiles[i].toObject() );
+                        for (var i=0; i < profiles.length; i++ ) {
+                            context.profiles[i] = profileHelper.sanitize(profiles[i].toObject());
+                        }
 
                         callback(null, context);
                     }
-                })
+                });
             } /*,
 
             function (context, callback) {
@@ -56,7 +55,7 @@ exports.getProfiles = function (req, res) {
         ],
 
         function (err, context) {
-            console.log("getProfiles(): exiting: err=%s,result=%s", err, context);
+            console.log('getProfiles(): exiting: err=%s,result=%s', err, context);
             if (!err) {
                 res.status(200).json(context);
             } else {
@@ -68,15 +67,15 @@ exports.getProfiles = function (req, res) {
 
 exports.getOneProfile = function (req, res) {
 
-    console.log("getOneProfile(): entered");
+    console.log('getOneProfile(): entered');
     async.waterfall(
         [
             function (callback) {
                 var context = {};
-                var accountId = genericMongoController.extractAccountId(req);
+                var accountId = req.user.origin;
                 context.accountId = accountId;
                 context.id = req.params.id;
-                console.log("getProfiles(): accountId=%s", accountId);
+                console.log('getProfiles(): accountId=%s', accountId);
                 callback(null, context);
             },
             function (context, callback) {
@@ -88,12 +87,12 @@ exports.getOneProfile = function (req, res) {
                         context.profile = profileHelper.sanitize( profile.toObject() );
                         callback(null, context);
                     }
-                })
+                });
             }
         ],
 
         function (err, context) {
-            console.log("getOneProfile(): exiting: err=%s,result=%s", err, context);
+            console.log('getOneProfile(): exiting: err=%s,result=%s', err, context);
             if (!err) {
                 res.status(200).json(context.profile);
             } else {
@@ -105,20 +104,20 @@ exports.getOneProfile = function (req, res) {
 
 exports.newProfile = function (req, res) {
 
-    console.log("newProfile(): entered");
+    console.log('newProfile(): entered');
     async.waterfall(
         [
             function (callback) {
                 var context = {};
-                var accountId = genericMongoController.extractAccountId(req);
+                var accountId = req.user.origin;
                 context.accountId = accountId;
-                console.log("getProfiles(): accountId=%s", accountId);
+                console.log('getProfiles(): accountId=%s', accountId);
                 callback(null, context);
             },
 
             function (context, callback) {
 
-                var info = {}
+                var info = {};
                 info.name = req.body.name;
                 info.label = req.body.label;
 
@@ -142,7 +141,7 @@ exports.newProfile = function (req, res) {
         ],
 
         function (err, context) {
-            console.log("newProfile(): exiting: err=%s,result=%s", err, context);
+            console.log('newProfile(): exiting: err=%s,result=%s', err, context);
             if (!err) {
                 res.status(200).json(context.profile);
             } else {
@@ -154,13 +153,13 @@ exports.newProfile = function (req, res) {
 
 exports.getConversations = function (req, res) {
 
-    console.log("getConversations(): entered");
+    console.log('getConversations(): entered');
 
     async.waterfall(
         [
             function (callback) {
                 var context = {};
-                var accountId = genericMongoController.extractAccountId(req);
+                var accountId = req.user.origin;
 
                 context.accountId = accountId;
                 context.profileId = req.params.id;
@@ -207,7 +206,7 @@ exports.getConversations = function (req, res) {
         ],
 
         function (err, context) {
-            console.log("getConversations(): exiting: err=%s,result=%s", err, context);
+            console.log('getConversations(): exiting: err=%s,result=%s', err, context);
             if (!err) {
                 res.status(200).json(context.conversations);
             } else {
@@ -219,14 +218,14 @@ exports.getConversations = function (req, res) {
 
 exports.update = function (req, res) {
 
-    console.log("profiles.update(): entered");
+    console.log('profiles.update(): entered');
     async.waterfall(
         [
             function (callback) {
                 var context = {};
 
                 context.search = {};
-                context.search._id = ObjectId(req.params.id);
+                context.search._id = mongoose.Type.ObjectId(req.params.id);
                 context.update = profileHelper.getUpdate( req.body );
 
                 callback(null, context);
@@ -240,12 +239,12 @@ exports.update = function (req, res) {
                         context.profile = profileHelper.santize( profile.toObject() );
                         callback(null, context);
                     }
-                })
+                });
             }
         ],
 
         function (err, context) {
-            console.log("profile.update(): exiting: err=%s,result=%s", err, context);
+            console.log('profile.update(): exiting: err=%s,result=%s', err, context);
             if (!err) {
                 res.status(200).json(context.profile);
             } else {
@@ -257,14 +256,14 @@ exports.update = function (req, res) {
 
 exports.remove = function (req, res) {
 
-    console.log("profile.remove(): entered");
+    console.log('profile.remove(): entered');
     async.waterfall(
         [
             function (callback) {
                 var context = {};
 
                 context.search = {};
-                context.search._id = ObjectId(req.params.id);
+                context.search._id = mongoose.Type.ObjectId(req.params.id);
 
                 callback(null, context);
             },
@@ -277,12 +276,12 @@ exports.remove = function (req, res) {
                         context.profile = profileHelper.santize( profile.toObject() );
                         callback(null, context);
                     }
-                })
+                });
             }
         ],
 
         function (err, context) {
-            console.log("profile.remove(): exiting: err=%s,result=%s", err, context);
+            console.log('profile.remove(): exiting: err=%s,result=%s', err, context);
             if (!err) {
                 res.status(200).json(context.tag);
             } else {

@@ -13,7 +13,7 @@ var webhookSchema = new Schema({
 });
 
 
-webhookSchema.pre("save",function(next, done) {
+webhookSchema.pre('save',function(next, done) {
     var self = this;
 
     next();

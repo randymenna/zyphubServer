@@ -7,9 +7,9 @@ exports.extractOriginId = function(req) {
     var token      = req.headers['cp-auth-token'];
 
     return decodeToken(token);
-}
+};
 
 var decodeToken = function( token ) {
     return token;
-}
+};
 

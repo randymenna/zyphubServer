@@ -1,6 +1,5 @@
 var express                 = require('express');
 var bodyParser              = require('body-parser');
-var url                     = require('url');
 var mongoDbClient           = require('../src/mongodb-client/index');
 var https                   = require('https');
 var config                  = require('config');
@@ -14,7 +13,7 @@ logger.startLogger('restServer');
 require('../src/auth/passport')(passport);
 
 mongoDbClient.init(function(error) {
-    if ( error == null ) {
+    if ( error === null ) {
         var app = createExpressApplication();
         if (config.restServer.isUnSecurePortEnabled) {
 
@@ -58,7 +57,7 @@ function runSecureRestServer(app) {
 
     var httpsServer = https.createServer(options,app);
     httpsServer.listen(config.restServer.securePort,function() {
-       console.info("HTTPS Server listening on " + config.restServer.securePort);
+       console.info('HTTPS Server listening on ' + config.restServer.securePort);
     });
 }
 
@@ -68,15 +67,15 @@ function createExpressApplication() {
 
     var checkContentType = function(req, res, next) {
         var requestType = req.get('Content-Type');
-        if (req.method == 'POST' || req.method == 'PUT') {
-            if (requestType == undefined) {
+        if (req.method === 'POST' || req.method === 'PUT') {
+            if (requestType === undefined) {
                 res.status(415).json({error: 'Content-Type not defined'});
-            } else if (requestType != "application/json") {
-                res.status(415).json({error: 'Unsupported Content-Type ' + "'" + requestType + "'"});
+            } else if (requestType !== 'application/json') {
+                res.status(415).json({error: 'Unsupported Content-Type ' + '"' + requestType + '"'});
             }
         }
         next();
-    }
+    };
 
     var allowCrossDomain = function(req, res, next) {
         var oneof = false;
@@ -97,13 +96,13 @@ function createExpressApplication() {
         }
 
         // intercept OPTIONS method
-        if (oneof && req.method == 'OPTIONS') {
+        if (oneof && req.method === 'OPTIONS') {
             res.send(200);
         }
         else {
             next();
         }
-    }
+    };
 
     app.use(bodyParser.json())
         .use(bodyParser.urlencoded({extended:true}))
@@ -115,30 +114,30 @@ function createExpressApplication() {
     //
     app.use(function(req, res, next) {
         // Put rest call preprocessing here.
-        console.log("express interceptor");
+        console.log('express interceptor');
 
         // ignore token validation
-        if ( req.url.indexOf('/') == 0) {
+        if ( req.url.indexOf('/') === 0) {
             // no token to validate
             next();
         }
     });
 
     // the API Spec
-    app.use("/apiDoc", express.static(__dirname + '/cp-api-swager.json'));
+    app.use('/apiDoc', express.static(__dirname + '/cp-api-swager.json'));
     // Routes
 
-    app.use('/api', require('../src/rest/mongoService'));
-    app.use('/atrium/profiles', require('../src/rest/profileService'));
-    app.use('/atrium/groups', require('../src/rest/groupService'));
-    app.use('/atrium/conversations', require('../src/rest/conversationService'));
-    app.use('/atrium/escalations', require('../src/rest/escalationService'));
-    app.use('/atrium/auditTrail', require('../src/rest/auditService'));
-    app.use('/atrium/users', require('../src/rest/userService'));
-    app.use('/atrium/contexts', require('../src/rest/contextService'));
-    app.use('/atrium/auth', require('../src/rest/authService'));
+    app.use('/v1/profiles', require('../src/rest/profileService'));
+    app.use('/v1/groups', require('../src/rest/groupService'));
+    app.use('/v1/conversations', require('../src/rest/conversationService'));
+    app.use('/v1/escalations', require('../src/rest/escalationService'));
+    app.use('/v1/auditTrail', require('../src/rest/auditService'));
+    app.use('/v1/users', require('../src/rest/userService'));
+    app.use('/v1/contexts', require('../src/rest/contextService'));
+    app.use('/v1/auth', require('../src/rest/authService'));
     app.use('/auth', require('../src/rest/authService'));
-    app.use('/atrium/webhook', require('../src/rest/webHookService'));
+    app.use('/v1/webhook', require('../src/rest/webHookService'));
+    app.use('/v1/admin', require('../src/rest/adminService'));
 
     return app;
 }

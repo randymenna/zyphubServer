@@ -1,5 +1,6 @@
-'use strict';
-
+(function() {
+	'use strict';
+}());
 /**
  * Module dependencies.
  */
@@ -11,7 +12,7 @@ var models				= require('../../models/models');
 
 module.exports = function() {
 	// Use facebook strategy
-	console.log("facebook");
+	console.log('facebook');
 	passport.use(new FacebookStrategy({
 			clientID: config.facebook.appID,
 			clientSecret: config.facebook.appSecret,

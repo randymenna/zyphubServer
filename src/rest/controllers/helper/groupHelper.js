@@ -15,7 +15,7 @@ exports.santize = function( group ) {
     delete group.avatar;
 
     return group;
-}
+};
 
 exports.pull = function( array, item ) {
     for(var i = array.length-1; i--;){
@@ -23,7 +23,7 @@ exports.pull = function( array, item ) {
     }
 
     return array;
-}
+};
 
 exports.pullAll = function( array, itemArray ) {
     for(var i = array.length-1; i--;){
@@ -32,4 +32,4 @@ exports.pullAll = function( array, itemArray ) {
     }
 
     return array;
-}
+};

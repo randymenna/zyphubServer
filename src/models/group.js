@@ -11,10 +11,10 @@ var groupSchema = new Schema({
     name:           String,
     label:          String,
     description:    String,
-    avatar:         {type: String, default: "group.png"},
-    type:           {type: String, default: "GROUP"},
+    avatar:         {type: String, default: 'group.png'},
+    type:           {type: String, default: 'GROUP'},
     public:         {type: Boolean, default: false},
-    enterprise:     {type: String, default: "ConversePoint"},
+    enterprise:     {type: String, default: 'ConversePoint'},
     members:        [{type: Schema.Types.ObjectId, ref: 'Profiles'}],
     owner:          [{type: Schema.Types.ObjectId, ref: 'Profiles'}],
     meta:           {

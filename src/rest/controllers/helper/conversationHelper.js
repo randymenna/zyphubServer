@@ -3,7 +3,6 @@
  */
 
 var async                   = require('async');
-var config                  = require('config');
 var model                   = require('../../../models/models');
 var mongoose                = require('mongoose');
 var ObjectId                = require('mongoose').Types.ObjectId;
@@ -12,22 +11,22 @@ var TagHelper               = require('./tagHelper');
 var ConversationHelper = module.exports = function ConversationHelper () {
 
     this.getOriginAllowableActions = function( pattern ){
-        var actions = { "STANDARD" : [ "CLOSE", "REPLY", "FORWARD" ] };
+        var actions = { 'STANDARD' : [ 'CLOSE', 'REPLY', 'FORWARD' ] };
 
         return actions[pattern];
     };
 
     this.getParticipantAllowableActions = function(pattern){
-        var actions = { "STANDARD" : [ "READ", "LEAVE", "REPLY", "FORWARD", "DELEGATE" ] };
+        var actions = { 'STANDARD' : [ 'READ', 'LEAVE', 'REPLY', 'FORWARD', 'DELEGATE' ] };
 
         return actions[pattern];
-    }
+    };
 
     this._conversationPublisher = null;
 
     this.removeFromArray = function( id, list ) {
         for (var i=0; i < list.length; i++) {
-            if ( id == list._id ) {
+            if ( id === list._id ) {
                 list.splice(i,1);
                 break;
             }
@@ -37,7 +36,7 @@ var ConversationHelper = module.exports = function ConversationHelper () {
     this.updateLastEvent = function( profileId, state , conversation) {
 
        for (var i=0; i < conversation.state.members.length; i++ ) {
-           if ( conversation.state.members[i].member.id == (new ObjectId(profileId)).id ) {
+           if ( conversation.state.members[i].member.id === (new ObjectId(profileId)).id ) {
                conversation.state.members[i].lastEvent = state;
                break;
            }
@@ -49,8 +48,8 @@ var ConversationHelper = module.exports = function ConversationHelper () {
         // update the state
         for (var i=0; i < conversation.state.members.length; i++ ) {
 
-            if ( conversation.state.members[i].lastEvent != state ) {
-                conversation.state.members[i].lastEvent = "REMOVED";
+            if ( conversation.state.members[i].lastEvent !== state ) {
+                conversation.state.members[i].lastEvent = 'REMOVED';
                 conversation.envelope.members.pull(new ObjectId(conversation.state.members[i].member));
                 --conversation.state.curMemberCount;
             }
@@ -60,7 +59,7 @@ var ConversationHelper = module.exports = function ConversationHelper () {
     // remove conversation from Inbox
     this.removeConversationFromOriginMembersInbox = function(context, callback) {
 
-        model.Profile.update({'_id': context.origin},{$pull: {inbox: context.conversation._id}}, function (err, doc) {
+        model.Profile.update({'_id': context.origin},{$pull: {inbox: context.conversation._id}}, function (err) {
             if ( err ) {
                 callback(err, null);
             }
@@ -90,15 +89,15 @@ var ConversationHelper = module.exports = function ConversationHelper () {
         // update the state
         for (var i=0; i < context.conversation.state.members.length; i++ ) {
 
-            context.conversation.state.members[i].state = "REMOVED";
+            context.conversation.state.members[i].state = 'REMOVED';
             context.conversation.envelope.members.pull(new ObjectId(context.conversation.state.members[i].member));
             --context.conversation.state.curMemberCount;
         }
-        callback(null,context)
+        callback(null,context);
     };
 
     this.addConversationToNewMembersInboxes = function( context, callback ) {
-        model.Profile.update({'_id': { $in: context.toProfiles }},{$push: {inbox: context.conversation._id }}, {multi:true}, function(err, profiles){
+        model.Profile.update({'_id': { $in: context.toProfiles }},{$push: {inbox: context.conversation._id }}, {multi:true}, function(err){
             if ( err ) {
                 callback(err, null);
             }
@@ -106,39 +105,40 @@ var ConversationHelper = module.exports = function ConversationHelper () {
                 callback(null, context);
             }
         });
-    }
+    };
 
     this.addNewMembersToConversation = function( context, callback ) {
         for (var i=0; i < context.toProfiles.length; i++) {
             context.conversation.envelope.members.push( context.toProfiles[i] );
-            context.conversation.state.members.push( {member: context.toProfiles[i], state: "UNOPENED"} );
+            context.conversation.state.members.push( {member: context.toProfiles[i], state: 'UNOPENED'} );
             ++context.conversation.state.curMemberCount;
         }
         callback(null, context);
-    }
+    };
 
     this.escalationConditionMet = function( context ) {
         var condition = context.escalation.steps[context.currentStep].trigger;
         var doNextStep = true;
 
         switch( condition ) {
-            case "NO_READS":
+            case 'NO_READS':
                 for (var i=0; i < context.conversation.state.members.length; i++) {
-                    if (context.conversation.state.members[i].lastEvent != 'UNREAD') {
+                    if (context.conversation.state.members[i].lastEvent !== 'UNREAD') {
                         doNextStep = false;
                         break;
                     }
                 }
                 break;
 
-            case "NO_REPLIES":
-                if (context.conversation.envelope.replies.length)
+            case 'NO_REPLIES':
+                if (context.conversation.envelope.replies.length) {
                     doNextStep = false;
+                }
                 break;
         }
 
         return doNextStep;
-    }
+    };
 
     this.routeToGroups = function( context, callback ) {
 
@@ -148,7 +148,7 @@ var ConversationHelper = module.exports = function ConversationHelper () {
 
         while (i--) {
             // is it a group?
-            if (context.members[i].charAt(0) == 'b') {
+            if (context.members[i].charAt(0) === 'b') {
                 context.groups.push(context.members[i]);
                 context.members.splice(i,1);
             }
@@ -175,7 +175,6 @@ var ConversationHelper = module.exports = function ConversationHelper () {
     };
 
     this.routeToTags = function( context, callback ) {
-        var self = this;
 
         model.Tag.find({'label': {$in: context.tags}}, function (err, tags) {
 
@@ -184,8 +183,9 @@ var ConversationHelper = module.exports = function ConversationHelper () {
             }
             else {
                 for (var i=0; i < tags.length; i++) {
-                    if ( TagHelper.isActive(tags[i]) )
+                    if ( TagHelper.isActive(tags[i]) ) {
                         context.members.push(tags[i].owner[0]);
+                    }
                 }
                 context.tags = tags;
 
@@ -197,9 +197,9 @@ var ConversationHelper = module.exports = function ConversationHelper () {
 
 ConversationHelper.prototype.getOriginAllowableActions = function( pattern ){
     var actions = {
-        "STANDARD" : [ "CLOSE", "REPLY", "FORWARD" ],
-        "FYI": [ "CLOSE", "FORWARD" ],
-        "FCFS": [ "CLOSE", "REPLY", "FORWARD"]
+        'STANDARD' : [ 'CLOSE', 'REPLY', 'FORWARD' ],
+        'FYI': [ 'CLOSE', 'FORWARD' ],
+        'FCFS': [ 'CLOSE', 'REPLY', 'FORWARD']
     };
 
     return actions[pattern];
@@ -207,18 +207,18 @@ ConversationHelper.prototype.getOriginAllowableActions = function( pattern ){
 
 ConversationHelper.prototype.getParticipantAllowableActions = function(pattern){
     var actions = {
-        "STANDARD" : [ "READ", "LEAVE", "REPLY", "FORWARD", "DELEGATE" ],
-        "FYI": [ "OK" ],
-        "FCFS": [ "ACCEPT", "REJECT", "DELEGATE", "REPLY", "FORWARD"]
+        'STANDARD' : [ 'READ', 'LEAVE', 'REPLY', 'FORWARD', 'DELEGATE' ],
+        'FYI': [ 'OK' ],
+        'FCFS': [ 'ACCEPT', 'REJECT', 'DELEGATE', 'REPLY', 'FORWARD']
     };
 
     return actions[pattern];
-}
+};
 
 ConversationHelper.prototype.setSchedulerPublisher = function( schedulerPublisher ) {
     var self = this;
     self._schedulerPublisher = schedulerPublisher;
-}
+};
 
 ConversationHelper.prototype.requestToModel = function( context ) {
     var c = new model.Conversation();
@@ -231,21 +231,22 @@ ConversationHelper.prototype.requestToModel = function( context ) {
     }
     c.envelope.meta.enterprise = context.enterprise;
 
-    if ( context.tags )
+    if ( context.tags ) {
         c.envelope.tags = context.tags;
+    }
 
-    if ( context.ttl )
+    if ( context.ttl ) {
         c.time.toLive = context.ttl;
+    }
     c.content.message = context.content.text;
     // TODO: fix this
     c.escalation = context.escalation;
     //c.actions = context.allowableActions;
 
     return c;
-}
+};
 
 ConversationHelper.prototype.decorateContext = function( context, body ) {
-    var self = this;
 
     context.originalMembers = JSON.parse(JSON.stringify(body.members));
     context.members = JSON.parse(JSON.stringify(context.originalMembers));
@@ -260,7 +261,7 @@ ConversationHelper.prototype.decorateContext = function( context, body ) {
     //context.allowableActions = self.AllowableActions[ context.pattern ];
 
     return context;
-}
+};
 
 ConversationHelper.prototype.route = function( context, callback ) {
     var self = this;
@@ -280,11 +281,10 @@ ConversationHelper.prototype.route = function( context, callback ) {
             }
         }
     });
-}
+};
 
 ConversationHelper.prototype.addProfileToConversations = function( profile, conversations, callback ) {
-    var self = this;
-    console.log("addProfileToConversation(): entered");
+    console.log('addProfileToConversation(): entered');
 
     async.waterfall(
         [
@@ -296,7 +296,7 @@ ConversationHelper.prototype.addProfileToConversations = function( profile, conv
                 for (var i=0; i < conversations.length; i++) {
                     context.conversationIds.push(conversations[i]._id.toHexString());
                     conversations[i].envelope.members.push( context.profileId );
-                    conversations[i].state.members.push( {member: context.profileId, state: "UNOPENED"} );
+                    conversations[i].state.members.push( {member: context.profileId, state: 'UNOPENED'} );
                     ++conversations[i].state.curMemberCount;
 
                     functions.push((function (doc) {
@@ -310,7 +310,7 @@ ConversationHelper.prototype.addProfileToConversations = function( profile, conv
 
                 if (context.conversations.length > 0) {
 
-                    async.parallel(functions, function (err, results) {
+                    async.parallel(functions, function (err) {
                         callback(err,context);
                     });
                 }
@@ -324,7 +324,7 @@ ConversationHelper.prototype.addProfileToConversations = function( profile, conv
 
                 if (context.conversations.length > 0) {
 
-                    model.Profile.findOneAndUpdate({'_id': profile._id},{$pushAll:{'inbox' : context.conversationIds}},function(err,ret){
+                    model.Profile.findOneAndUpdate({'_id': profile._id},{$pushAll:{'inbox' : context.conversationIds}},function(err){
                         callback(err,context);
                     });
                 }
@@ -335,15 +335,14 @@ ConversationHelper.prototype.addProfileToConversations = function( profile, conv
         ],
 
         function (err, context) {
-            console.log("addProfileToConversation(): exiting: err=%s,result=%s", err, context);
+            console.log('addProfileToConversation(): exiting: err=%s,result=%s', err, context);
             callback( err, null );
         }
     );
 };
 
 ConversationHelper.prototype.removeProfileFromConversations = function( profile, conversations, callback ) {
-    var self = this;
-    console.log("removeProfileFromConversations(): entered");
+    console.log('removeProfileFromConversations(): entered');
 
     async.waterfall(
         [
@@ -376,19 +375,21 @@ ConversationHelper.prototype.removeProfileFromConversations = function( profile,
                 for (var i=0; i < context.conversations.length; i++) {
 
                     // if conversation is closed, don't change it
-                    if (!context.conversations[i].state.open)
+                    if (!context.conversations[i].state.open) {
                         continue;
+                    }
 
                     // remove from active members
                     context.conversations[i].envelope.members.pull( {_id: new ObjectId(context.profileId)} );
 
                     // update conversation state
-                    for (var j=0; j < context.conversations[i].state.members.length; j++)
-                        if (context.conversations[i].state.members[j].member == context.profileId ) {
-                            context.conversations[i].state.members[j].state = "LEFT";
+                    for (var j=0; j < context.conversations[i].state.members.length; j++) {
+                        if (context.conversations[i].state.members[j].member === context.profileId) {
+                            context.conversations[i].state.members[j].state = 'LEFT';
                             --context.conversations[i].state.curMemberCount;
                             break;
                         }
+                    }
 
                     context.functions.push((function (doc) {
                         return function (callback) {
@@ -400,7 +401,7 @@ ConversationHelper.prototype.removeProfileFromConversations = function( profile,
 
                 if (context.conversations.length > 0) {
 
-                    async.parallel(context.functions, function (err, results) {
+                    async.parallel(context.functions, function (err) {
                         callback(err,context);
                     });
                 }
@@ -414,7 +415,7 @@ ConversationHelper.prototype.removeProfileFromConversations = function( profile,
 
                 if (context.conversations.length > 0) {
 
-                    model.Profile.findOneAndUpdate({'_id': context.profileId},{$pullAll:{'inbox' : context.conversationIds}},function(err,ret){
+                    model.Profile.findOneAndUpdate({'_id': context.profileId},{$pullAll:{'inbox' : context.conversationIds}},function(err){
                         callback(err,context);
                     });
                 }
@@ -425,7 +426,7 @@ ConversationHelper.prototype.removeProfileFromConversations = function( profile,
         ],
 
         function (err, context) {
-            console.log("removeProfileFromConversations(): exiting: err=%s,result=%s", err, context);
+            console.log('removeProfileFromConversations(): exiting: err=%s,result=%s', err, context);
             callback( err, context );
         }
     );
@@ -434,7 +435,7 @@ ConversationHelper.prototype.removeProfileFromConversations = function( profile,
 ConversationHelper.prototype.leaveConversation = function( context, callback ) {
     var self = this;
 
-    console.log("leaveConversation(): entered");
+    console.log('leaveConversation(): entered');
     async.waterfall(
         [
             function (callback) {
@@ -468,7 +469,7 @@ ConversationHelper.prototype.leaveConversation = function( context, callback ) {
                 context.conversation.envelope.members.pull({_id: new ObjectId(context.origin)});
                 --context.conversation.state.curMemberCount;
                 ++context.conversation.state.leaves;
-                self.updateLastEvent( context.origin, "LEFT", context.conversation);
+                self.updateLastEvent( context.origin, 'LEFT', context.conversation);
 
                 context.conversation.save(function( err, conversation ){
                     if ( err ) {
@@ -485,7 +486,7 @@ ConversationHelper.prototype.leaveConversation = function( context, callback ) {
         ],
 
         function (err, context) {
-            console.log("leaveConversation(): exit: error %s", err);
+            console.log('leaveConversation(): exit: error %s', err);
             callback( err, context.conversation );
         }
     );
@@ -494,7 +495,7 @@ ConversationHelper.prototype.leaveConversation = function( context, callback ) {
 ConversationHelper.prototype.acceptConversation = function( context, callback ) {
     var self = this;
 
-    console.log("acceptConversation(): entered");
+    console.log('acceptConversation(): entered');
     async.waterfall(
         [
             function (callback) {
@@ -520,15 +521,15 @@ ConversationHelper.prototype.acceptConversation = function( context, callback ) 
             function(context,callback) {
 
                 // bump accepts
-                if ( context.conversation.state.maxAccepts == context.conversation.state.accepts ) {
-                    callback( new mongoose.Error("Max Accepts Reached"), null );
+                if ( context.conversation.state.maxAccepts === context.conversation.state.accepts ) {
+                    callback( new mongoose.Error('Max Accepts Reached'), null );
                 }
 
                 ++context.conversation.state.accepts;
-                self.updateLastEvent( context.origin, "ACCEPTED", context.conversation);
+                self.updateLastEvent( context.origin, 'ACCEPTED', context.conversation);
 
-                if ( context.conversation.state.accepts == context.conversation.state.maxAccepts ) {
-                    self.removeAllMembersWhoDontHaveLastEventFromConversation( "ACCEPTED", context.conversation );
+                if ( context.conversation.state.accepts === context.conversation.state.maxAccepts ) {
+                    self.removeAllMembersWhoDontHaveLastEventFromConversation( 'ACCEPTED', context.conversation );
                 }
 
                 context.conversation.save(function( err, conversation ){
@@ -546,7 +547,7 @@ ConversationHelper.prototype.acceptConversation = function( context, callback ) 
         ],
 
         function (err, context) {
-            console.log("acceptConversation(): exit: error %s", err);
+            console.log('acceptConversation(): exit: error %s', err);
             callback( err, context.conversation );
         }
     );
@@ -555,7 +556,7 @@ ConversationHelper.prototype.acceptConversation = function( context, callback ) 
 ConversationHelper.prototype.rejectConversation = function( context, callback ) {
     var self = this;
 
-    console.log("rejectConversation(): entered");
+    console.log('rejectConversation(): entered');
     async.waterfall(
         [
             function (callback) {
@@ -581,7 +582,7 @@ ConversationHelper.prototype.rejectConversation = function( context, callback ) 
             function(context,callback) {
 
                 ++context.conversation.state.rejects;
-                self.updateLastEvent( context.origin, "REJECTED", context.conversation );
+                self.updateLastEvent( context.origin, 'REJECTED', context.conversation );
                 context.conversation.envelope.members.pull( new ObjectId(context.origin) );
                 --context.conversation.state.curMemberCount;
 
@@ -600,7 +601,7 @@ ConversationHelper.prototype.rejectConversation = function( context, callback ) 
         ],
 
         function (err, context) {
-            console.log("rejectConversation(): exit: error %s", err);
+            console.log('rejectConversation(): exit: error %s', err);
             callback( err, context );
         }
     );
@@ -609,7 +610,7 @@ ConversationHelper.prototype.rejectConversation = function( context, callback ) 
 ConversationHelper.prototype.okConversation = function( context, callback ) {
     var self = this;
 
-    console.log("okConversation(): entered");
+    console.log('okConversation(): entered');
     async.waterfall(
         [
             function (callback) {
@@ -641,7 +642,7 @@ ConversationHelper.prototype.okConversation = function( context, callback ) {
                 context.conversation.envelope.members.pull({_id: new ObjectId(context.origin)});
                 --context.conversation.state.curMemberCount;
                 ++context.conversation.state.oks;
-                self.updateLastEvent( context.origin, "OK", context.conversation );
+                self.updateLastEvent( context.origin, 'OK', context.conversation );
 
                 context.conversation.save(function( err, conversation ){
                     if ( err ) {
@@ -658,7 +659,7 @@ ConversationHelper.prototype.okConversation = function( context, callback ) {
         ],
 
         function (err, context) {
-            console.log("okConversation(): exit: error %s", err);
+            console.log('okConversation(): exit: error %s', err);
             callback( err, context );
         }
     );
@@ -667,7 +668,7 @@ ConversationHelper.prototype.okConversation = function( context, callback ) {
 ConversationHelper.prototype.closeConversation = function( context, callback ) {
     var self = this;
 
-    console.log("closeConversation(): entered");
+    console.log('closeConversation(): entered');
     async.waterfall(
         [
             function (callback) {
@@ -700,7 +701,7 @@ ConversationHelper.prototype.closeConversation = function( context, callback ) {
             // remove profiles from Conversation
             function(context,callback) {
                 // remove from active members
-                self.updateLastEvent( context.origin, "CLOSED", context.conversation);
+                self.updateLastEvent( context.origin, 'CLOSED', context.conversation);
 
                 context.conversation.state.open = false;
 
@@ -718,7 +719,7 @@ ConversationHelper.prototype.closeConversation = function( context, callback ) {
         ],
 
         function (err, context) {
-            console.log("closeConversation(): exit: error %s", err);
+            console.log('closeConversation(): exit: error %s', err);
             callback( err, context );
         }
     );
@@ -729,7 +730,7 @@ ConversationHelper.prototype.closeConversation = function( context, callback ) {
 ConversationHelper.prototype.forwardConversation = function( context, callback ) {
     var self = this;
 
-    console.log("forwardConversation(): entered");
+    console.log('forwardConversation(): entered');
     async.waterfall(
         [
             function (callback) {
@@ -785,7 +786,7 @@ ConversationHelper.prototype.forwardConversation = function( context, callback )
         ],
 
         function (err, context) {
-            console.log("forwardConversation(): exit: error %s", err);
+            console.log('forwardConversation(): exit: error %s', err);
             callback( err, context );
         }
     );
@@ -794,7 +795,7 @@ ConversationHelper.prototype.forwardConversation = function( context, callback )
 ConversationHelper.prototype.delegateConversation = function( context, callback ) {
     var self = this;
 
-    console.log("delegateConversation(): entered");
+    console.log('delegateConversation(): entered');
     async.waterfall(
         [
             function (callback) {
@@ -828,7 +829,7 @@ ConversationHelper.prototype.delegateConversation = function( context, callback 
 
                 context.conversation.envelope.members.pull({_id: new ObjectId(context.origin)});
                 --context.conversation.state.curMemberCount;
-                self.updateLastEvent( context.origin, "DELEGATED", context.conversation);
+                self.updateLastEvent( context.origin, 'DELEGATED', context.conversation);
 
                 callback(null, context);
             },
@@ -861,7 +862,7 @@ ConversationHelper.prototype.delegateConversation = function( context, callback 
         ],
 
         function (err, context) {
-            console.log("delegateConversation(): exit: error %s", err);
+            console.log('delegateConversation(): exit: error %s', err);
             callback( err, context );
         }
     );
@@ -870,7 +871,7 @@ ConversationHelper.prototype.delegateConversation = function( context, callback 
 ConversationHelper.prototype.escalateConversation = function( context, callback ) {
     var self = this;
 
-    console.log("escalateConversation(): entered");
+    console.log('escalateConversation(): entered');
     async.waterfall(
         [
             function (callback) {
@@ -896,7 +897,7 @@ ConversationHelper.prototype.escalateConversation = function( context, callback 
                         });
                 }
                 else {
-                    callback( Error("Escalation Aborted"), null );
+                    callback( Error('Escalation Aborted'), null );
                 }
             },
 
@@ -936,13 +937,16 @@ ConversationHelper.prototype.escalateConversation = function( context, callback 
 
                 if ( context.currentStep < context.conversation.escalation.steps.length ) {
 
-                    context.action = "escalationStep";
+                    context.action = 'escalationStep';
 
-                    _schedulerPublisher.publish('SchedulerQueue', context, function (error) {
-                        if (error)
-                            callback(Error("Scheduler Publish Failed: setEscalation"), null);
-                        else
+                    self._schedulerPublisher.publish('SchedulerQueue', context, function (error) {
+                        if (error) {
+                            callback(Error('Scheduler Publish Failed: setEscalation'), null);
+                        }
+                        else {
                             callback(null, context);
+                        }
+
                     });
                 }
                 else {
@@ -953,16 +957,15 @@ ConversationHelper.prototype.escalateConversation = function( context, callback 
         ],
 
         function (err, context) {
-            console.log("escalateConversation(): exit: error %s", err);
+            console.log('escalateConversation(): exit: error %s', err);
             callback( err, context );
         }
     );
 };
 
 ConversationHelper.prototype.replyToConversation = function( context, callback ) {
-    var self = this;
 
-    console.log("replyToConversation(): entered");
+    console.log('replyToConversation(): entered');
     async.waterfall(
         [
             function (callback) {
@@ -1005,7 +1008,7 @@ ConversationHelper.prototype.replyToConversation = function( context, callback )
         ],
 
         function (err, context) {
-            console.log("replyToConversation(): exit: error %s", err);
+            console.log('replyToConversation(): exit: error %s', err);
             callback( err, context );
         }
     );
@@ -1017,28 +1020,34 @@ ConversationHelper.prototype.sanitize = function( conversation, user ) {
 
         delete c.__v;
 
-        if (!c.escalation.id.length)
+        if (!c.escalation.id.length) {
             delete c.escalation;
+        }
 
         delete c.envelope.meta;
 
-        if ( !c.envelope.tags || !c.envelope.tags.length )
+        if ( !c.envelope.tags || !c.envelope.tags.length ) {
             delete c.envelope.tags;
+        }
 
-        if (c.envelope.origin._id.toHexString() == user)
+        if (c.envelope.origin._id.toHexString() === user) {
             c.allowableActions = ConversationHelper.prototype.getOriginAllowableActions(c.envelope.pattern);
-        else
+        }
+        else {
             c.allowableActions = ConversationHelper.prototype.getParticipantAllowableActions(c.envelope.pattern);
+        }
 
         return c;
     }
 
-    if ( conversation instanceof Array )
-        for(var i=0; i < conversation.length; i++ ) {
-            conversation[i] = clean( conversation[i].toObject());
+    if ( conversation instanceof Array ) {
+        for (var i = 0; i < conversation.length; i++) {
+            conversation[i] = clean(conversation[i].toObject());
         }
-    else
+    }
+    else {
         conversation = clean(conversation.toObject());
+    }
 
     return conversation;
 };
@@ -1046,7 +1055,7 @@ ConversationHelper.prototype.sanitize = function( conversation, user ) {
 ConversationHelper.prototype.readConversation = function( context, callback ) {
     var self = this;
 
-    console.log("readConversation(): entered");
+    console.log('readConversation(): entered');
     async.waterfall(
         [
             function (callback) {
@@ -1069,7 +1078,7 @@ ConversationHelper.prototype.readConversation = function( context, callback ) {
             },
 
             function(context,callback) {
-                self.updateLastEvent(context.origin, "READ", context.conversation);
+                self.updateLastEvent(context.origin, 'READ', context.conversation);
                 callback(null,context);
             },
 
@@ -1091,7 +1100,7 @@ ConversationHelper.prototype.readConversation = function( context, callback ) {
         ],
 
         function (err, context) {
-            console.log("readConversation(): exit: error %s", err);
+            console.log('readConversation(): exit: error %s', err);
             callback( err, context );
         }
     );
@@ -1117,11 +1126,11 @@ ConversationHelper.prototype.getConversationsInInbox = function( context, callba
                 callback(null, context);
             }
         });
-}
+};
 
 ConversationHelper.prototype.setAllowableActions = function( context ) {
     var self = this;
 
     context.allowableActions = self.AllowableActions[ context.pattern ];
     return context;
-}
+};

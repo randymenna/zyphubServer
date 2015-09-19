@@ -39,13 +39,13 @@ exports.setConversationHelper = function( conversationHelper ) {
 
 exports.getConversations = function (req, res) {
 
-    console.log("getConversations(): entered");
+    console.log('getConversations(): entered');
     async.waterfall(
         [
             function (callback) {
                 var context = {};
                 context.origin = req.user.origin;
-                console.log("getConversations(): origin ",context.origin);
+                console.log('getConversations(): origin ',context.origin);
 
                 callback(null, context);
             },
@@ -55,11 +55,11 @@ exports.getConversations = function (req, res) {
                 model.Profile.findOne({'_id': context.origin}, {_id: 0, inbox: 1})
                     .exec(function (err, profile) {
                         if ( err ) {
-                            console.log("getConversations(): error ",err);
+                            console.log('getConversations(): error ',err);
                             callback(err, null);
                         }
                         else {
-                            console.log("getConversations(): inbox ",profile.toObject().inbox);
+                            console.log('getConversations(): inbox ',profile.toObject().inbox);
                             context.inbox = profile.toObject().inbox;
                             callback(null, context);
                         }
@@ -73,7 +73,7 @@ exports.getConversations = function (req, res) {
         ],
 
         function (err, context) {
-            console.log("getConversations(): exiting: err=", err, "context=", context);
+            console.log('getConversations(): exiting: err=', err, 'context=', context);
             if (!err) {
                 res.status(200).json(context.conversations);
             } else {
@@ -85,7 +85,7 @@ exports.getConversations = function (req, res) {
 
 exports.getOneConversation = function(req, res) {
 
-    console.log("getOneConversation(): entered");
+    console.log('getOneConversation(): entered');
     async.waterfall(
         [
             function (callback) {
@@ -116,7 +116,7 @@ exports.getOneConversation = function(req, res) {
         ],
 
         function (err, context) {
-            console.log("getOneConversation(): exiting: err=%s,result=%s", err, context);
+            console.log('getOneConversation(): exiting: err=%s,result=%s', err, context);
             if (!err) {
                 res.status(200).json(context.conversation);
             } else {
@@ -130,13 +130,13 @@ exports.newConversation = function (req, res) {
 
     var context = {};
 
-    console.log("newConversation(): entered");
+    console.log('newConversation(): entered');
     async.waterfall(
         [
             // create context for new message
             function (callback) {
                 var context = {};
-                context.action = "new";
+                context.action = 'new';
                 context.origin = req.user.origin;
                 context.enterprise = req.user.enterprise;
 
@@ -150,7 +150,7 @@ exports.newConversation = function (req, res) {
 
                 var c = _conversationHelper.requestToModel( context );
 
-                context.conversationId = c._id
+                context.conversationId = c._id;
 
                 c.save(function( err, conversation){
                     if ( err ) {
@@ -169,14 +169,14 @@ exports.newConversation = function (req, res) {
                 var routingKey = parseInt(context.conversationId) % CONSTANTS.BUS.CONVERSATION_WORKERS;
                 var published = _conversationPublisher.publish(routingKey, context);
                 if ( !published )
-                    callback(Error("Publish Failed"), null);
+                    callback(Error('Publish Failed'), null);
                 else
                     callback(null, context);
             }
         ],
 
         function (err, context) {
-            console.log("newConversation(): exiting: err=%s,result=%s", err, context);
+            console.log('newConversation(): exiting: err=%s,result=%s', err, context);
             if (!err) {
                 res.status(200).json(context.conversationId);
             } else {
@@ -188,7 +188,7 @@ exports.newConversation = function (req, res) {
 
 exports.updateConversation = function (req, res) {
 
-    console.log("updateConversation(): entered");
+    console.log('updateConversation(): entered');
     async.waterfall(
         [
             function (callback) {
@@ -240,13 +240,13 @@ exports.updateConversation = function (req, res) {
                 var routingKey = parseInt(context.conversationId) % CONSTANTS.BUS.CONVERSATION_WORKERS;
                 var published = _conversationPublisher.publish(routingKey, context);
                 if ( !published )
-                    callback(Error("Publish Failed"), null);
+                    callback(Error('Publish Failed'), null);
                 else
                     callback(null, context);
                 /*
                 _conversationPublisher.publish('ConversationEngineQueue',context, function( error ){
                     if ( error )
-                        callback(Error("Publish Failed"), null);
+                        callback(Error('Publish Failed'), null);
                     else
                         callback(null, context);
                 });
@@ -255,7 +255,7 @@ exports.updateConversation = function (req, res) {
         ],
 
         function (err, context) {
-            console.log("updateConversation(): exiting: err=%s,result=%s", err, context);
+            console.log('updateConversation(): exiting: err=%s,result=%s', err, context);
             if (!err) {
                 res.status(200).json(context.conversationId);
             } else {

@@ -1,6 +1,9 @@
 /**
  * Created by randy on 1/14/14.
  */
+(function() {
+    'use strict';
+}());
 var winston         = require('winston');
 var config          = require('config');
 var moment          = require('moment');
@@ -11,7 +14,6 @@ var logger;
 var log ;
 
 var timeFormatFn = function() {
-    'use strict';
     return moment().toISOString();
 };
 

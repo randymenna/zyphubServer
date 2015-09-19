@@ -107,5 +107,5 @@ cpBus.promise.then(function(con){
         }
     )
 }, function(err){
-    console.log("unable to connect to cp bus:" + err);
+    console.log('unable to connect to cp bus:' + err);
 });

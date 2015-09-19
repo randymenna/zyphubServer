@@ -1,7 +1,7 @@
 /**
  * Created by randy on 1/27/14.
  */
-var async                   = require("async");
+var async                   = require('async');
 var mongoose                = require('mongoose');
 var model                   = require('../models/models');
 var clientMap               = require('../util/clientMap');
@@ -16,7 +16,7 @@ var NotificationMessageHandler = module.exports = function NotificationMessageHa
 
     this.setNotificationHelper = function( notificationHelper ) {
         this._notificationHelper = notificationHelper;
-    }
+    };
 
     this.msgHandleSwitch                = {};
     this.msgHandleSwitch['NEW']         = this.handleNew.bind(this);
@@ -36,7 +36,7 @@ var NotificationMessageHandler = module.exports = function NotificationMessageHa
 NotificationMessageHandler.prototype.handleMessagePool = function ( context, msgHandlerCallback ) {
     var self = this;
 
-    console.log("NotificationMessageHandler(): entered: handleMessage:" + context);
+    console.log('NotificationMessageHandler(): entered: handleMessage:' + context);
 
     async.waterfall(
         [
@@ -56,12 +56,12 @@ NotificationMessageHandler.prototype.handleMessagePool = function ( context, msg
                             callback(err, context);
                         }
                         else {
-                            callback("no notification",null);
+                            callback('no notification',null);
                         }
                     });
                 }
                 else {
-                    callback(Error("No message handler for "+context.action), null);
+                    callback(Error('No message handler for '+context.action), null);
                 }
             },
 
@@ -72,14 +72,14 @@ NotificationMessageHandler.prototype.handleMessagePool = function ( context, msg
                     for (var i=0; i < context.notification.recipientSocketIds.length; i++) {
                         var socket = context.notification.recipientSocketIds[i];
 
-                        if (socket != null) {
+                        if (socket) {
                             socket.send(context.notification.message.getMessage());
-                            console.log("NotificationMessageHandler(): sent to topic: " + context.notification.topic);
+                            console.log('NotificationMessageHandler(): sent to topic: ' + context.notification.topic);
                         }
                     }
                     callback(null,context);
                 } else {
-                    console.log("NotificationMessageHandler(): no clients found: ");
+                    console.log('NotificationMessageHandler(): no clients found: ');
                     callback(null,context);
                 }
 
@@ -89,7 +89,7 @@ NotificationMessageHandler.prototype.handleMessagePool = function ( context, msg
         function (err, context) {
 
             msgHandlerCallback(null);
-            console.log("NotificationMessageHandler(): exit: handleMessage");
+            console.log('NotificationMessageHandler(): exit: handleMessage');
         }
     );
 };
@@ -104,7 +104,7 @@ NotificationMessageHandler.prototype.handleNew = function(context,doneCallback) 
         context.notification = self._notificationHelper.createNotification(context, cpConstants.NOTIFICATION_TYPES.NEW, 'state content envelope');
 
     doneCallback(null,context);
-}
+};
 
 NotificationMessageHandler.prototype.handleReply = function(context,doneCallback) {
     var self = this;

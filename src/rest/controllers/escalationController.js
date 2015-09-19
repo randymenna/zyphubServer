@@ -3,29 +3,24 @@
  */
 var mongoose                = require('mongoose');
 var async                   = require('async');
-var genericMongoController  = require('./genericMongoController');
 var model                   = require('../../models/models');
 
 exports.newEscalation = function (req, res) {
 
-    var context = {};
-
-    console.log("newEscalation(): entered " + req.body.name);
+    console.log('newEscalation(): entered ' + req.body.name);
     async.waterfall(
         [
             function (callback) {
                 var context = {};
-                var accountId = genericMongoController.extractAccountId(req);
 
-                context.accountId = accountId;
+                context.accountId = req.user.origin;
                 context.profileId = req.params.profileId;
 
                 callback(null, context);
             },
 
             function (context, callback) {
-                var context = {};
-                context.action = "new";
+                context.action = 'new';
 
                 var esc = new model.Escalation({
                     name: req.body.name,
@@ -54,7 +49,7 @@ exports.newEscalation = function (req, res) {
             },
 
             function (context, callback) {
-                context.escalation.save(function( err, escalation){
+                context.escalation.save(function( err){
                     if ( err ) {
                         callback(err, null);
                     }
@@ -68,10 +63,10 @@ exports.newEscalation = function (req, res) {
 /*
             function(context, callback) {
 
-                context.action = "new";
+                context.action = 'new';
                 _notificationPublisher.publish('SocketIOQueue',context, function( error ){
                     if ( error )
-                        callback(Error("SocketIO Publish Failed"), null);
+                        callback(Error('SocketIO Publish Failed'), null);
                     else
                         callback(null, context);
                 });
@@ -81,7 +76,7 @@ exports.newEscalation = function (req, res) {
         ],
 
         function (err, context) {
-            console.log("newEscalation(): exiting: err=%s,result=%s", err, context);
+            console.log('newEscalation(): exiting: err=%s,result=%s', err, context);
             if (!err) {
                 res.status(200).json(context.escalation);
             } else {
@@ -93,7 +88,7 @@ exports.newEscalation = function (req, res) {
 
 exports.getEscalations = function (req, res) {
 
-    console.log("getEscalations(): entered");
+    console.log('getEscalations(): entered');
     async.waterfall(
         [
             function (callback) {
@@ -124,7 +119,7 @@ exports.getEscalations = function (req, res) {
         ],
 
         function (err, context) {
-            console.log("getEscalations(): exiting: err=%s,result=%s", err, context);
+            console.log('getEscalations(): exiting: err=%s,result=%s', err, context);
             if (!err) {
                 res.status(200).json(context.escalations);
             } else {

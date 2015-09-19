@@ -1,5 +1,6 @@
-'use strict';
-
+(function() {
+	'use strict';
+}());
 var model                   = require('../../../models/models');
 var profileHelper			= require('../helper/profileHelper');
 var userHelper				= require('../helper/userHelper');
@@ -9,10 +10,8 @@ var config					= require('config');
 /**
  * Module dependencies.
  */
-var _ = require('lodash'),
-	errorHandler = require('../errors'),
-	mongoose = require('mongoose'),
-	passport = require('passport');
+var errorHandler = require('../errors');
+var passport = require('passport');
 
 var authHelper = new AuthHelper();
 
@@ -25,13 +24,12 @@ exports.signup = function(req, res) {
 
 	// Init Variables
 	var user = new model.User(req.body);
-	var message = null;
 
 	// Add missing user fields
 	user.provider = 'local';
 	user.displayName = user.firstName + ' ' + user.lastName;
 
-	var info = {}
+	var info = {};
 	info.user = user.email;
 	info.displayName = user.displayName;
 
@@ -39,7 +37,7 @@ exports.signup = function(req, res) {
 
 	p.save(function( err, profile){
 
-		user.profile = []
+		user.profile = [];
 		user.profile[0] = profile._id;
 
 		// Then save the user
@@ -83,7 +81,7 @@ exports.authByKey = function(req, res, next){
                         }
                         else {
 
-                            user.token = authHelper.createToken(user.profile[0], req.body.enterprise, config.jwt.secret, {expiresInMinutes: config.jwt.ttl});
+                            user.token = authHelper.createToken(user.profile[0], req.body, config.jwt.secret, {expiresInMinutes: config.jwt.ttl});
 
                             user.save(function (err, u) {
                                 if (err){
@@ -106,7 +104,7 @@ exports.authByKey = function(req, res, next){
             }
             else {
                 user.credentials.password = req.body.password;
-                user.token = authHelper.createToken(user.profile[0], req.body.enterprise, config.jwt.secret, {expiresInMinutes: config.jwt.ttl});
+                user.token = authHelper.createToken(user.profile[0], req.body, config.jwt.secret, {expiresInMinutes: config.jwt.ttl});
 
                 user.save(function (err, u) {
                     res.json(userHelper.sanitizeForGraph(u));
@@ -121,7 +119,7 @@ exports.authByKey = function(req, res, next){
  */
 exports.signin = function(req, res, next) {
 
-    if ( req.body.provider == 'local' ) {
+    if ( req.body.provider === 'local' ) {
         passport.authenticate('local', {session: false}, function (err, user, info) {
             if (err) {
                 res.status(400).send(info);
@@ -138,7 +136,7 @@ exports.signin = function(req, res, next) {
                             }
                             else {
 
-                                user.token = authHelper.createToken(user.profile[0], req.body.enterprise, config.jwt.secret, {expiresInMinutes: config.jwt.ttl});
+                                user.token = authHelper.createToken(user.profile[0], req.body, config.jwt.secret, {expiresInMinutes: config.jwt.ttl});
 
                                 user.save(function (err, u) {
                                     res.json(userHelper.sanitizeUser(u));
@@ -156,7 +154,7 @@ exports.signin = function(req, res, next) {
                 }
                 else {
                     user.credentials.password = req.body.password;
-                    user.token = authHelper.createToken(user.profile[0], req.body.enterprise, config.jwt.secret, {expiresInMinutes: config.jwt.ttl});
+                    user.token = authHelper.createToken(user.profile[0], req.body, config.jwt.secret, {expiresInMinutes: config.jwt.ttl});
 
                     user.save(function (err, u) {
                         res.json(userHelper.sanitizeUser(u));
@@ -166,14 +164,14 @@ exports.signin = function(req, res, next) {
         })(req, res, next);
     }
     else
-	if ( req.body.provider == 'github' ) {
+	if ( req.body.provider === 'github' ) {
         passport.authenticate('github', {session: false}, function (err, user, info) {
             if (err || !user) {
                 res.status(400).send(info);
             }
             else {
 
-                user.token = authHelper.createToken(user.profile[0], req.body.enterprise, config.jwt.secret, {expiresInMinutes: config.jwt.ttl});
+                user.token = authHelper.createToken(user.profile[0], req.body, config.jwt.secret, {expiresInMinutes: config.jwt.ttl});
 
                 user.save(function (err, u) {
                     res.json(userHelper.sanitizeUser(u));
@@ -182,7 +180,7 @@ exports.signin = function(req, res, next) {
         })(req, res, next);
     }
     else
-	if ( req.body.provider == 'google' ) {
+	if ( req.body.provider === 'google' ) {
         passport.authenticate('google', {
             scope: [
                 'https://www.googleapis.com/auth/userinfo.profile',
@@ -194,7 +192,7 @@ exports.signin = function(req, res, next) {
             }
             else {
 
-                user.token = authHelper.createToken(user.profile[0], req.body.enterprise, config.jwt.secret, {expiresInMinutes: config.jwt.ttl});
+                user.token = authHelper.createToken(user.profile[0], req.body, config.jwt.secret, {expiresInMinutes: config.jwt.ttl});
 
                 user.save(function (err, u) {
                     res.json(userHelper.sanitizeUser(u));
@@ -210,7 +208,7 @@ exports.signin = function(req, res, next) {
 exports.signout = function(req, res) {
 	req.logout();
 	var o = {};
-	o.status = "logout ok";
+	o.status = 'logout ok';
 	res.jsonp(o);
 };
 
@@ -219,7 +217,7 @@ exports.signout = function(req, res) {
  */
 exports.oauthCallback = function(strategy) {
 	return function(req, res, next) {
-		passport.authenticate(strategy, function(err, user, redirectURL) {
+		passport.authenticate(strategy, function(err /*,user, redirectURL*/) {
 			if (err) {
 				res.status(400).send(err);
 			} else {
@@ -232,13 +230,13 @@ exports.oauthCallback = function(strategy) {
 						}
 						else
 						if (!user) {
-							res.status(401).send({error: "oauth callback mismatch"});
+							res.status(401).send({error: 'oauth callback mismatch'});
 						}
 						else {
 							// TODO: make this configurable
 							// user.token = authHelper.createToken(user.profile[0], config.jwt.secret,{expiresInMinutes: config.jwt.ttl});
 
-							user.token = authHelper.createToken(user.profile[0], req.body.enterprise, config.jwt.secret,{});
+							user.token = authHelper.createToken(user.profile[0], req.body, config.jwt.secret,{});
 
 							user.save(function (err, u) {
 
@@ -305,7 +303,7 @@ exports.saveOrValidateOAuthUserProfile = function(req, providerUserProfile, done
 /**
  * Remove OAuth provider
  */
-exports.removeOAuthProvider = function(req, res, next) {
+exports.removeOAuthProvider = function(req, res /*,next*/) {
 	var user = req.user;
 	var provider = req.param('provider');
 

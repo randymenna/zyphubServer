@@ -1,4 +1,4 @@
-var async                   = require("async");
+var async                   = require('async');
 var model                   = require('../models/models');
 var CONSTANTS               = require('../constants/index');
 
@@ -9,7 +9,7 @@ var SchedulerMessageHandler = module.exports = function SchedulerMessageHandler(
     this.setConversationPublisher = function( conversationPublisher ) {
         this._conversationPublisher = conversationPublisher;
         publisher = conversationPublisher;
-    }
+    };
 
     this.setAgenda = function(agenda) {
         this.agenda = agenda;
@@ -28,7 +28,7 @@ module.exports.publisher = publisher;
 SchedulerMessageHandler.prototype.handleMessagePool = function (context, msgHandlerCallback) {
     var self = this;
 
-    console.log("SchedulerMessageHandler.handleMessage() entered: message: " + JSON.stringify(context));
+    console.log('SchedulerMessageHandler.handleMessage() entered: message: ' + JSON.stringify(context));
 
     async.waterfall(
         [
@@ -45,7 +45,7 @@ SchedulerMessageHandler.prototype.handleMessagePool = function (context, msgHand
                     });
                 }
                 else {
-                    callback(Error("No message handler for "+context.action), null);
+                    callback(Error('No message handler for '+context.action), null);
                 }
             }
         ],
@@ -62,7 +62,7 @@ SchedulerMessageHandler.prototype.setTTL = function(context,doneCallback) {
 
     var expirationTime = 'in ' + context.conversation.time.toLive + ' minutes';
     self.agenda.schedule(expirationTime,'handle ttl',{context:context});
-    console.log("SchedulerMessageHandler.handleMessage() 'handle ttl' " + expirationTime);
+    console.log('SchedulerMessageHandler.handleMessage() 'handle ttl' ' + expirationTime);
     doneCallback(null,context);
 };
 
@@ -71,7 +71,7 @@ SchedulerMessageHandler.prototype.setEscalation = function(context,doneCallback)
 
     model.Escalation.findOne({_id: escalationId}, function (err, escalation) {
         if (err) {
-            console.log("SchedulerMessageHandler.handleMessage() 'handle escalation' can't find esclation id: " + escalationId);
+            console.log('SchedulerMessageHandler.handleMessage() 'handle escalation' can't find esclation id: ' + escalationId);
             doneCallback(null,context);
         }
         else {
@@ -83,7 +83,7 @@ SchedulerMessageHandler.prototype.setEscalation = function(context,doneCallback)
             var expirationTime = 'in ' + context.conversation.time.toLive + ' minutes';
             self.agenda.schedule(expirationTime,'handle escalation',{context:context});
 
-            console.log("SchedulerMessageHandler.handleMessage() 'setEscalation' " + context.conversationId);
+            console.log('SchedulerMessageHandler.handleMessage() 'setEscalation' ' + context.conversationId);
             doneCallback(null,context);
         }
     });
@@ -95,7 +95,7 @@ SchedulerMessageHandler.prototype.handleEscalationStep = function(context,doneCa
     var expirationTime = 'in ' + time + ' minutes';
     self.agenda.schedule(expirationTime,'handle escalation',{context:context});
 
-    console.log("SchedulerMessageHandler.handleMessage() 'handleEscalationStep' " + context.conversationId);
+    console.log('SchedulerMessageHandler.handleMessage() 'handleEscalationStep' ' + context.conversationId);
     doneCallback(null,context);
 };
 
@@ -104,6 +104,6 @@ SchedulerMessageHandler.prototype.setTagConstraint = function(context,doneCallba
 
     var expirationTime = new Date(context.constraint);
     var job = self.agenda.schedule(expirationTime,'tag constraint',{context:context});
-    console.log("SchedulerMessageHandler.handleMessage() 'tag constraint' " + expirationTime);
+    console.log('SchedulerMessageHandler.handleMessage() 'tag constraint' ' + expirationTime);
     doneCallback(null,context);
 };

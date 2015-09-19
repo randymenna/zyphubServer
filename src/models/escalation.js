@@ -9,14 +9,14 @@ var escalationSchema = new Schema({
     name: String,
     description: String,
     public: Boolean,
-    enterprise: {type: String, default: "ConversePoint"},
+    enterprise: {type: String, default: 'ConversePoint'},
     steps: [
         {
             time: {type: Number, default: 300},
             targets: [
                 {type: Schema.Types.ObjectId, ref: 'Profiles'}
             ],
-            trigger: {type: String, default: "NO_READS"},
+            trigger: {type: String, default: 'NO_READS'},
             _id: false
         }
     ],

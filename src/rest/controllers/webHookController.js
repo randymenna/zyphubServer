@@ -22,7 +22,7 @@ var validate = function(token,secret) {
         }
     }
     catch( e ) {
-        console.log("validate(): %s",e);
+        console.log('validate(): %s',e);
     }
     return decoded;
 };
@@ -30,7 +30,7 @@ var validate = function(token,secret) {
 exports.getWebHookUrl = function (req, res) {
     var apiKey = req.body.apiKey;
 
-    console.log("getWebHookUrl(): entered");
+    console.log('getWebHookUrl(): entered');
     async.waterfall(
         [
             function (callback) {
@@ -65,7 +65,7 @@ exports.getWebHookUrl = function (req, res) {
 
         function (err, webhook) {
             var url = webhook ? webhook.url : 'none set';
-            console.log("getWebHookUrl(): exiting: err=%s,result=%s", err, webhook);
+            console.log('getWebHookUrl(): exiting: err=%s,result=%s', err, webhook);
             if (!err) {
                 res.status(200).json({url:url});
             } else {
@@ -79,7 +79,7 @@ exports.setWebHookUrl = function (req, res) {
     var apiKey = req.body.apiKey;
     var url = req.body.url;
 
-    console.log("setWebHookUrl(): entered");
+    console.log('setWebHookUrl(): entered');
     async.waterfall(
         [
             function (callback) {
@@ -113,7 +113,7 @@ exports.setWebHookUrl = function (req, res) {
         ],
 
         function (err, context) {
-            console.log("setWebHookUrl(): exiting: err=%s,result=%s", err, context);
+            console.log('setWebHookUrl(): exiting: err=%s,result=%s', err, context);
             if (!err) {
                 res.status(200).json({url:url});
             } else {
@@ -125,7 +125,7 @@ exports.setWebHookUrl = function (req, res) {
 
 exports.justEcho = function (req, res) {
 
-    console.log("Notification: ",JSON.stringify(req.body));
+    console.log('Notification: ',JSON.stringify(req.body));
     res.status(200).json({status:'ok'});
 };
 

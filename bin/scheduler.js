@@ -12,11 +12,9 @@ var CONSTANTS                       = require('../src/constants');
 
 logger.startLogger('scheduler');
 
-var messageDrivenBean = null;
-
 // INITIALIZATION CODE
 // ONCE WE CAN CONNECT TO RABBIT MQ, TRY AND CONNECT TO MONGO, THEN START THE MDB
-cpBus.promise.then(function(con){
+cpBus.promise.then(function(){
 
     var exchangePublisherFactory = new ExchangePublisherFactory(cpBus.connection);
 
@@ -65,7 +63,7 @@ cpBus.promise.then(function(con){
                                         maxConcurrency: 100
                                         });
 
-                agenda.database(mongoInstance,'conversePointJobs')
+                agenda.database(mongoInstance,'conversePointJobs');
 
                 agenda.define('handle escalation',scheduleHelper.handleEscalation);
                 agenda.define('handle ttl',scheduleHelper.handleTTL);
@@ -85,21 +83,23 @@ cpBus.promise.then(function(con){
 
                 console.info('Scheduler MDB: agenda start');
 
-                var indexCallback = function(err) { if (err) { console.log("Index creation failed: " + err); } };
+                var indexCallback = function(err) { if (err) { console.log('Index creation failed: ' + err); } };
 
                 agenda._db
-                    .ensureIndex("nextRunAt", indexCallback)
-                    .ensureIndex("lockedAt", indexCallback)
-                    .ensureIndex("name", indexCallback)
-                    .ensureIndex("priority", indexCallback);
+                    .ensureIndex('nextRunAt', indexCallback)
+                    .ensureIndex('lockedAt', indexCallback)
+                    .ensureIndex('name', indexCallback)
+                    .ensureIndex('priority', indexCallback);
 
                 agenda.start();
 
                 agenda.on('complete', function(job) {
-                    console.log("Job %s finished", job.attrs.name);
+                    console.log('Job %s finished', job.attrs.name);
                     job.remove(function(err) {
-                        if(!err) console.log("Successfully removed job from collection");
-                    })
+                        if(!err){
+                            console.log('Successfully removed job from collection');
+                        }
+                    });
                 });
 
                 callback(null,'done');
@@ -113,5 +113,5 @@ cpBus.promise.then(function(con){
                 console.info('Scheduler MDB Successfully Initialized');
             }
         }
-    )
+    );
 });

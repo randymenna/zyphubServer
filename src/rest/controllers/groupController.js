@@ -11,7 +11,7 @@ var ObjectId = mongoose.Types.ObjectId;
 
 exports.getGroups = function (req, res) {
 
-    console.log("getGroups(): entered");
+    console.log('getGroups(): entered');
     async.waterfall(
         [
             function (callback) {
@@ -38,7 +38,7 @@ exports.getGroups = function (req, res) {
         ],
 
         function (err, context) {
-            console.log("getGroups(): exiting: err=%s,result=%s", err, context);
+            console.log('getGroups(): exiting: err=%s,result=%s', err, context);
             if (!err) {
                 res.status(200).json(context.groups);
             } else {
@@ -50,7 +50,7 @@ exports.getGroups = function (req, res) {
 
 exports.getOneGroup = function (req, res) {
 
-    console.log("getOneGroup(): entered");
+    console.log('getOneGroup(): entered');
     async.waterfall(
         [
             function (callback) {
@@ -67,8 +67,8 @@ exports.getOneGroup = function (req, res) {
                     .exec(function( err, group){
                         if ( err ) {
                             if (err.name == 'CastError') {
-                                err.message = "missing or malformed profiled id";
-                                err.name = "BadParameter";
+                                err.message = 'missing or malformed profiled id';
+                                err.name = 'BadParameter';
                             }
                             callback(err, null);
                         }
@@ -81,7 +81,7 @@ exports.getOneGroup = function (req, res) {
         ],
 
         function (err, context) {
-            console.log("getOneGroup(): exiting: err=%s,result=%s", err, context);
+            console.log('getOneGroup(): exiting: err=%s,result=%s', err, context);
             if (!err) {
                 res.status(200).json(context.group);
             } else {
@@ -93,7 +93,7 @@ exports.getOneGroup = function (req, res) {
 
 exports.newGroup = function (req, res) {
 
-    console.log("newGroup(): entered");
+    console.log('newGroup(): entered');
     async.waterfall(
         [
             function (callback) {
@@ -142,7 +142,7 @@ exports.newGroup = function (req, res) {
         ],
 
         function (err, context) {
-            console.log("newGroup(): exiting: err=%s,result=%s", err, context);
+            console.log('newGroup(): exiting: err=%s,result=%s', err, context);
             if (!err) {
                 res.status(200).json(context.group);
             } else {
@@ -154,7 +154,7 @@ exports.newGroup = function (req, res) {
 
 exports.update = function (req, res) {
 
-    console.log("groups.update(): entered");
+    console.log('groups.update(): entered');
     async.waterfall(
         [
             function (callback) {
@@ -189,7 +189,7 @@ exports.update = function (req, res) {
         ],
 
         function (err, context) {
-            console.log("groups.update(): exiting: err=%s,result=%s", err, context);
+            console.log('groups.update(): exiting: err=%s,result=%s', err, context);
             if (!err) {
                 res.status(200).json(context.group);
             } else {
@@ -201,7 +201,7 @@ exports.update = function (req, res) {
 
 exports.remove = function (req, res) {
 
-    console.log("groups.remove(): entered");
+    console.log('groups.remove(): entered');
     async.waterfall(
         [
             function (callback) {
@@ -234,7 +234,7 @@ exports.remove = function (req, res) {
         ],
 
         function (err, context) {
-            console.log("groups.remove(): exiting: err=%s,result=%s", err, context);
+            console.log('groups.remove(): exiting: err=%s,result=%s', err, context);
             if (!err) {
                 res.status(200).json(context.group);
             } else {
@@ -246,7 +246,7 @@ exports.remove = function (req, res) {
 
 exports.joinGroup = function (req, res) {
 
-    console.log("joinGroup(): entered");
+    console.log('joinGroup(): entered');
     async.waterfall(
         [
             function (callback) {
@@ -256,7 +256,7 @@ exports.joinGroup = function (req, res) {
                 context.groupId = req.params.id;
                 context.profileIds = req.body.members;
 
-                console.log("joinGroup(): group=%s profile=%", context.groupId, context.profileIds);
+                console.log('joinGroup(): group=%s profile=%', context.groupId, context.profileIds);
                 callback(null, context);
             },
 
@@ -272,7 +272,7 @@ exports.joinGroup = function (req, res) {
             // add the new member to all the groups conversations
             function (context, callback) {
 
-                model.Conversation.find({"envelope.meta.groups": context.groupId}, function(err, conversations){
+                model.Conversation.find({'envelope.meta.groups': context.groupId}, function(err, conversations){
                     if ( err ) {
                         callback(err, null);
                     }
@@ -285,7 +285,7 @@ exports.joinGroup = function (req, res) {
 
                             for (var j=0; j < context.profileIds.length; j++) {
                                 conversations[i].envelope.members.push( context.profileIds[j] );
-                                conversations[i].state.members.push( {member: context.profileIds[j], state: "UNOPENED"} );
+                                conversations[i].state.members.push( {member: context.profileIds[j], state: 'UNOPENED'} );
                                 ++conversations[i].state.curMemberCount;
                             }
 
@@ -346,7 +346,7 @@ exports.joinGroup = function (req, res) {
         ],
 
         function (err, context) {
-            console.log("joinGroup(): exiting: err=%s,result=%s", err, context);
+            console.log('joinGroup(): exiting: err=%s,result=%s', err, context);
             if (!err) {
                 res.status(200).json(groupHelper.santize(context.group.toObject()));
             } else {
@@ -358,7 +358,7 @@ exports.joinGroup = function (req, res) {
 
 exports.leaveGroup = function (req, res) {
 
-    console.log("leaveGroup(): entered");
+    console.log('leaveGroup(): entered');
     async.waterfall(
         [
             function (callback) {
@@ -368,7 +368,7 @@ exports.leaveGroup = function (req, res) {
                 context.groupId = req.params.id;
                 context.profileIds = req.body.members;
 
-                console.log("leaveGroup(): group=%s profile=%", context.groupId, context.profileIds);
+                console.log('leaveGroup(): group=%s profile=%', context.groupId, context.profileIds);
                 callback(null, context);
             },
 
@@ -381,7 +381,7 @@ exports.leaveGroup = function (req, res) {
                         callback(err, context);
                     }
                     else {
-                        var error = err ? err : { message: "missing or malformed group id"};
+                        var error = err ? err : { message: 'missing or malformed group id'};
                         callback(error,null);
                     }
                 });
@@ -390,7 +390,7 @@ exports.leaveGroup = function (req, res) {
             // remove member from all the groups conversations
             function (context, callback) {
 
-                model.Conversation.find({"envelope.meta.groups": context.groupId}, function(err, conversations){
+                model.Conversation.find({'envelope.meta.groups': context.groupId}, function(err, conversations){
                     if ( err ) {
                         callback(err, null);
                     }
@@ -412,7 +412,7 @@ exports.leaveGroup = function (req, res) {
                                 // update conversation state
                                 for (var j = 0; j < conversations[i].state.members.length; j++)
                                     if (conversations[i].state.members[j].member == context.profileIds[j]) {
-                                        conversations[i].state.members[j].state = "LEFT";
+                                        conversations[i].state.members[j].state = 'LEFT';
                                         --conversations[i].state.curMemberCount;
                                         break;
                                     }
@@ -477,7 +477,7 @@ exports.leaveGroup = function (req, res) {
         ],
 
         function (err, context) {
-            console.log("leaveGroup(): exiting: err=%s,result=%s", err, context);
+            console.log('leaveGroup(): exiting: err=%s,result=%s', err, context);
             if (!err) {
                 res.status(200).json(groupHelper.santize(context.group));
             } else {

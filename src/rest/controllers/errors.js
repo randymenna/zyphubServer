@@ -1,5 +1,6 @@
-'use strict';
-
+(function() {
+	'use strict';
+}());
 /**
  * Get unique error field name
  */

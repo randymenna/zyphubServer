@@ -1,7 +1,7 @@
 
 var amqp = require('amqplib/callback_api');
-//var amqp    = require("amqp");
-var config  = require("config");
+//var amqp    = require('amqp');
+var config  = require('config');
 var q       = require('q');
 
 module.exports.publishMessage = function(queueName,payload,callback) {
@@ -21,7 +21,7 @@ module.exports.bindCallBackToQueue = function(queueName,onMsgCallback) {
 
         q.subscribe({ack: false}, function(message) {
             onMsgCallback(message, function(err) {
-                if (err != null) {
+                if (err !== null) {
                     q.shift(true,true);
                 } else {
                     q.shift();
@@ -54,23 +54,23 @@ var connection = null;
 var deferred = q.defer();
 
 function start() {
-    amqp.connect(config.cloudamqp.url + "?heartbeat=60", function(err, conn) {
+    amqp.connect(config.cloudamqp.url + '?heartbeat=60', function(err, conn) {
         if (err) {
-            console.error("[AMQP]", err.message);
+            console.error('[AMQP]', err.message);
             deferred.reject(err.message);
             return setTimeout(start, 1000);
         }
-        conn.on("error", function(err) {
-            if (err.message !== "Connection closing") {
-                console.error("[AMQP] conn error", err.message);
+        conn.on('error', function(err) {
+            if (err.message !== 'Connection closing') {
+                console.error('[AMQP] conn error', err.message);
             }
         });
-        conn.on("close", function() {
-            console.error("[AMQP] reconnecting");
+        conn.on('close', function() {
+            console.error('[AMQP] reconnecting');
             return setTimeout(start, 1000);
         });
 
-        console.log("[AMQP] connected");
+        console.log('[AMQP] connected');
         module.exports.connection = conn;
 
         deferred.resolve(conn);

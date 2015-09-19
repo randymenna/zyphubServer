@@ -14,14 +14,14 @@ var MongoUtil = module.exports = function MongoUtil () {
 
     this.db.open(function(err, db) {
         if(!err) {
-            console.log("MongoUtil: Connected to %s database", config.mongo.dbName);
+            console.log('MongoUtil: Connected to %s database', config.mongo.dbName);
         }
         else {
-            console.log("MongoUtil: Unable to connect to %s database", config.mongo.dbName);
+            console.log('MongoUtil: Unable to connect to %s database', config.mongo.dbName);
         }
     });
-}
+};
 
 MongoUtil.prototype.getDb = function() {
     return this.db;
-}
+};

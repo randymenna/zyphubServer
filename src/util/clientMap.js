@@ -11,11 +11,11 @@ module.exports.addClient = function(profileId,socket) {
     clientInfo.socketId   = socket.id;
     clientInfo.socket     = socket;
 
-    if (_clientMap[profileId] == null) {
+    if (!_clientMap[profileId]) {
         _clientMap[profileId] = [];
     }
     _clientMap[ profileId ].push(clientInfo);
-}
+};
 
 module.exports.removeClient = function(socket) {
 
@@ -36,7 +36,7 @@ module.exports.removeClient = function(socket) {
             }
         }
     }
-}
+};
 
 module.exports.getSocketList = function(profiles) {
     var sockets = [];
@@ -54,4 +54,4 @@ module.exports.getSocketList = function(profiles) {
     }
 
     return sockets;
-}
+};

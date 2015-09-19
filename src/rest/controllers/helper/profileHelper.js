@@ -15,7 +15,7 @@ exports.newProfile = function( info, callback ) {
     var p = new model.Profile(info);
 
     // create a default tag
-    var defaultTag = {}
+    var defaultTag = {};
     defaultTag.context = info.userName;
     defaultTag.enterprise = info.enterprise;
     defaultTag.owner = [ info._id ];
@@ -24,7 +24,7 @@ exports.newProfile = function( info, callback ) {
 
     t.save(function( err, tag){
         if ( err ) {
-            console.log("newProfile(): Error: cannot save default tag %s",defaultTag.label);
+            console.log('newProfile(): Error: cannot save default tag %s',defaultTag.label);
         }
         callback( err, p );
     });

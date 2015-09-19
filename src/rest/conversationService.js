@@ -21,7 +21,7 @@ module.exports = function() {
 
     /*
     cpBus.connection.on('error',function(err) {
-        console.error("Conversation Controller: Unable to connect to bus: " + err);
+        console.error('Conversation Controller: Unable to connect to bus: ' + err);
     });
     */
 
@@ -68,7 +68,7 @@ module.exports = function() {
             });
 
     },function(err){
-        console.error("Conversation Controller: Unable to connect to bus: " + err);
+        console.error('Conversation Controller: Unable to connect to bus: ' + err);
     });
 
     return app;

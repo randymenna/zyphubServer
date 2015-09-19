@@ -517,8 +517,7 @@ describe('Conversation Tests', function() {
                 res.status.should.equal(200);
                 callback(null, res);
             });
-    };
-
+    }
     function conversationAction(action, conversation, callback) {
         var payload = orginatorJSON(action);
         request(url)
@@ -533,8 +532,7 @@ describe('Conversation Tests', function() {
                 res.status.should.equal(200);
                 callback(null, res);
             });
-    };
-
+    }
     function buildConversationJSON(type) {
         var registration =
         {
@@ -549,11 +547,10 @@ describe('Conversation Tests', function() {
             "content": {
                 "message": "This is a test of " + type + " message"
             }
-        }
+        };
 
         return registration;
-    };
-
+    }
     function orginatorJSON(action) {
         var o =
         {
@@ -574,5 +571,5 @@ describe('Conversation Tests', function() {
             }
         }
         return o;
-    };
-})
+    }
+});

@@ -1,5 +1,6 @@
-'use strict';
-
+(function() {
+    'use strict';
+}());
 /**
  * Module dependencies.
  */
@@ -23,12 +24,13 @@ module.exports = function(passport) {
             if ( decoded.exp ) {
                 var now = moment();
                 var expires = moment(decoded.expires);
-                if ( now.isAfter(expires) )
+                if ( now.isAfter(expires) ) {
                     decoded = null;
+                }
             }
         }
         catch( e ) {
-            console.log("validate(): %s",e);
+            console.log('validate(): %s',e);
         }
         return decoded;
     };
@@ -50,6 +52,7 @@ module.exports = function(passport) {
                     email: id + fakeEmail
                 },function(err, user) {
                     req.body.enterprise = token.aud;
+                    req.body.enterpriseId = token.jti;
 
                     if (err) {
                         return done(err);

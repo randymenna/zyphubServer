@@ -1,5 +1,6 @@
-'use strict';
-
+(function() {
+	'use strict';
+}());
 /**
  * Module dependencies.
  */
@@ -11,7 +12,7 @@ var models				= require('../../models/models');
 
 module.exports = function() {
 	// Use github strategy
-	console.log("github");
+	console.log('github');
 	passport.use(new GithubStrategy({
 			clientID: config.github.clientID,
 			clientSecret: config.github.clientSecret,

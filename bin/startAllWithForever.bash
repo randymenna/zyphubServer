@@ -18,11 +18,11 @@ atriumExecutables=(
                     scheduler.js
                     )
 
-for atriumExecutable in  "${atriumExecutables[@]}"
+for atriumExecutable in  '${atriumExecutables[@]}'
 {
    baseExecutableName=$(basename atriumExecutable .js);
    logFileName=$baseExecutableName;
-   logFileName+=".log"
+   logFileName+='.log'
    NODE_ENV=$nodeEnv forever start -v -d --minUptime 1  --append -p ./logs -l $logFileName -e $logFileName -o $logFileName  bin/${atriumExecutable}
 }
 

@@ -11,21 +11,21 @@ var cpbus = require('../bus/index');
 var MessagePublisher = module.exports = function MessagePublisher(exchangeName) {
     this._exchange = null;
     var self = this;
-    if (exchangeName != null) {
+    if (exchangeName) {
         cpbus.connection.exchange(exchangeName, getExchangeOptions(null) , function(exchange) {
             self._exchange = exchange;
-        })
+        });
     }
 };
 
 MessagePublisher.prototype.publishToExchange = function (routingKey, message) {
     this._exchange.publish(routingKey, message, { type : 'direct' , contentType : 'application/json' } );
-}
+};
 
 MessagePublisher.prototype.publishAsJSON = function (queueName, message, callback) {
     var messageAsJSON = JSON.stringify(message);
     cpbus.publishMessage(queueName,messageAsJSON,callback);
-}
+};
 
 function getExchangeOptions(args) {
     return {
@@ -36,4 +36,4 @@ function getExchangeOptions(args) {
         autoDelete: false,
         arguments: args ? args : {}
     };
-};
+}

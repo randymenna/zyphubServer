@@ -21,7 +21,7 @@ describe.only("Notification Server",function(){
         socket = io.connect("http://localhost:19691");
 
         socket.on('login',function(response) {
-            console.log(response)
+            console.log(response);
             response.should.equal('{login:"bearer"}');
 
             socket.emit('login',User1);

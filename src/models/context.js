@@ -11,7 +11,7 @@ var contextSchema = new Schema({
 
     owner: [{type: Schema.Types.ObjectId, ref: 'Profiles', index: true}],
 
-    enterprise: {type: String, default: "ConversePoint"}
+    enterprise: {type: String, default: 'ConversePoint'}
 
     });
 

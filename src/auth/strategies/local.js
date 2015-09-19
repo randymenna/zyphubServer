@@ -1,5 +1,6 @@
-'use strict';
-
+(function() {
+	'use strict';
+}());
 /**
  * Module dependencies.
  */
@@ -8,7 +9,7 @@ var	LocalStrategy = require('passport-local').Strategy,
 	User = require('mongoose').model('User');
 
 module.exports = function(passport) {
-    console.log("local");
+    console.log('local');
 
     passport.use(new LocalStrategy({
 			usernameField: 'email',

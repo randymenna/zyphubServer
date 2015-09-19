@@ -26,12 +26,12 @@ var moment                  = require('moment');
  */
 
 var days = [
-    "sun","mon","tue","wed","thu","fri","sat"
+    'sun','mon','tue','wed','thu','fri','sat'
 ];
 
 var minutesOfDay = function(m){
     return m.minutes() + m.hours() * 60;
-}
+};
 
 exports.fixDates = function( context ) {
     var noDates = true;
@@ -51,10 +51,10 @@ exports.fixDates = function( context ) {
             noDayTimes = false;
             for (var i = 0; i < context.schedule.dayTimes.length; i++) {
                 if (context.schedule.dayTimes[i].startTime)
-                    context.schedule.dayTimes[i].startTime = moment(context.schedule.dayTimes[i].startTime, "h:ma").toDate();
+                    context.schedule.dayTimes[i].startTime = moment(context.schedule.dayTimes[i].startTime, 'h:ma').toDate();
 
                 if (context.schedule.dayTimes[i].endTime)
-                    context.schedule.dayTimes[i].endTime = moment(context.schedule.dayTimes[i].endTime, "h:ma").toDate();
+                    context.schedule.dayTimes[i].endTime = moment(context.schedule.dayTimes[i].endTime, 'h:ma').toDate();
             }
         }
     }
@@ -63,7 +63,7 @@ exports.fixDates = function( context ) {
         delete context.schedule;
 
     return context;
-}
+};
 exports.newTag = function( context, callback ) {
 
     context = exports.fixDates(context);
@@ -92,10 +92,10 @@ exports.isActive = function( pTag ) {
         }
     }
 
-    if ( dateIndex != -1 ) {
+    if ( dateIndex !== -1 ) {
         var day = days[now.day()];
 
-        if ( pTag.schedule.dayTimes[dateIndex].days.toLowerCase().indexOf(day) != -1 ) {
+        if ( pTag.schedule.dayTimes[dateIndex].days.toLowerCase().indexOf(day) !== -1 ) {
 
             var dayStart = false;
             if (pTag.schedule.dayTimes[i].startTime) {
@@ -143,14 +143,16 @@ exports.sanitize = function( tag ) {
         delete t.__v;
         delete t.owner;
 
-        if ( (!t.schedule.dayTimes.length || t.schedule.dayTimes.length && t.schedule.dayTimes[0] == null) && !t.schedule.dates.length )
+        if ((!t.schedule.dayTimes.length || t.schedule.dayTimes.length && !t.schedule.dayTimes[0]) && !t.schedule.dates.length) {
             delete t.schedule;
-        else
-        if ( !t.schedule.dayTimes.length || t.schedule.dayTimes.length && t.schedule.dayTimes[0] == null )
+        }
+        else if (!t.schedule.dayTimes.length || t.schedule.dayTimes.length && !t.schedule.dayTimes[0]) {
             delete t.schedule.dayTimes;
+        }
         else
-        if (!t.schedule.dates.length )
+        if (!t.schedule.dates.length ) {
             delete t.schedule.dates;
+        }
 
         return t;
     }

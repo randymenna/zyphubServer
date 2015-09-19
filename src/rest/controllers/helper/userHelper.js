@@ -7,30 +7,32 @@ var config                  = require('config');
 
 exports.userHasOAuthProvider = function( user, provider ) {
     for(var i=0; i < user.credentials.oauth.length; i++) {
-        if (user.credentials.oauth[i].provider == provider) {
+        if (user.credentials.oauth[i].provider === provider) {
             return true;
         }
     }
     return false;
-}
+};
 
 exports.updateProviderCode = function( user, provider, code ) {
     for(var i=0; i < user.credentials.oauth.length; i++) {
-        if (user.credentials.oauth[i].provider == provider) {
+        if (user.credentials.oauth[i].provider === provider) {
             user.credentials.oauth[i].code = code;
             return true;
         }
     }
     return false;
-}
+};
 
 exports.validateOAuthId = function( user, provider, profile, providerData ) {
     for(var i=0; i < user.credentials.oauth.length; i++) {
-        if (user.credentials.oauth[i].provider == provider) {
-            if (user.credentials.oauth[i].providerData[profile.providerIdentifierField] == providerData[profile.providerIdentifierField])
+        if (user.credentials.oauth[i].provider === provider) {
+            if (user.credentials.oauth[i].providerData[profile.providerIdentifierField] === providerData[profile.providerIdentifierField]) {
                 return true;
-            else
+            }
+            else {
                 return false;
+            }
         }
     }
     return false;
@@ -94,7 +96,7 @@ exports.sanitize = function( user ) {
 };
 
 exports.newUserFromOAuth = function( providerUserProfile, callback ) {
-    var info = {}
+    var info = {};
     info.name = providerUserProfile.email;
     info.label = providerUserProfile.displayName;
     info.email = providerUserProfile.email;
@@ -125,7 +127,7 @@ exports.newUserFromLocal = function( body, callback ) {
     user.email = body.email;
     user.public.firstName = body.firstName ? body.firstName : possibleName[0];
     user.public.lastName = body.lastName ? body.lastName : possibleName[1];
-    user.public.name = body.name ? body.name : possibleName[0] + " " + possibleName[1];
+    user.public.name = body.name ? body.name : possibleName[0] + ' ' + possibleName[1];
     user.public.displayName = user.public.name;
     user.credentials.password = body.password;
 
@@ -157,6 +159,7 @@ exports.newUserFromApiKey = function( body, callback ) {
     profileInfo.displayName = user.public.displayName;
     profileInfo.userName = user.email;
     profileInfo.enterprise = body.enterprise;
+    profileInfo.enterpriseId = body.enterpriseId;
 
     profileHelper.newProfile( profileInfo,function( err, p){
         p.save(function( err, profile) {

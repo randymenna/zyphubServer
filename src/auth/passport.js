@@ -1,4 +1,6 @@
-'use strict';
+(function() {
+	'use strict';
+}());
 
 var _			= require('lodash');
 

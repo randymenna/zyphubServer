@@ -16,7 +16,7 @@ var conversationSchema = new Schema({
         pattern: String,
         priority: {type: Number, default: 1},
         meta: {
-            enterprise: {type: String, default: "ConversePoint"},
+            enterprise: {type: String, default: 'ConversePoint'},
             originalMembers: [ {type: Schema.Types.ObjectId} ],
             groups: [ {type: Schema.Types.ObjectId, ref: 'Group'} ],
             tags: [ {type: Schema.Types.ObjectId, ref: 'Tag'} ]
@@ -30,7 +30,7 @@ var conversationSchema = new Schema({
     state: {
         members: [{
             member: {type: Schema.Types.ObjectId, ref: 'Profiles'},
-            lastEvent: {type: String, default: "UNREAD" },
+            lastEvent: {type: String, default: 'UNREAD' },
             _id: false
         }],
         maxAccepts: {type: Number, default: 1},

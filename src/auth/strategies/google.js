@@ -1,5 +1,6 @@
-'use strict';
-
+(function() {
+	'use strict';
+}());
 /**
  * Module dependencies.
  */
@@ -13,7 +14,7 @@ var models				= require('../../models/models');
 
 module.exports = function() {
 	// Use google strategy
-	console.log("google");
+	console.log('google');
 	passport.use(new GoogleStrategy({
 			clientID: config.google.clientID,
 			clientSecret: config.google.clientSecret,

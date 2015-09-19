@@ -1,15 +1,11 @@
 var async                           = require('async');
 var config                          = require('config');
 var mongoose                        = require('mongoose');
-var https                           = require('https');
-var fs                              = require('fs');
-var request                         = require('request');
 var model                           = require('../src/models/models');
 var mongodbClient                   = require('../src/mongodb-client/index');
 var MessageDrivenBean               = require('../src/util/mdb/messageDrivenBean');
 var cpBus                           = require('../src/bus');
 var WebHookMessageHandler           = require('../src/msgHandler/webHookMessageHandler');
-var AuthenticationHelper            = require('../src/util/authenticationHelper');
 var NotificationHelper              = require('../src/util/notificationHelper');
 var ConversationHelper              = require('../src/rest/controllers/helper/conversationHelper');
 var logger                          = require('../src/util/logger');
@@ -17,7 +13,7 @@ var CONSTANTS                       = require('../src/constants');
 
 logger.startLogger('webhookServer');
 
-cpBus.promise.then(function(con){
+cpBus.promise.then(function(){
 
     var enterprise = config.webhook.enterprise;
     var webHookUrl;
@@ -60,7 +56,7 @@ cpBus.promise.then(function(con){
                     .exec(function(err, webhook){
                         if ( err ) {
                             webHookUrl = config.webHook.url;
-                            console.log( Error("Can't find enterprise",enterprise) );
+                            console.log( Error('Can\'t find enterprise',enterprise) );
                         }
                         else {
                             if (webhook) {

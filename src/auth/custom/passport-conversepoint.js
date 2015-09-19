@@ -42,7 +42,7 @@ var util = require('util');
  * @api public
  */
 function Strategy(options, verify) {
-    if (typeof options == 'function') {
+    if (typeof options === 'function') {
         verify = options;
         options = {};
     }

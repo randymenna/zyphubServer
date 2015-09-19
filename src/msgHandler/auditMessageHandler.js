@@ -1,4 +1,4 @@
-var async                   = require("async");
+var async                   = require('async');
 var model                   = require('../models/models');
 var cpConstants             = require('../constants/index');
 
@@ -16,10 +16,10 @@ module.exports.publisher = publisher;
 AuditMessageHandler.prototype.handleMessagePool = function (context, msgHandlerCallback) {
     var self = this;
 
-    console.log("SchedulerMessageHandler.handleMessage() entered: message: " + JSON.stringify(context));
+    console.log('SchedulerMessageHandler.handleMessage() entered: message: ' + JSON.stringify(context));
 
     if ( !context.auditAction )
-        context.auditAction = "log";
+        context.auditAction = 'log';
 
     async.waterfall(
         [
@@ -36,7 +36,7 @@ AuditMessageHandler.prototype.handleMessagePool = function (context, msgHandlerC
                     });
                 }
                 else {
-                    callback(Error("No message handler for "+context.auditAction), null);
+                    callback(Error('No message handler for '+context.auditAction), null);
                 }
             }
         ],
@@ -49,7 +49,7 @@ AuditMessageHandler.prototype.handleMessagePool = function (context, msgHandlerC
 };
 
 AuditMessageHandler.prototype.log = function(context,doneCallback) {
-    console.log("log(): entered");
+    console.log('log(): entered');
 
     var details;
 

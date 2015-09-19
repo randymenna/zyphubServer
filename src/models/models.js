@@ -8,8 +8,9 @@ var escalation              = require('./escalation');
 var auditTrail              = require('./auditTrail');
 var user                    = require('./user');
 var tag                     = require('./tag');
-var context                 = require('./context');
+var contextT                = require('./context');
 var integration             = require('./webhooks');
+var enterprise              = require('./enterprise');
 
 
 module.exports =  {
@@ -20,6 +21,7 @@ module.exports =  {
     AuditTrail: auditTrail.AuditTrail,
     User: user.User,
     Tag: tag.Tag,
-    Context: context.Context,
-    Webhook: integration.Webhook
+    Context: contextT.Context,
+    Webhook: integration.Webhook,
+    Enterprise: enterprise.Enterprise
 };

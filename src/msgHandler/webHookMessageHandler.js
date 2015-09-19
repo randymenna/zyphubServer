@@ -1,7 +1,7 @@
 /**
  * Created by randy on 1/27/14.
  */
-var async                   = require("async");
+var async                   = require('async');
 var mongoose                = require('mongoose');
 var model                   = require('../models/models');
 var _                       = require('lodash');
@@ -27,10 +27,10 @@ WebHookMessageHandler.prototype.handleMessagePool = function ( notification, msg
     var self = this;
 
     if (notification.enterprise !== self._options.enterprise){
-        console.log("WebHookMessageHandler(): skipped: wrong enterprise",context);
+        console.log('WebHookMessageHandler(): skipped: wrong enterprise',context);
         return;
     }
-    console.log("WebHookMessageHandler(): entered: handleMessage:",notification);
+    console.log('WebHookMessageHandler(): entered: handleMessage:',notification);
 
     request.post(self._options.url, {
         headers: {
@@ -40,9 +40,9 @@ WebHookMessageHandler.prototype.handleMessagePool = function ( notification, msg
         body: notification
     }, function(err, response, tokens) {
         if(err) {
-            console.log("WebHookMessageHandler(): error: ",err, tokens);
+            console.log('WebHookMessageHandler(): error: ',err, tokens);
         } else {
-            console.log("WebHookMessageHandler(): exit: handleMessage");
+            console.log('WebHookMessageHandler(): exit: handleMessage');
             msgHandlerCallback(null);
         }
     });

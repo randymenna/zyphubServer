@@ -18,10 +18,14 @@ module.exports = function(grunt) {
                     'cp config/dev-default.yaml config/default.yaml'
                 ].join(';')
             }
+        },
+        jshint: {
+            files: ['bin/*.js','src/**/*.js']
         }
     });
 
     grunt.loadNpmTasks('grunt-shell');
+    grunt.loadNpmTasks('grunt-contrib-jshint');
 
     grunt.registerTask('docker' ,
         [
@@ -34,6 +38,12 @@ module.exports = function(grunt) {
         [
             'shell:configDev'
 
+        ]
+    );
+
+    grunt.registerTask('lint',
+        [
+            'jshint'
         ]
     );
 

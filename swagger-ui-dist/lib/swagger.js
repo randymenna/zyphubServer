@@ -26,7 +26,7 @@
       return e.parameterMacro(model, parameter);
     else
       return parameter.defaultValue;
-  }
+  };
 
   /**
    * allows overriding the default value of an operation
@@ -37,7 +37,7 @@
       return e.modelPropertyMacro(operation, property);
     else
       return property.defaultValue;
-  }
+  };
 
   if (!Array.prototype.indexOf) {
     Array.prototype.indexOf = function (obj, start) {
@@ -415,7 +415,7 @@
       e.authorizations.apply(obj);
       new SwaggerHttp().execute(obj);
     }
-  }
+  };
 
   SwaggerResource.prototype.getAbsoluteBasePath = function (relativeBasePath) {
     var pos, url;
@@ -556,7 +556,7 @@
       var prop = new SwaggerModelProperty(propertyName, obj.properties[propertyName], this);
       this.properties.push(prop);
     }
-  }
+  };
 
   SwaggerModel.prototype.setReferencedModels = function (allModels) {
     var results = [];
@@ -604,7 +604,7 @@
     }
     else {
       var result = {};
-      var modelsToIgnore = (modelsToIgnore || [])
+      var modelsToIgnore = (modelsToIgnore || []);
       modelsToIgnore.push(this.name);
       for (var i = 0; i < this.properties.length; i++) {
         var prop = this.properties[i];
@@ -645,7 +645,7 @@
         this.valueString = '\'' + this.values.join('\' or \'') + '\'';
       }
     }
-  }
+  };
 
   SwaggerModelProperty.prototype.getSampleValue = function (modelsToIgnore) {
     var result;
@@ -825,7 +825,7 @@
     this.resource[this.nickname].asCurl = function (args) {
       return _this.asCurl(args);
     };
-  }
+  };
 
   SwaggerOperation.prototype.isListType = function (type) {
     if (type && type.indexOf('[') >= 0) {
@@ -1356,7 +1356,7 @@
     if (accepts)
       headers['Accept'] = accepts;
     return headers;
-  }
+  };
 
   /**
    * SwaggerHttp is a wrapper for executing requests
@@ -1373,7 +1373,7 @@
       return new JQueryHttpClient().execute(obj);
     else
       return new ShredHttpClient().execute(obj);
-  }
+  };
 
   SwaggerHttp.prototype.isIE8 = function () {
     var detectedIE = false;
@@ -1399,7 +1399,7 @@
     if (!jQuery) {
       var jQuery = window.jQuery;
     }
-  }
+  };
 
   JQueryHttpClient.prototype.execute = function (obj) {
     var cb = obj.on;
@@ -1454,7 +1454,7 @@
         headers: headers
       };
 
-      var contentType = (headers['content-type'] || headers['Content-Type'] || null)
+      var contentType = (headers['content-type'] || headers['Content-Type'] || null);
 
       if (contentType != null) {
         if (contentType.indexOf('application/json') == 0 || contentType.indexOf('+json') > 0) {
@@ -1475,7 +1475,7 @@
 
     jQuery.support.cors = true;
     return jQuery.ajax(obj);
-  }
+  };
 
   /*
    * ShredHttpClient is a light-weight, node or browser HTTP client
@@ -1491,12 +1491,12 @@
     else
       this.Shred = require('shred');
     this.shred = new this.Shred();
-  }
+  };
 
   ShredHttpClient.prototype.initShred = function () {
     this.isInitialized = true;
     this.registerProcessors(this.shred);
-  }
+  };
 
   ShredHttpClient.prototype.registerProcessors = function () {
     var identity = function (x) {
@@ -1517,7 +1517,7 @@
         stringify: toString
       });
     }
-  }
+  };
 
   ShredHttpClient.prototype.execute = function (obj) {
     if (!this.isInitialized)
@@ -1535,7 +1535,7 @@
       };
 
       var headers = response._headers.normalized || response._headers;
-      var contentType = (headers['content-type'] || headers['Content-Type'] || null)
+      var contentType = (headers['content-type'] || headers['Content-Type'] || null);
       if (contentType != null) {
         if (contentType.indexOf('application/json') == 0 || contentType.indexOf('+json') > 0) {
           if (response.content.data && response.content.data !== '')
@@ -1672,13 +1672,13 @@
 
   var CookieAuthorization = function (cookie) {
     this.cookie = cookie;
-  }
+  };
 
   CookieAuthorization.prototype.apply = function (obj) {
     obj.cookieJar = obj.cookieJar || CookieJar();
     obj.cookieJar.setCookie(this.cookie);
     return true;
-  }
+  };
 
   /**
    * Password Authorization is a basic auth implementation
