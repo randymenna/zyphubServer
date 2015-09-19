@@ -13,12 +13,11 @@ var CONSTANTS                       = require('../src/constants');
 
 logger.startLogger('conversationRouter');
 
-var messageDrivenBean = null;
 var conversationHelper = new ConversationHelper();
 
 // INITIALIZATION CODE
 // ONCE WE CAN CONNECT TO RABBIT MQ, TRY AND CONNECT TO MONGO, THEN START THE MDB
-cpBus.promise.then(function(con){
+cpBus.promise.then(function(){
 
     console.log('Connected to CP Bus');
     var exchangePublisherFactory = new ExchangePublisherFactory(cpBus.connection);
@@ -105,7 +104,7 @@ cpBus.promise.then(function(con){
                 console.info('Conversation MDB Successfully Initialized');
             }
         }
-    )
+    );
 }, function(err){
     console.log('unable to connect to cp bus:' + err);
 });

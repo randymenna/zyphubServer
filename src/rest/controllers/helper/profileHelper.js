@@ -22,7 +22,7 @@ exports.newProfile = function( info, callback ) {
 
     var t = tagHelper.newTag( defaultTag );
 
-    t.save(function( err, tag){
+    t.save(function( err /*,tag*/){
         if ( err ) {
             console.log('newProfile(): Error: cannot save default tag %s',defaultTag.label);
         }
@@ -46,14 +46,17 @@ exports.sanitize = function( profile ) {
 exports.getUpdate = function( body ) {
     var update = {};
 
-    if (body.displayName)
+    if (body.displayName) {
         update.displayName = body.displayName;
+    }
 
-    if (body.memberOf)
+    if (body.memberOf) {
         update.memberOf = body.memberOf;
+    }
 
-    if (body.enterprise)
-    update.enterprise = body.enterprise;
+    if (body.enterprise) {
+        update.enterprise = body.enterprise;
+    }
 
     return update;
 };

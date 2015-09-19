@@ -55,17 +55,17 @@ AuthenticationHelper.prototype.createToken = function( profileId, body, secret, 
         expiration = moment().add(options.expiresInMinutes, 'minutes').toISOString();
     }
 
-    var payload = {
+    var claims = {
         'iss': 'conversepoint.com',
         'iat':  Math.round(+new Date()/1000),
         'exp':  Math.round(+new Date()/1000) + 31536000,    // 1 year
         'sub': 'profile id',
         'aud': body.enterprise,
-        'jti': body.enterpriseId
+        'jti': body.enterpriseId,
+        'pid': profileId
     };
-    payload.profileId = profileId;
 
-    var token = jwt.encode(payload,secret);
+    var token = jwt.encode(claims,secret);
 
     return token;
 };

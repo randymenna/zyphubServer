@@ -30,7 +30,7 @@ module.exports = function(passport) {
                     return done(Error('Invalid Bearer token'), false);
                 }
                 else {
-                    user.origin = decoded.profileId;
+                    user.origin = decoded.pid;
                     user.enterprise = decoded.aud;
                     user.enterpriseId = decoded.jti;
 

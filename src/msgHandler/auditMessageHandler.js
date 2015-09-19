@@ -1,10 +1,9 @@
 var async                   = require('async');
 var model                   = require('../models/models');
-var cpConstants             = require('../constants/index');
 
 var publisher;
 
-var AuditMessageHandler = module.exports = function AuditMessageHandler( context ) {
+var AuditMessageHandler = module.exports = function AuditMessageHandler() {
 
     this.msgHandleSwitch                        = {};
     this.msgHandleSwitch['LOG']                 = this.log.bind(this);
@@ -18,8 +17,9 @@ AuditMessageHandler.prototype.handleMessagePool = function (context, msgHandlerC
 
     console.log('SchedulerMessageHandler.handleMessage() entered: message: ' + JSON.stringify(context));
 
-    if ( !context.auditAction )
+    if ( !context.auditAction ) {
         context.auditAction = 'log';
+    }
 
     async.waterfall(
         [
@@ -93,9 +93,11 @@ AuditMessageHandler.prototype.log = function(context,doneCallback) {
     });
 
     a.markModified('details');
-    a.save(function( err, action ){
-
-        doneCallback(err,context);
+    a.save(function( err, auditEntry ){
+        if (err){
+            console.log('auditMessageHandler(): error:',err);
+        }
+        doneCallback(err,auditEntry);
     });
 };
 

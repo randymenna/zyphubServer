@@ -2,7 +2,6 @@
  * Created by randy on 9/29/14.
  */
 var mongoose                = require('mongoose');
-var conversation            = require('./conversation');
 
 var Schema  = mongoose.Schema;
 

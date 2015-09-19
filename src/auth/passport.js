@@ -2,12 +2,7 @@
 	'use strict';
 }());
 
-var _			= require('lodash');
-
-
-//var passport = require('passport'),
-var User = require('../models/models').User,
-	path = require('path');
+var User = require('../models/models').User;
 
 module.exports = function(passport) {
 
@@ -25,7 +20,6 @@ module.exports = function(passport) {
 			done(err, user);
 		});
 	});
-
 
 	require('./strategies/local')(passport);
 	require('./strategies/bearer')(passport);

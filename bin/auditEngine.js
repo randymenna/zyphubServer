@@ -4,7 +4,6 @@ var mongoose                        = require('mongoose');
 var MessageDrivenBean               = require('../src/util/mdb/messageDrivenBean');
 var cpBus                           = require('../src/bus');
 var AuditMessageHandler             = require('../src/msgHandler/auditMessageHandler');
-var ExchangePublisherFactory        = require('../src/util/bus/exchangePublisherFactory');
 var logger                          = require('../src/util/logger');
 var CONSTANTS                       = require('../src/constants');
 
@@ -13,9 +12,7 @@ logger.startLogger('auditEngine');
 
 // INITIALIZATION CODE
 // ONCE WE CAN CONNECT TO RABBIT MQ, TRY AND CONNECT TO MONGO, THEN START THE MDB
-cpBus.promise.then(function(con){
-
-    var exchangePublisherFactory = new ExchangePublisherFactory(cpBus.connection);
+cpBus.promise.then(function(){
 
     // INITIALIZATION CODE
     async.waterfall(
@@ -62,5 +59,5 @@ cpBus.promise.then(function(con){
                 console.info('Auditor MDB Successfully Initialized');
             }
         }
-    )
+    );
 });

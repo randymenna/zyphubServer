@@ -116,6 +116,7 @@ UserSchema.methods.authenticate = function(password) {
  * Create instance method for authenticating user
  */
 UserSchema.methods.validateSecret = function(secret) {
+	console.log('validate: ',secret);
     return true;
 };
 

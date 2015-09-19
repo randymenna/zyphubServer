@@ -2,7 +2,6 @@
  * Created by randy on 9/29/14.
  */
 var mongoose                = require('mongoose');
-var conversation            = require('./conversation');
 
 var Schema  = mongoose.Schema;
 
@@ -31,12 +30,6 @@ var tagSchema = new Schema({
 
     meta: {}
     });
-
-tagSchema.pre('save',function(next, done) {
-    var self = this;
-
-    next();
-});
 
 var _Tag = mongoose.model('Tags', tagSchema);
 

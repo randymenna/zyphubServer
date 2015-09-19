@@ -9,7 +9,6 @@ var passport 			= require('passport');
 var config				= require('config');
 var LinkedInStrategy 	= require('passport-linkedin').Strategy;
 var users 				= require('../../rest/controllers/userController');
-var models				= require('../../models/models');
 
 module.exports = function() {
 	// Use linkedin strategy

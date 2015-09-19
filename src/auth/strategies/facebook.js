@@ -8,7 +8,6 @@ var passport 			= require('passport');
 var config				= require('config');
 var FacebookStrategy 	= require('passport-facebook').Strategy;
 var users 				= require('../../rest/controllers/userController');
-var models				= require('../../models/models');
 
 module.exports = function() {
 	// Use facebook strategy

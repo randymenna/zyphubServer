@@ -1,16 +1,13 @@
-var async                           = require('async');
 var config                          = require('config');
-var mongoose                        = require('mongoose');
-var https                           = require('https');
-var fs                              = require('fs');
 var MessageDrivenBean               = require('../src/util/mdb/messageDrivenBean');
 var cpBus                           = require('../src/bus');
 var NotificationMessageHandler      = require('../src/msgHandler/notificationMessageHandler');
 var AuthenticationHelper            = require('../src/util/authenticationHelper');
 var ConversationHelper              = require('../src/rest/controllers/helper/conversationHelper');
+var NotificationHelper              = require('../src/rest/controllers/helper/notificationHelper');
 var logger                          = require('../src/util/logger');
-var CONSTANTS                       = require('../src/constants');
 var RFC6455Server                   = require('../src/util/websocket/rfc6455Server');
+var CONSTANTS                       = require('../src/constants');
 
 logger.startLogger('notificationServer');
 
@@ -28,10 +25,15 @@ cpBus.promise.then(function() {
     }
     else
     if (config.socketio.isSecurePortEnabled) {
-        setupSecureServer();
+        console.log('notificationServer(): no setupSecureServer() function');
     }
 
-    messageDrivenBean = new MessageDrivenBean('CPNotification',notificationHandler, 1); // TODO: start is implicit in new
+    try {
+        var messageDrivenBean = new MessageDrivenBean(cpBus.connection, CONSTANTS.BUS.FANOUT, CONSTANTS.BUS.NOTIFIER, notificationHandler, 0);
+        messageDrivenBean.start();
+    } catch(exception){
+        console.log('conversationRouter(): mdb.exception', exception);
+    }
     console.log('NotificationMessageHandler Initialized');
 });
 
