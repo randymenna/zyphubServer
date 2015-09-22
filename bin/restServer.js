@@ -1,6 +1,5 @@
 var express                 = require('express');
 var bodyParser              = require('body-parser');
-var mongoDbClient           = require('../src/mongodb-client/index');
 var https                   = require('https');
 var config                  = require('config');
 var fs                      = require('fs');
@@ -11,7 +10,7 @@ var logger                  = require('../src/util/logger');
 logger.startLogger('restServer');
 
 require('../src/auth/passport')(passport);
-
+/*
 mongoDbClient.init(function(error) {
     if ( error === null ) {
         var app = createExpressApplication();
@@ -35,6 +34,26 @@ mongoDbClient.init(function(error) {
     }
     else {
         console.log(error);
+    }
+});
+*/
+
+mongoose.connect(config.mongo.url, {auto_reconnect: true},function(err){
+    if (err){
+        console.log('restServer(): mongoose error: ', err);
+    }
+    else {
+        console.log('restServer(): mongoose.connect',config.mongo.url);
+        var app = createExpressApplication();
+
+        if (config.restServer.isUnSecurePortEnabled) {
+
+            runRestServer(app);
+        }
+        else
+        if (config.restServer.isSecurePortEnabled) {
+            runSecureRestServer(app);
+        }
     }
 });
 

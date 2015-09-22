@@ -41,14 +41,14 @@ var ConversationMessageHandler = module.exports = function ConversationMessageHa
 
 ConversationMessageHandler.prototype.onMessage = function (msg, msgHandlerCallback) {
     var self = this;
+    var context = JSON.parse(msg.content.toString());
 
-    console.log('ConversationMessageHandler.handleMessage() entered: message: ' + JSON.stringify(msg.content.toString()));
+    console.log('ConversationMessageHandler.handleMessage() entered: message: ' + context);
 
     async.waterfall(
         [
             // call update fn
             function (/*context,*/ callback) {
-                var context = JSON.parse(msg.content.toString());
                 var msgHandlerFunction = self.msgHandleSwitch[context.action.toUpperCase()];
 
                 if (msgHandlerFunction !== undefined) {

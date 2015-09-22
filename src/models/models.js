@@ -11,6 +11,7 @@ var tag                     = require('./tag');
 var contextT                = require('./context');
 var integration             = require('./webhooks');
 var enterprise              = require('./enterprise');
+var billing                 = require('./billing');
 
 
 module.exports =  {
@@ -23,5 +24,6 @@ module.exports =  {
     Tag: tag.Tag,
     Context: contextT.Context,
     Webhook: integration.Webhook,
-    Enterprise: enterprise.Enterprise
+    Enterprise: enterprise.Enterprise,
+    Billing: billing.Billing
 };

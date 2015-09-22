@@ -1,10 +1,9 @@
 var async                   = require('async');
 var model                   = require('../models/models');
-var CONSTANTS               = require('../constants/index');
 
 var publisher;
 
-var SchedulerMessageHandler = module.exports = function SchedulerMessageHandler( context ) {
+var SchedulerMessageHandler = module.exports = function SchedulerMessageHandler() {
 
     this.setConversationPublisher = function( conversationPublisher ) {
         this._conversationPublisher = conversationPublisher;
@@ -25,8 +24,9 @@ var SchedulerMessageHandler = module.exports = function SchedulerMessageHandler(
 
 module.exports.publisher = publisher;
 
-SchedulerMessageHandler.prototype.handleMessagePool = function (context, msgHandlerCallback) {
+SchedulerMessageHandler.prototype.onMessage = function (msg, msgHandlerCallback) {
     var self = this;
+    var context = JSON.parse(msg.content.toString());
 
     console.log('SchedulerMessageHandler.handleMessage() entered: message: ' + JSON.stringify(context));
 
@@ -52,7 +52,7 @@ SchedulerMessageHandler.prototype.handleMessagePool = function (context, msgHand
 
         function (err, context) {
 
-            msgHandlerCallback(err, context);
+            msgHandlerCallback(err, msg);
         }
     );
 };
@@ -62,40 +62,42 @@ SchedulerMessageHandler.prototype.setTTL = function(context,doneCallback) {
 
     var expirationTime = 'in ' + context.conversation.time.toLive + ' minutes';
     self.agenda.schedule(expirationTime,'handle ttl',{context:context});
-    console.log('SchedulerMessageHandler.handleMessage() 'handle ttl' ' + expirationTime);
+    console.log('SchedulerMessageHandler.handleMessage().setTTL()',expirationTime);
     doneCallback(null,context);
 };
 
 SchedulerMessageHandler.prototype.setEscalation = function(context,doneCallback) {
+    var self = this;
     var escalationId = context.conversation.escalation[0];
 
     model.Escalation.findOne({_id: escalationId}, function (err, escalation) {
         if (err) {
-            console.log('SchedulerMessageHandler.handleMessage() 'handle escalation' can't find esclation id: ' + escalationId);
+            console.log('SchedulerMessageHandler.handleMessage().setEscalation() cannot find esclation id ', escalationId);
             doneCallback(null,context);
         }
         else {
             context.escalation = escalation;
             context.currentStep = 0;
 
-            var time = escalation.steps[0].time;
+            var escalationTime = escalation.steps[0].time;
 
-            var expirationTime = 'in ' + context.conversation.time.toLive + ' minutes';
-            self.agenda.schedule(expirationTime,'handle escalation',{context:context});
+            var escalate = 'in ' + escalationTime + ' minutes';
+            self.agenda.schedule(escalate,'handle escalation',{context:context});
 
-            console.log('SchedulerMessageHandler.handleMessage() 'setEscalation' ' + context.conversationId);
+            console.log('SchedulerMessageHandler.handleMessage().setEscalation()',context.conversationId);
             doneCallback(null,context);
         }
     });
 };
 
 SchedulerMessageHandler.prototype.handleEscalationStep = function(context,doneCallback) {
+    var self = this;
     var time = context.escalation.steps[context.currentStep].time;
 
     var expirationTime = 'in ' + time + ' minutes';
     self.agenda.schedule(expirationTime,'handle escalation',{context:context});
 
-    console.log('SchedulerMessageHandler.handleMessage() 'handleEscalationStep' ' + context.conversationId);
+    console.log('SchedulerMessageHandler.handleMessage().handleEsacalationStep',context.conversationId);
     doneCallback(null,context);
 };
 
@@ -104,6 +106,6 @@ SchedulerMessageHandler.prototype.setTagConstraint = function(context,doneCallba
 
     var expirationTime = new Date(context.constraint);
     var job = self.agenda.schedule(expirationTime,'tag constraint',{context:context});
-    console.log('SchedulerMessageHandler.handleMessage() 'tag constraint' ' + expirationTime);
+    console.log('SchedulerMessageHandler.handleMessage().setTagConstraint',expirationTime);
     doneCallback(null,context);
 };

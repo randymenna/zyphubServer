@@ -25,6 +25,19 @@ cpBus.promise.then(function(){
     async.waterfall(
         [
             function(callback) {
+                var context = {};
+
+                mongoose.connect(config.mongo.url, {auto_reconnect: true},function(err){
+                    if (err){
+                        console.log('webhookServer(): mongoose error: ', err);
+                        callback(err, null);
+                    }
+                    else {
+                        console.log('webhookServer(): connected',config.mongo.url);
+                        callback(null,context);
+                    }
+                });
+                /*
                 mongodbClient.init(function(error) {
 
                     var context = {};
@@ -32,6 +45,7 @@ cpBus.promise.then(function(){
 
                     callback(error,context);
                 });
+                */
             },
 
             function(context, callback) {
@@ -70,11 +84,21 @@ cpBus.promise.then(function(){
 
             function(context, callback) {
 
+                exchangePublisherFactory.createBillingExchangePublisher(function(billingPublisher) {
+                    console.log('conversationRouter(): billingPublisher');
+                    context.billingPublisher = billingPublisher;
+                    callback(null,context);
+                });
+            },
+
+            function(context, callback) {
+
                 var conversationHandler = new ConversationMessageHandler();
                 conversationHandler.setAuditTrailPublisher(context.auditTrailPublisher);
                 conversationHandler.setNotificationPublisher(context.notificationPublisher);
                 conversationHandler.setNotificationHelper(context.notificationHelper);
                 conversationHandler.setSchedulerPublisher(context.schedulerPublisher);
+                conversationHandler.setBillingPublisher(context.billingPublisher);
                 conversationHandler.setConversationHelper( conversationHelper );
 
                 //mongoose.connect(config.mongo.host, config.mongo.dbName, config.mongo.port, {auto_reconnect: true},function(err){

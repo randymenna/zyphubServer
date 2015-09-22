@@ -62,6 +62,7 @@ var UserSchema = new Schema({
 		}]
 	},
 
+	enterprise: {type: String },
 	enterpriseId: {type: Schema.Types.ObjectId, ref: 'Enterprise'},
 
 	roles: {

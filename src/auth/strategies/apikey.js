@@ -54,6 +54,11 @@ module.exports = function(passport) {
                     req.body.enterprise = token.aud;
                     req.body.enterpriseId = token.jti;
 
+                    if (user) {
+                        user.enterprise = token.aud;
+                        user.enterpriseId = token.jti;
+                    }
+
                     if (err) {
                         return done(err);
                     }

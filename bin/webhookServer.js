@@ -30,7 +30,6 @@ cpBus.promise.then(function(){
 
             function(context, callback) {
 
-                //mongoose.connect(config.mongo.host, config.mongo.dbName, config.mongo.port, {auto_reconnect: true});
                 mongoose.connect(config.mongo.url, {auto_reconnect: true},function(err){
                     if (err){
                         console.log('webhookServer(): mongoose error: ', err);

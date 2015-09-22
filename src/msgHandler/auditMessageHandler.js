@@ -12,10 +12,10 @@ var AuditMessageHandler = module.exports = function AuditMessageHandler() {
 
 module.exports.publisher = publisher;
 
-AuditMessageHandler.prototype.handleMessagePool = function (context, msgHandlerCallback) {
+AuditMessageHandler.prototype.onMessage = function (msg, msgHandlerCallback) {
     var self = this;
 
-    console.log('SchedulerMessageHandler.handleMessage() entered: message: ' + JSON.stringify(context));
+    console.log('SchedulerMessageHandler.handleMessage() entered: message: ' + JSON.stringify(msg));
 
     if ( !context.auditAction ) {
         context.auditAction = 'log';
@@ -25,6 +25,7 @@ AuditMessageHandler.prototype.handleMessagePool = function (context, msgHandlerC
         [
             // get from db
             function (callback) {
+                var context = JSON.parse(msg.content.toString());
 
                 var msgHandlerFunction = self.msgHandleSwitch[context.auditAction.toUpperCase()];
 
@@ -43,7 +44,7 @@ AuditMessageHandler.prototype.handleMessagePool = function (context, msgHandlerC
 
         function (err, context) {
 
-            msgHandlerCallback(err, context);
+            msgHandlerCallback(err, msg);
         }
     );
 };

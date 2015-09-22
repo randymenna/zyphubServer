@@ -23,11 +23,12 @@ var WebHookMessageHandler = module.exports = function WebHookMessageHandler( opt
 };
 
 
-WebHookMessageHandler.prototype.handleMessagePool = function ( notification, msgHandlerCallback ) {
+WebHookMessageHandler.prototype.onMessage = function ( msg, msgHandlerCallback ) {
     var self = this;
+    var notification = JSON.parse(msg.content.toString());
 
     if (notification.enterprise !== self._options.enterprise){
-        console.log('WebHookMessageHandler(): skipped: wrong enterprise',context);
+        console.log('WebHookMessageHandler(): skipped: wrong enterprise',notification);
         return;
     }
     console.log('WebHookMessageHandler(): entered: handleMessage:',notification);
@@ -43,8 +44,8 @@ WebHookMessageHandler.prototype.handleMessagePool = function ( notification, msg
             console.log('WebHookMessageHandler(): error: ',err, tokens);
         } else {
             console.log('WebHookMessageHandler(): exit: handleMessage');
-            msgHandlerCallback(null);
         }
+        msgHandlerCallback(err, msg);
     });
 };
 

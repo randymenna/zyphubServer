@@ -60,6 +60,13 @@ module.exports = function() {
                         ConversationController.setAuditTrailPublisher(auditTrailPublisher);
                         callback();
                     });
+                },
+                function(callback) {
+                    exchangePublisherFactory.createBillingExchangePublisher( function(billingPublisher) {
+                        console.log('conversationService: set billing Publisher');
+                        ConversationController.setBillingPublisher(billingPublisher);
+                        callback();
+                    });
                 }
             ],
             function() {

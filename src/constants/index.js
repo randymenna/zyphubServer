@@ -35,9 +35,11 @@ module.exports.BUS = {
   FANOUT                : 'fanout',
   CONVERSATION_WORKERS  : 1,
   AUDIT_WORKERS         : 1,
+  BILLING_WORKERS       : 1,
   SCHEDULE_WORKERS      : 1,
   CONVERSATION_ROUTER   : 'ConversationRouter',
   SCHEDULER             : 'Scheduler',
   NOTIFIER              : 'Notifier',
-  AUDITTRAIL            : 'AuditTrail'
+  AUDITTRAIL            : 'AuditTrail',
+  BILLING               : 'Billing'
 };

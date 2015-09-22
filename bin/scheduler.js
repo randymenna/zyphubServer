@@ -37,7 +37,6 @@ cpBus.promise.then(function(){
 
                 console.info('Scheduler MDB: mongoose connect');
 
-                //mongoose.connect(config.mongo.host, config.mongo.dbName, config.mongo.port, {auto_reconnect: true});
                 mongoose.connect(config.mongo.url, {auto_reconnect: true},function(err){
                     if (err){
                         console.log('scheduler(): mongoose error: ', err);

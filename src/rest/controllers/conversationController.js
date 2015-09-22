@@ -12,6 +12,7 @@ var _schedulerPublisher = null;
 var _notificationPublisher = null;
 var _auditTrailPublisher = null;
 var _conversationHelper = null;
+var _billingPublisher = null;
 
 exports.setConversationPublisher = function( conversationPublisher ) {
     _conversationPublisher = conversationPublisher;
@@ -36,6 +37,11 @@ exports.setConversationHelper = function( conversationHelper ) {
     if ( _schedulerPublisher )
         _conversationHelper.setSchedulerPublisher(_schedulerPublisher);
 };
+
+exports.setBillingPublisher = function( billingPublisher ) {
+    _billingPublisher = billingPublisher;
+};
+
 
 exports.getConversations = function (req, res) {
 
@@ -128,8 +134,6 @@ exports.getOneConversation = function(req, res) {
 
 exports.newConversation = function (req, res) {
 
-    var context = {};
-
     console.log('newConversation(): entered');
     async.waterfall(
         [
@@ -139,6 +143,7 @@ exports.newConversation = function (req, res) {
                 context.action = 'new';
                 context.origin = req.user.origin;
                 context.enterprise = req.user.enterprise;
+                context.enterpriseId = req.user.enterpriseId;
 
                 context = _conversationHelper.decorateContext(context, req.body);
 
@@ -168,6 +173,19 @@ exports.newConversation = function (req, res) {
                 //_conversationPublisher.publish('ConversationEngineQueue',context, function( error ){
                 var routingKey = parseInt(context.conversationId) % CONSTANTS.BUS.CONVERSATION_WORKERS;
                 var published = _conversationPublisher.publish(routingKey, context);
+                if ( !published )
+                    callback(Error('Publish Failed'), null);
+                else
+                    callback(null, context);
+            },
+
+            // billing event
+            function (context, callback) {
+
+                //_conversationPublisher.publish('ConversationEngineQueue',context, function( error ){
+                var routingKey = parseInt(context.conversationId) % CONSTANTS.BUS.BILLING_WORKERS;
+                context.billingEvent = 'NewMessage';
+                var published = _billingPublisher.publish(routingKey, context);
                 if ( !published )
                     callback(Error('Publish Failed'), null);
                 else

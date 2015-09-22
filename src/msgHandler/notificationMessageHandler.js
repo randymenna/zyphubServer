@@ -33,15 +33,16 @@ var NotificationMessageHandler = module.exports = function NotificationMessageHa
 };
 
 
-NotificationMessageHandler.prototype.handleMessagePool = function ( context, msgHandlerCallback ) {
+NotificationMessageHandler.prototype.onMessage = function ( msg, msgHandlerCallback ) {
     var self = this;
 
-    console.log('NotificationMessageHandler(): entered: handleMessage:' + context);
+    console.log('NotificationMessageHandler(): entered: handleMessage:' + JSON.stringify(msg));
 
     async.waterfall(
         [
             // get a list of participants to notify
             function (callback) {
+                var context = JSON.parse(msg.content.toString());
 
                 var msgHandlerFunction = self.msgHandleSwitch[context.action.toUpperCase()];
 
@@ -88,7 +89,7 @@ NotificationMessageHandler.prototype.handleMessagePool = function ( context, msg
 
         function (err, context) {
 
-            msgHandlerCallback(null);
+            msgHandlerCallback(err, msg);
             console.log('NotificationMessageHandler(): exit: handleMessage');
         }
     );
