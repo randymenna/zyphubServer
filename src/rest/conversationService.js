@@ -4,10 +4,12 @@
 
 var ExchangePublisherFactory        = require('../util/bus/exchangePublisherFactory');
 var ConversationController          = require('./controllers/conversationController');
-var cpBus                           = require('../bus/index');
+var CPBus                           = require('../bus/index');
 var ConversationHelper              = require('./controllers/helper/conversationHelper');
 var passport                        = require('passport');
 var async                           = require('async');
+
+var cpBus = new CPBus();
 
 module.exports = function() {
 
@@ -26,10 +28,10 @@ module.exports = function() {
     */
 
     //cpBus.connection.on('ready',function() {
-    cpBus.promise.then(function(conn) {
+    cpBus.start().then(function(busConnection) {
 
         console.log('conversationService: connected to cp bus');
-        var exchangePublisherFactory = new ExchangePublisherFactory(cpBus.connection);
+        var exchangePublisherFactory = new ExchangePublisherFactory(busConnection);
 
         async.waterfall(
             [
@@ -72,6 +74,7 @@ module.exports = function() {
             function() {
                 var conversationHelper = new ConversationHelper();
                 ConversationController.setConversationHelper(conversationHelper);
+                console.log('conversationService: initialzation complete');
             });
 
     },function(err){

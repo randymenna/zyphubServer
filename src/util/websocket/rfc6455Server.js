@@ -11,6 +11,7 @@ var RFC6455Server = module.exports = function RFC6455Server( context ) {
     };
 };
 
+module.exports.clientMap = clientMap;
 
 RFC6455Server.prototype.startUnsecureServer = function () {
     var self = this;

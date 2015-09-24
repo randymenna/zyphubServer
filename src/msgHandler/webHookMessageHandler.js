@@ -28,25 +28,27 @@ WebHookMessageHandler.prototype.onMessage = function ( msg, msgHandlerCallback )
     var notification = JSON.parse(msg.content.toString());
 
     if (notification.enterprise !== self._options.enterprise){
-        console.log('WebHookMessageHandler(): skipped: wrong enterprise',notification);
-        return;
-    }
-    console.log('WebHookMessageHandler(): entered: handleMessage:',notification);
+        console.log('WebHookMessageHandler(): skipped: incorrect enterprise',notification);
+        msgHandlerCallback(null, msg);
+    } else {
+        console.log('WebHookMessageHandler(): entered: handleMessage:', notification);
 
-    request.post(self._options.url, {
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        json: true,
-        body: notification
-    }, function(err, response, tokens) {
-        if(err) {
-            console.log('WebHookMessageHandler(): error: ',err, tokens);
-        } else {
-            console.log('WebHookMessageHandler(): exit: handleMessage');
-        }
-        msgHandlerCallback(err, msg);
-    });
+        request.post(self._options.url, {
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            json: true,
+            body: notification
+        }, function (err, response, tokens) {
+            if (err) {
+                console.log('WebHookMessageHandler(): error: ', err, tokens);
+            }
+            else {
+                console.log('WebHookMessageHandler(): exit: handleMessage');
+            }
+            msgHandlerCallback(err, msg);
+        });
+    }
 };
 
 

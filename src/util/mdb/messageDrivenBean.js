@@ -1,317 +1,353 @@
 /**
  * Created by randy on 12/19/13.
  */
-var config                      = require('config');
-var ExchangePublisherFactory    = require('../bus/exchangePublisherFactory');
-var q                           = require('q');
-var async                       = require('async');
-var CONSTANTS                   = require('../../constants/index');
+(function() {
+    var ExchangePublisherFactory = require('../bus/exchangePublisherFactory');
+    var q = require('q');
+    var async = require('async');
+    var CONSTANTS = require('../../constants/index');
 
-var epf = new ExchangePublisherFactory();
+    var epf = new ExchangePublisherFactory();
 
-var MessageDrivenBean = module.exports = function MessageDrivenBean(connection, type, baseName, messageHandler, workers) {
-    this.baseName       = baseName;
-    this.messageHandler = messageHandler;
-    this.workers        = workers;
-    this.connection     = connection;
-    this.type           = type;
-    this.channel        = null;
-};
-
-function createQueues( channel, name, options ) {
-    return function(callback) {
-        channel.assertQueue(name, options, function(err, ok){
-            if (err) {
-                console.log(err);
-                callback(err, null);
-            }
-            else {
-                callback(null, ok.queue);
-            }
-        });
-    }
-}
-
-function bindQueues(channel, exchange, queue, route) {
-    return function(callback) {
-        channel.bindQueue(queue, exchange, route, {}, function(err, ok){
-            if (err) {
-                console.log(err);
-                callback(err);
-            }
-            else {
-                callback();
-            }
-        });
-    }
-}
-
-function consumeQueue(channel, queue, handler){
-    return function(callback) {
-        channel.prefetch(1);
-        channel.consume(queue, handler, {}, function (err, ok) {
-            if (err) {
-                callback(err. null);
-            } else {
-                callback(null, ok);
-            }
-        });
-    }
-}
-
-function createDirectTopology( bean, ch, done ) {
-    var DEAD_LETTER = {
-        deadLetterExchange: bean.baseName+'Exchange.dead',
-        deadLetterRoutingKey: bean.baseName+'Queue.dead'
+    var MessageDrivenBean = module.exports = function MessageDrivenBean(connection, type, baseName, messageHandler, workers) {
+        this.baseName = baseName;
+        this.messageHandler = messageHandler;
+        this.workers = workers;
+        this.connection = connection;
+        this.type = type;
+        this.channel = null;
     };
 
-    async.waterfall([
-            function( callback ){
-                ch.assertExchange(bean.baseName+'Exchange', 'direct', epf.getExchangeOptions(), function(err, ok) {
-                    if (err) {
-                        console.log(err);
-                        callback(err);
-                    }
-                    else {
-                        callback();
-                    }
-                });
-            },
-
-            function( callback ){
-                ch.assertExchange(bean.baseName+'Exchange.dead', 'direct', epf.getExchangeOptions(), function(err, ok) {
-                    if (err) {
-                        console.log(err);
-                        callback(err);
-                    }
-                    else {
-                        callback();
-                    }
-                });
-            },
-
-            function( callback ){
-                var functions = [];
-                for (var i=0; i < bean.workers; i++){
-                    functions.push((createQueues)(ch, bean.baseName+'Queue'+i, DEAD_LETTER));
+    function createQueues(channel, name, options) {
+        return function (callback) {
+            channel.assertQueue(name, options, function (err, ok) {
+                if (err) {
+                    console.log(err);
+                    callback(err, null);
                 }
-                if (functions.length) {
-                    async.parallel(functions,function(err, queues){
-                        callback(null, queues);
-                    });
-                } else {
-                    callback('No Queues');
+                else {
+                    callback(null, ok.queue);
                 }
-            },
-
-            function( queues, callback ){
-                ch.assertQueue(bean.baseName+'Queue.dead', {}, function(err, ok){
-                    if (err) {
-                        console.log(err);
-                        callback(err);
-                    }
-                    else {
-                        callback(null, queues);
-                    }
-                });
-            },
-
-            function( queues, callback  ){
-                var functions = [];
-                for (var i=0; i < queues.length; i++) {
-                    functions.push((bindQueues)(ch,  bean.baseName+'Exchange', queues[i], bean.baseName+i));
-                }
-                if (functions.length){
-                    async.parallel(functions, function(){
-                        callback();
-                    });
-                } else {
-                    callback('No bindings');
-                }
-            },
-
-            function( callback ) {
-                ch.bindQueue(bean.baseName + 'Queue.dead', bean.baseName + 'Exchange.dead', bean.baseName+'Queue.dead', {}, function (err, ok) {
-                    if (err) {
-                        console.log(err);
-                        callback(err);
-                    }
-                    else {
-                        callback();
-                    }
-                });
-            }
-        ],
-
-        function(err){
-            if (err){
-                console.log(err);
-            }
-            done(err);
-        });
-}
-
-function createFanoutTopology( bean, ch, done ) {
-    var DEAD_LETTER = {
-        deadLetterExchange: bean.baseName+'Exchange.dead',
-        deadLetterRoutingKey: bean.baseName+'Queue.dead'
-    };
-
-    async.waterfall([
-            function( callback ){
-                ch.assertExchange(bean.baseName+'Exchange', 'fanout', epf.getExchangeOptions(), function(err, ok) {
-                    if (err) {
-                        console.log(err);
-                        callback(err);
-                    }
-                    else {
-                        callback();
-                    }
-                });
-            },
-
-            function( callback ){
-                ch.assertExchange(bean.baseName+'Exchange.dead', 'direct', epf.getExchangeOptions(), function(err, ok) {
-                    if (err) {
-                        console.log(err);
-                        callback(err);
-                    }
-                    else {
-                        callback();
-                    }
-                });
-            },
-
-            function( callback ){
-                ch.assertQueue(bean.baseName+'Queue'+bean.instance, DEAD_LETTER, function(err, ok){
-                    if (err) {
-                        console.log(err);
-                        callback(err);
-                    }
-                    else {
-                        callback();
-                    }
-                });
-            },
-
-            function( callback ){
-                ch.assertQueue(bean.baseName+'Queue.dead', {}, function(err, ok){
-                    if (err) {
-                        console.log(err);
-                        callback(err);
-                    }
-                    else {
-                        callback();
-                    }
-                });
-            },
-
-            function( callback ){
-                ch.bindQueue(bean.baseName+'Queue'+bean.instance, bean.baseName+'Exchange', bean.baseName+bean.instance, {}, function(err, ok){
-                    if (err) {
-                        console.log(err);
-                        callback(err);
-                    }
-                    else {
-                        callback();
-                    }
-                });
-            },
-
-            function( callback ) {
-                ch.bindQueue(bean.baseName + 'Queue.dead', bean.baseName + 'Exchange.dead', bean.baseName+'Queue.dead', {}, function (err, ok) {
-                    if (err) {
-                        console.log(err);
-                        callback(err);
-                    }
-                    else {
-                        callback();
-                    }
-                });
-            }
-        ],
-
-        function(err){
-            if (err){
-                console.log(err);
-            }
-            done(err);
-        });
-}
-
-function listenOnQueue(bean, ch, done){
-    var functions = [];
-    for(var i=0; i < bean.workers; i++) {
-        functions.push((consumeQueue)(ch, bean.baseName+'Queue'+i, bean.onMessageWrapper.bind(bean)));
+            });
+        };
     }
 
-    if (functions.length){
-        async.parallel(functions, function(err, result){
-            done();
-        });
-    } else {
-        done('No consumers');
+    function bindQueues(channel, exchange, queue, route) {
+        return function (callback) {
+            channel.bindQueue(queue, exchange, route, {}, function (err, ok) {
+                if (err) {
+                    console.log(err);
+                    callback(err);
+                }
+                else {
+                    console.log(ok);
+                    callback();
+                }
+            });
+        };
     }
-}
 
-function messageDone(err, message){
-    var self = this;
+    function consumeQueue(channel, queue, handler) {
+        return function (callback) {
+            channel.prefetch(1);
+            channel.consume(queue, handler, {}, function (err, ok) {
+                if (err) {
+                    callback(err.null);
+                }
+                else {
+                    callback(null, ok);
+                }
+            });
+        };
+    }
 
-    if (err) {
-        if (message.fields.redelivered) {
-            self.channel.nack(message, false, false);
-            console.log('DLQ message');
-        } else {
-            self.channel.nack(message, false, true);
-            console.log('Retry message');
+    function bindDirectExchangesAndQueues(bean, ch, done) {
+        var DEAD_LETTER = {
+            deadLetterExchange: bean.baseName + 'Exchange.dead',
+            deadLetterRoutingKey: bean.baseName + 'Queue.dead'
+        };
+
+        async.waterfall([
+                function (callback) {
+                    ch.assertExchange(bean.baseName + 'Exchange', 'direct', epf.getExchangeOptions(), function (err, ok) {
+                        if (err) {
+                            console.log(err);
+                            callback(err);
+                        }
+                        else {
+                            callback();
+                        }
+                    });
+                },
+
+                function (callback) {
+                    ch.assertExchange(bean.baseName + 'Exchange.dead', 'direct', epf.getExchangeOptions(), function (err, ok) {
+                        if (err) {
+                            console.log(err);
+                            callback(err);
+                        }
+                        else {
+                            callback();
+                        }
+                    });
+                },
+
+                function (callback) {
+                    var functions = [];
+                    for (var i = 0; i < bean.workers; i++) {
+                        functions.push((createQueues)(ch, bean.baseName + 'Queue' + i, DEAD_LETTER));
+                    }
+                    if (functions.length) {
+                        async.parallel(functions, function (err, queues) {
+                            callback(null, queues);
+                        });
+                    }
+                    else {
+                        callback('No Queues');
+                    }
+                },
+
+                function (queues, callback) {
+                    ch.assertQueue(bean.baseName + 'Queue.dead', {}, function (err, ok) {
+                        if (err) {
+                            console.log(err);
+                            callback(err);
+                        }
+                        else {
+                            callback(null, queues);
+                        }
+                    });
+                },
+
+                function (queues, callback) {
+                    var functions = [];
+                    for (var i = 0; i < queues.length; i++) {
+                        functions.push((bindQueues)(ch, bean.baseName + 'Exchange', queues[i], bean.baseName + i));
+                    }
+                    if (functions.length) {
+                        async.parallel(functions, function () {
+                            callback();
+                        });
+                    }
+                    else {
+                        callback('No bindings');
+                    }
+                },
+
+                function (callback) {
+                    ch.bindQueue(bean.baseName + 'Queue.dead', bean.baseName + 'Exchange.dead', bean.baseName + 'Queue.dead', {}, function (err, ok) {
+                        if (err) {
+                            console.log(err);
+                            callback(err);
+                        }
+                        else {
+                            callback();
+                        }
+                    });
+                }
+            ],
+
+            function (err) {
+                if (err) {
+                    console.log(err);
+                }
+                done(err);
+            });
+    }
+
+    function bindFanoutExchangeAndQueues(bean, ch, done) {
+        var DEAD_LETTER = {
+            deadLetterExchange: bean.baseName + 'Exchange.dead',
+            deadLetterRoutingKey: bean.baseName + 'Queue.dead',
+            durable: false,
+            exclusive: true
+        };
+
+        async.waterfall([
+                function (callback) {
+                    ch.assertExchange(bean.baseName + 'Exchange', 'fanout', epf.getExchangeOptions(), function (err, ok) {
+                        if (err) {
+                            console.log(err);
+                            callback(err);
+                        }
+                        else {
+                            callback();
+                        }
+                    });
+                },
+
+                function (callback) {
+                    ch.assertExchange(bean.baseName + 'Exchange.dead', 'direct', epf.getExchangeOptions(), function (err, ok) {
+                        if (err) {
+                            console.log(err);
+                            callback(err);
+                        }
+                        else {
+                            callback();
+                        }
+                    });
+                },
+
+                function (callback) {
+                    var functions = [];
+                    for (var i = 0; i < bean.workers; i++) {
+                        functions.push((createQueues)(ch, '', DEAD_LETTER));
+                    }
+                    if (functions.length) {
+                        async.parallel(functions, function (err, queues) {
+                            callback(null, queues);
+                        });
+                    }
+                    else {
+                        callback('No Queues');
+                    }
+                },
+
+                function (queues, callback) {
+                    ch.assertQueue(bean.baseName + 'Queue.dead', {}, function (err, ok) {
+                        if (err) {
+                            console.log(err);
+                            callback(err);
+                        }
+                        else {
+                            callback(null, queues);
+                        }
+                    });
+                },
+
+                function (queues, callback) {
+                    var functions = [];
+                    for (var i = 0; i < queues.length; i++) {
+                        functions.push((bindQueues)(ch, bean.baseName + 'Exchange', queues[i], ''));
+                    }
+                    if (functions.length) {
+                        async.parallel(functions, function () {
+                            callback(null, queues);
+                        });
+                    }
+                    else {
+                        callback('No bindings');
+                    }
+                },
+
+                function (queues, callback) {
+                    ch.bindQueue(bean.baseName + 'Queue.dead', bean.baseName + 'Exchange.dead', bean.baseName + 'Queue.dead', {}, function (err, ok) {
+                        if (err) {
+                            console.log(err);
+                            callback(err);
+                        }
+                        else {
+                            callback(null, queues);
+                        }
+                    });
+                }
+            ],
+
+            function (err, queues) {
+                if (err) {
+                    console.log(err);
+                }
+                done(err, queues);
+            });
+    }
+
+    function listenOnQueue(bean, ch, done) {
+        var functions = [];
+        for (var i = 0; i < bean.workers; i++) {
+            functions.push((consumeQueue)(ch, bean.baseName + 'Queue' + i, bean.onMessageWrapper.bind(bean)));
         }
-    } else {
-        self.channel.ack(message);
+
+        if (functions.length) {
+            async.parallel(functions, function (err, result) {
+                done();
+            });
+        }
+        else {
+            done('No consumers');
+        }
     }
-}
 
-MessageDrivenBean.prototype.start = function () {
-    var deferred = q.defer();
-    var self = this;
+    function listenOnFanQueues(bean, ch, queues, done) {
+        var functions = [];
+        for (var i = 0; i < queues.length; i++) {
+            functions.push((consumeQueue)(ch, queues[i], bean.onMessageWrapper.bind(bean)));
+        }
 
-    function on_channel_open(err, ch){
+        if (functions.length) {
+            async.parallel(functions, function (err, result) {
+                done();
+            });
+        }
+        else {
+            done('No consumers');
+        }
+    }
+
+    function messageDone(err, message) {
+        var self = this;
+
         if (err) {
-            console.log(err);
-            return;
+            if (message.fields.redelivered) {
+                self.channel.nack(message, false, false);
+                console.log('DLQ message');
+            }
+            else {
+                self.channel.nack(message, false, true);
+                console.log('Retry message');
+            }
         }
-        self.channel = ch;
-
-        if (self.type === CONSTANTS.BUS.DIRECT) {
-            createDirectTopology( self, ch, function(err){
-                if (!err){
-                    listenOnQueue(self, ch, function(err){
-                        if (!err){
-                            console.log('mdb ' + self.baseName + ' started');
-                        }
-                    });
-                }
-            });
-        }
-        else if (self.type === CONSTANTS.BUS.FANOUT) {
-            createFanoutTopology( self, ch, function(err){
-                if (!err){
-                    listenOnQueue(self, ch, function(err){
-                        if (!err){
-                            console.log('mdb ' + self.baseName + ' started');
-                        }
-                    });
-                }
-            });
+        else {
+            self.channel.ack(message);
         }
     }
 
-    self.connection.createChannel(on_channel_open);
+    MessageDrivenBean.prototype.start = function (connection) {
+        var deferred = q.defer();
+        var self = this;
 
-    return deferred.promise;
-};
+        if (connection){
+            self.connection = connection;
+        }
 
-MessageDrivenBean.prototype.onMessageWrapper = function(message) {
-    var self = this;
+        function on_channel_open(err, ch) {
+            if (err) {
+                console.log(err);
+                return;
+            }
+            self.channel = ch;
 
-    self.messageHandler.onMessage(message, messageDone.bind(self));
-};
+            if (self.type === CONSTANTS.BUS.DIRECT) {
+                bindDirectExchangesAndQueues(self, ch, function (err) {
+                    if (!err) {
+                        listenOnQueue(self, ch, function (err) {
+                            if (!err) {
+                                console.log('mdb ' + self.baseName + ' started');
+                            }
+                        });
+                    }
+                });
+            }
+            else if (self.type === CONSTANTS.BUS.FANOUT) {
+                bindFanoutExchangeAndQueues(self, ch, function (err, queues) {
+                    if (!err) {
+                        listenOnFanQueues(self, ch, queues, function (err) {
+                            if (!err) {
+                                console.log('mdb ' + self.baseName + ' started');
+                            }
+                        });
+                    }
+                });
+            }
+        }
+
+        self.connection.createChannel(on_channel_open);
+
+        return deferred.promise;
+    };
+
+    MessageDrivenBean.prototype.onMessageWrapper = function (message) {
+        var self = this;
+
+        self.messageHandler.onMessage(message, messageDone.bind(self));
+    };
+})();

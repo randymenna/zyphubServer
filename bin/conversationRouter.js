@@ -1,9 +1,8 @@
 var async                           = require('async');
 var config                          = require('config');
 var mongoose                        = require('mongoose');
-var mongodbClient                   = require('../src/mongodb-client/index');
 var MessageDrivenBean               = require('../src/util/mdb/messageDrivenBean');
-var cpBus                           = require('../src/bus');
+var CPBus                           = require('../src/bus');
 var ConversationMessageHandler      = require('../src/msgHandler/conversationMessageHandler');
 var ExchangePublisherFactory        = require('../src/util/bus/exchangePublisherFactory');
 var NotificicationHelper            = require('../src/util/notificationHelper');
@@ -14,13 +13,14 @@ var CONSTANTS                       = require('../src/constants');
 logger.startLogger('conversationRouter');
 
 var conversationHelper = new ConversationHelper();
+var cpBus = new CPBus();
 
 // INITIALIZATION CODE
 // ONCE WE CAN CONNECT TO RABBIT MQ, TRY AND CONNECT TO MONGO, THEN START THE MDB
-cpBus.promise.then(function(){
+cpBus.start().then(function(busConnection){
 
     console.log('Connected to CP Bus');
-    var exchangePublisherFactory = new ExchangePublisherFactory(cpBus.connection);
+    var exchangePublisherFactory = new ExchangePublisherFactory(busConnection);
 
     async.waterfall(
         [
@@ -37,15 +37,6 @@ cpBus.promise.then(function(){
                         callback(null,context);
                     }
                 });
-                /*
-                mongodbClient.init(function(error) {
-
-                    var context = {};
-                    console.log('conversationRouter(): mongodb Client init');
-
-                    callback(error,context);
-                });
-                */
             },
 
             function(context, callback) {
@@ -101,18 +92,9 @@ cpBus.promise.then(function(){
                 conversationHandler.setBillingPublisher(context.billingPublisher);
                 conversationHandler.setConversationHelper( conversationHelper );
 
-                //mongoose.connect(config.mongo.host, config.mongo.dbName, config.mongo.port, {auto_reconnect: true},function(err){
-                mongoose.connect(config.mongo.url, {auto_reconnect: true},function(err){
-                    if (err){
-                        console.log('conversationRouter(): mongoose error: ', err);
-                    }
-                    else {
-                        console.log('conversationRouter(): mongoose.connect ',config.mongo.url);
-                    }
-                });
-
                 try {
-                    var messageDrivenBean = new MessageDrivenBean(cpBus.connection, CONSTANTS.BUS.DIRECT, CONSTANTS.BUS.CONVERSATION_ROUTER, conversationHandler, CONSTANTS.BUS.CONVERSATION_WORKERS);
+                    var messageDrivenBean = new MessageDrivenBean(busConnection, CONSTANTS.BUS.DIRECT, CONSTANTS.BUS.CONVERSATION_ROUTER, conversationHandler, CONSTANTS.BUS.CONVERSATION_WORKERS);
+                    cpBus.setBeanRestart(messageDrivenBean.start.bind(messageDrivenBean));
                     messageDrivenBean.start();
                 } catch(exception){
                     console.log('conversationRouter(): mdb.exception', exception);

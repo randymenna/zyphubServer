@@ -8,13 +8,13 @@ var ExchangePublisherFactory = module.exports = function ExchangePublisherFactor
 };
 
 ExchangePublisherFactory.prototype.createConversationExchangePublisher = function(callback) {
-    this.createExchangePublisher(CONSTANTS.BUS.CONVERSATION_ROUTER,function(newPublisher) {
+    this.createDirectExchangePublisher(CONSTANTS.BUS.CONVERSATION_ROUTER,function(newPublisher) {
         callback(newPublisher);
     });
 };
 
 ExchangePublisherFactory.prototype.createSchedulerExchangePublisher = function(callback) {
-    this.createExchangePublisher(CONSTANTS.BUS.SCHEDULER,function(newPublisher) {
+    this.createDirectExchangePublisher(CONSTANTS.BUS.SCHEDULER,function(newPublisher) {
         callback(newPublisher);
     });
 
@@ -28,25 +28,24 @@ ExchangePublisherFactory.prototype.createNotificationExchangePublisher = functio
 };
 
 ExchangePublisherFactory.prototype.createAuditTrailExchangePublisher = function(callback) {
-    this.createExchangePublisher(CONSTANTS.BUS.AUDITTRAIL,function(newPublisher) {
+    this.createDirectExchangePublisher(CONSTANTS.BUS.AUDITTRAIL,function(newPublisher) {
         callback(newPublisher);
     });
 
 };
 
 ExchangePublisherFactory.prototype.createBillingExchangePublisher = function(callback) {
-    this.createExchangePublisher(CONSTANTS.BUS.BILLING,function(newPublisher) {
+    this.createDirectExchangePublisher(CONSTANTS.BUS.BILLING,function(newPublisher) {
         callback(newPublisher);
     });
 
 };
 
-ExchangePublisherFactory.prototype.createExchangePublisher = function(exchangeName,callback) {
-    var publishOptions  = this.getDefaultExchangeOptions();
+ExchangePublisherFactory.prototype.createDirectExchangePublisher = function(exchangeName,callback) {
     var exchangeOptions = this.getExchangeOptions({});
     var self = this;
 
-    function assertExchange(channel, exchangeName){
+    function assertDirectExchange(channel, exchangeName){
         channel.assertExchange(exchangeName+'Exchange', 'direct', exchangeOptions, function(err, ok) {
             if (err) {
                 console.log(err);
@@ -69,46 +68,31 @@ ExchangePublisherFactory.prototype.createExchangePublisher = function(exchangeNa
     function on_channel_open(err, ch) {
         self._channel = ch;
 
-        assertExchange(ch, exchangeName);
+        assertDirectExchange(ch, exchangeName);
     }
 
     if (!self._channel) {
         this._connection.createChannel(on_channel_open);
     } else {
-        assertExchange(self._channel, exchangeName);
+        assertDirectExchange(self._channel, exchangeName);
     }
 
 };
 
 ExchangePublisherFactory.prototype.createFanoutExchangePublisher = function(exchangeName,callback) {
-
-    var publishOptions  = this.getDefaultExchangeOptions();
-    //publishOptions.type = 'fanout';
-
     var exchangeOptions = this.getExchangeOptions({});
-    //exchangeOptions.type = 'fanout';
     var self = this;
 
-    /*
-    this._connection.exchange(exchangeName, exchangeOptions , function(exchange) {
-        var newExchangePublisher = new MessageExchangePublisher(exchange,publishOptions);
-        callback(newExchangePublisher);
-    });
-    */
-
-    function on_channel_open(err, ch){
-        self._channel = ch;
-
-        var channelWithExchange = ch;
-        ch.assertExchange(exchangeName+'Exchange', 'fanout', exchangeOptions, function(err, ok) {
+    function assertFanoutExchange(channel, exchangeName){
+        channel.assertExchange(exchangeName+'Exchange', 'fanout', exchangeOptions, function(err, ok) {
             if (err) {
                 console.log(err);
                 callback(null);
             } else {
+                console.log(ok);
                 var exchangePublisher = {
                     publish : function(routingKey, message) {
-                        var route = this.exchange+routingKey;
-                        return self._channel.publish(this.exchange+'Exchange', route, new Buffer(JSON.stringify(message)));
+                        return self._channel.publish(this.exchange+'Exchange', '', new Buffer(JSON.stringify(message)));
                     },
                     exchange: exchangeName
                 };
@@ -116,44 +100,28 @@ ExchangePublisherFactory.prototype.createFanoutExchangePublisher = function(exch
                 callback(exchangePublisher);
             }
         });
+    }
+
+    function on_channel_open(err, ch) {
+        self._channel = ch;
+
+        assertFanoutExchange(ch, exchangeName);
     }
 
     if (!self._channel) {
         this._connection.createChannel(on_channel_open);
     } else {
-        self._channel.assertExchange(exchangeName+'Exchange', 'fanout', exchangeOptions, function(err, ok) {
-            if (err) {
-                console.log(err);
-                callback(null);
-            } else {
-                var exchangePublisher = {
-                    publish : function(routingKey, message) {
-                        var route = this.exchange+routingKey;
-                        return self._channel.publish(this.exchange+'Exchange', route, new Buffer(JSON.stringify(message)));
-                    },
-                    exchange: exchangeName
-                };
-                exchangePublisher.publish.bind(this);
-                callback(exchangePublisher);
-            }
-        });
+        assertFanoutExchange(self._channel, exchangeName);
     }
+
 };
 
 ExchangePublisherFactory.prototype.getExchangeOptions = function(args) {
     return {
-        type:   'direct',
         passive: false,
         durable: true,
         confirm: true,
         autoDelete: false,
         arguments: args ? args : {}
-    };
-};
-
-ExchangePublisherFactory.prototype.getDefaultExchangeOptions = function() {
-    return {
-        type : 'direct' ,
-        contentType : 'application/json'
     };
 };

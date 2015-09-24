@@ -3,20 +3,22 @@ var config                          = require('config');
 var mongoose                        = require('mongoose');
 var Agenda                          = require('agenda');
 var MessageDrivenBean               = require('../src/util/mdb/messageDrivenBean');
-var cpBus                           = require('../src/bus');
+var CPBus                           = require('../src/bus');
 var SchedulerMessageHandler         = require('../src/msgHandler/schedulerMessageHandler');
 var ExchangePublisherFactory        = require('../src/util/bus/exchangePublisherFactory');
 var ScheduleHelper                  = require('../src/util/scheduleHelper');
 var logger                          = require('../src/util/logger');
 var CONSTANTS                       = require('../src/constants');
 
+var cpBus = new CPBus();
+
 logger.startLogger('scheduler');
 
 // INITIALIZATION CODE
 // ONCE WE CAN CONNECT TO RABBIT MQ, TRY AND CONNECT TO MONGO, THEN START THE MDB
-cpBus.promise.then(function(){
+cpBus.start.then(function(busConnection){
 
-    var exchangePublisherFactory = new ExchangePublisherFactory(cpBus.connection);
+    var exchangePublisherFactory = new ExchangePublisherFactory(busConnection);
 
     // INITIALIZATION CODE
     async.waterfall(
@@ -74,7 +76,8 @@ cpBus.promise.then(function(){
 
 
                 try {
-                    var messageDrivenBean = new MessageDrivenBean(cpBus.connection, CONSTANTS.BUS.DIRECT, CONSTANTS.BUS.SCHEDULER, schedulerHandler, CONSTANTS.BUS.SCHEDULE_WORKERS);
+                    var messageDrivenBean = new MessageDrivenBean(busConnection, CONSTANTS.BUS.DIRECT, CONSTANTS.BUS.SCHEDULER, schedulerHandler, CONSTANTS.BUS.SCHEDULE_WORKERS);
+                    cpBus.setBeanRestart(messageDrivenBean.start.bind(messageDrivenBean));
                     messageDrivenBean.start();
                 } catch(exception){
                     console.log('Scheduler: mdb.exception', exception);

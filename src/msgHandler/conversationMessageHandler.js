@@ -24,6 +24,10 @@ var ConversationMessageHandler = module.exports = function ConversationMessageHa
         this._schedulerPublisher = schedulerPublisher;
     };
 
+    this.setBillingPublisher = function(billingPublisher) {
+        this._billingPublisher = billingPublisher;
+    };
+
     this.msgHandleSwitch                = {};
     this.msgHandleSwitch['NEW']         = this.handleNew.bind(this);
     this.msgHandleSwitch['READ']        = this.handleRead.bind(this);
@@ -256,14 +260,6 @@ ConversationMessageHandler.prototype.handleNew = function(context,doneCallback) 
                     else {
                         callback(null, context);
                     }
-                    /*
-                    self._schedulerPublisher.publish('SchedulerQueue', context, function (error) {
-                        if (error)
-                            callback(Error('Scheduler Publish Failed: setTTL'), null);
-                        else
-                            callback(null, context);
-                    });
-                    */
                 }
                 else {
                     callback(null, context);
@@ -285,14 +281,6 @@ ConversationMessageHandler.prototype.handleNew = function(context,doneCallback) 
                     else {
                         callback(null, context);
                     }
-                    /*
-                    self._schedulerPublisher.publish('SchedulerQueue', context, function (error) {
-                        if (error)
-                            callback(Error('Scheduler Publish Failed: setEscalation'), null);
-                        else
-                            callback(null, context);
-                    });
-                    */
                 }
                 else {
                     callback(null, context);
@@ -321,12 +309,6 @@ ConversationMessageHandler.prototype.handleNew = function(context,doneCallback) 
                             else {
                                 callback(null, context);
                             }
-                            /*
-                            self._schedulerPublisher.publish('SchedulerQueue', ctx, function (error) {
-                                if (error)
-                                    console.log('Scheduler Publish Failed: tagConstraint');
-                            });
-                            */
                         }
                         callback(null, context);
                     }

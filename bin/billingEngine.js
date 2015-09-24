@@ -2,17 +2,18 @@ var async                           = require('async');
 var config                          = require('config');
 var mongoose                        = require('mongoose');
 var MessageDrivenBean               = require('../src/util/mdb/messageDrivenBean');
-var cpBus                           = require('../src/bus');
+var CPBus                           = require('../src/bus');
 var BillingMessageHandler           = require('../src/msgHandler/billingMessageHandler');
 var logger                          = require('../src/util/logger');
 var CONSTANTS                       = require('../src/constants');
 
+var cpBus = new CPBus();
 logger.startLogger('billingEngine');
 
 
 // INITIALIZATION CODE
 // ONCE WE CAN CONNECT TO RABBIT MQ, TRY AND CONNECT TO MONGO, THEN START THE MDB
-cpBus.promise.then(function(){
+cpBus.start().then(function(busConnection){
 
     // INITIALIZATION CODE
     async.waterfall(
@@ -42,7 +43,8 @@ cpBus.promise.then(function(){
                 var billingHandler = new BillingMessageHandler();
 
                 try {
-                    var messageDrivenBean = new MessageDrivenBean(cpBus.connection, CONSTANTS.BUS.DIRECT, CONSTANTS.BUS.BILLING, billingHandler, CONSTANTS.BUS.BILLING_WORKERS);
+                    var messageDrivenBean = new MessageDrivenBean(busConnection, CONSTANTS.BUS.DIRECT, CONSTANTS.BUS.BILLING, billingHandler, CONSTANTS.BUS.BILLING_WORKERS);
+                    cpBus.setBeanRestart(messageDrivenBean.start.bind(messageDrivenBean));
                     messageDrivenBean.start();
                 } catch(exception){
                     console.log('billingEngine: mdb.exception', exception);

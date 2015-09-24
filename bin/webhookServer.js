@@ -2,18 +2,18 @@ var async                           = require('async');
 var config                          = require('config');
 var mongoose                        = require('mongoose');
 var model                           = require('../src/models/models');
-var mongodbClient                   = require('../src/mongodb-client/index');
 var MessageDrivenBean               = require('../src/util/mdb/messageDrivenBean');
-var cpBus                           = require('../src/bus');
+var CPBus                           = require('../src/bus');
 var WebHookMessageHandler           = require('../src/msgHandler/webHookMessageHandler');
 var NotificationHelper              = require('../src/util/notificationHelper');
 var ConversationHelper              = require('../src/rest/controllers/helper/conversationHelper');
 var logger                          = require('../src/util/logger');
 var CONSTANTS                       = require('../src/constants');
 
+var cpBus = new CPBus();
 logger.startLogger('webhookServer');
 
-cpBus.promise.then(function(){
+cpBus.start().then(function(busConnection){
 
     var enterprise = config.webhook.enterprise;
     var webHookUrl;
@@ -21,14 +21,6 @@ cpBus.promise.then(function(){
     async.waterfall(
         [
             function(callback) {
-                mongodbClient.init(function(error) {
-
-                    var context = {};
-                    callback(error,context);
-                });
-            },
-
-            function(context, callback) {
 
                 mongoose.connect(config.mongo.url, {auto_reconnect: true},function(err){
                     if (err){
@@ -38,6 +30,7 @@ cpBus.promise.then(function(){
                         console.log('webhookServer(): mongoose.connect:',config.mongo.url);
                     }
                 });
+                var context = {};
 
                 var db = mongoose.connection;
                 db.on('error', function(err){
@@ -79,10 +72,11 @@ cpBus.promise.then(function(){
                 webHookHandler.setNotificationHelper( new NotificationHelper() );
 
                 try {
-                    var messageDrivenBean = new MessageDrivenBean(cpBus.connection, CONSTANTS.BUS.FANOUT, CONSTANTS.BUS.NOTIFIER, webHookHandler, 0);
+                    var messageDrivenBean = new MessageDrivenBean(busConnection, CONSTANTS.BUS.FANOUT, CONSTANTS.BUS.NOTIFIER, webHookHandler, CONSTANTS.BUS.NOTIFICATION_WORKERS);
+                    cpBus.setBeanRestart(messageDrivenBean.start.bind(messageDrivenBean));
                     messageDrivenBean.start();
                 } catch(exception){
-                    console.log('conversationRouter(): mdb.exception', exception);
+                    console.log('webhook(): mdb.exception', exception);
                 }
 
                 callback(null,'done');

@@ -1,97 +1,76 @@
 
 var amqp = require('amqplib/callback_api');
-//var amqp    = require('amqp');
 var config  = require('config');
 var q       = require('q');
 
-module.exports.publishMessage = function(queueName,payload,callback) {
-    connection.publish(queueName,payload,{ type : 'direct' , contentType : 'application/json' },callback);
-};
+var connection = null;
+var reconnect = false;
 
-module.exports.createSubscriberWithCallback = function(queueName,onMsgCallback) {
-    connection.queue(queueName, { passive : true, durable : true } ,function(q) {
-        q.bind('amq.direct','#');
-        q.subscribe(onMsgCallback);
-    });
-};
+var _beanRestartFn = null;
+var _connection = null;
 
-module.exports.bindCallBackToQueue = function(queueName,onMsgCallback) {
-    connection.queue(queueName, { passive : true, durable : true } ,function(q) {
-        q.bind('amq.direct','#');
+var CPBus = module.exports = function cpBus() {
 
-        q.subscribe({ack: false}, function(message) {
-            onMsgCallback(message, function(err) {
-                if (err !== null) {
-                    q.shift(true,true);
-                } else {
-                    q.shift();
-                }
-            });
-        });
-    });
-};
 
-module.exports.getConnectionOptions = function() {
-
-    return  {
-        host: config.rabbitmq.host,
-        login: config.rabbitmq.login,
-        password: config.rabbitmq.password,
-        authMechanism: config.rabbitmq.authMechanism,
-        vhost: config.rabbitmq.vhost,
-        reconnect: config.rabbitmq.reconnect,
-        reconnectBackoffStrategy: config.rabbitmq.reconnectBackoffStrategy,
-        reconnectExponentialLimit: config.rabbitmq.reconnectExponentialLimit,
-        reconnectBackoffTime: config.rabbitmq.reconnectBackoffTime,
-        retryTimeout: 20000
+    this.setBeanRestart = function(beanRestartFn) {
+        _beanRestartFn = beanRestartFn;
     };
 };
 
-//var connection = amqp.createConnection( module.exports.getConnectionOptions());
-//var connection = amqp.createConnection(config.cloudamqp.url);
+CPBus.prototype.amqpReconnectConnect = function() {
 
-var connection = null;
+    console.log('*** AMQP Restart');
+    CPBus.prototype.start();
+};
+
+CPBus.prototype.getConnection = function() {
+    return _connection;
+};
+
 var deferred = q.defer();
 
-function start() {
+CPBus.prototype.start = function () {
+    var self = this;
+
+    console.log('CPBus.start() entered');
+
     amqp.connect(config.cloudamqp.url + '?heartbeat=60', function(err, conn) {
         if (err) {
             console.error('[AMQP]', err.message);
-            deferred.reject(err.message);
-            return setTimeout(start, 1000);
+            return setTimeout(self.amqpReconnectConnect, 1000);
         }
+        _connection = conn;
+
         conn.on('error', function(err) {
             if (err.message !== 'Connection closing') {
                 console.error('[AMQP] conn error', err.message);
             }
         });
+
         conn.on('close', function() {
             console.error('[AMQP] reconnecting');
-            return setTimeout(start, 1000);
+            reconnect = true;
+            return setTimeout(self.amqpReconnectConnect, 1000);
         });
 
         console.log('[AMQP] connected');
-        module.exports.connection = conn;
+
+        if (reconnect){
+            reconnect = false;
+            console.log('reconnect execute here');
+            if (_beanRestartFn) {
+                _beanRestartFn(conn);
+            } else {
+                console.log('Error(): no bean restart');
+            }
+        }
 
         deferred.resolve(conn);
     });
-}
 
-module.exports.promise = deferred.promise;
-module.exports.connection=connection;
-
-start();
+    return deferred.promise;
+};
 
 
-// SAMPLE USAGE
-// var cpbus = require('../cp-bus');
-// cpbus.connection.on('ready',function() {
-//   console.log('xxxxxConnected to cp Bus using amqp...');
-//    cpbus.createSubscriberWithCallback('GatewayQueue',handleReceivedData);
-// });
-//
-//cpbus.connection.on('error',function() {
-//    console.log('error event fired for cpbus');
-//});
 
 

@@ -37,6 +37,7 @@ module.exports.BUS = {
   AUDIT_WORKERS         : 1,
   BILLING_WORKERS       : 1,
   SCHEDULE_WORKERS      : 1,
+  NOTIFICATION_WORKERS  : 1,
   CONVERSATION_ROUTER   : 'ConversationRouter',
   SCHEDULER             : 'Scheduler',
   NOTIFIER              : 'Notifier',
