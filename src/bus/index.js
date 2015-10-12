@@ -57,11 +57,12 @@ CPBus.prototype.start = function () {
 
         if (reconnect){
             reconnect = false;
-            console.log('reconnect execute here');
+
             if (_beanRestartFn) {
+                console.log('bean restart');
                 _beanRestartFn(conn);
             } else {
-                console.log('Error(): no bean restart');
+                console.log('no bean to restart');
             }
         }
 

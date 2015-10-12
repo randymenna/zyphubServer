@@ -23,7 +23,7 @@ RFC6455Server.prototype.startUnsecureServer = function () {
     var express = require('express');
     var app = express();
 
-    app.use(express.static(__dirname + '/public'));
+    //app.use(express.static(__dirname + '/public'));
 
     var server = http.createServer(app);
     server.listen(19691);
@@ -33,20 +33,25 @@ RFC6455Server.prototype.startUnsecureServer = function () {
     wss.on('connection', function connection(ws) {
 
         console.log('connection');
-        ws.send('login request');
+        // login prompt
+        ws.send('login');
 
         var token;
 
         ws.on('message', function(data) {
 
             if ( token = self._authenticationProvider.validateToken(data) ) {
-                console.log('Notification server: %s', token.profileId);
+                console.log('Notification server connection: %s', token.pid);
                 ws.id = shortId.generate();
-                clientMap.addClient( token.profileId, ws );
+                clientMap.addClient( token.pid, ws );
+                ws.send('ok');
+            } else {
+                ws.send('fail');
             }
         });
 
         ws.on('close', function(data){
+            console.log(data);
             clientMap.removeClient(ws);
         });
 

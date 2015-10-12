@@ -39,19 +39,22 @@ module.exports.removeClient = function(socket) {
 };
 
 module.exports.getSocketList = function(profiles) {
-    var sockets = [];
+    var list = [];
 
-    for (var i=0; i < profiles.length; i++) {
+    if (profiles) {
+        for (var i = 0; i < profiles.length; i++) {
 
-        var clients = _clientMap[ profiles[i] ];
+            var clients = _clientMap[profiles[i]];
 
-        if ( clients ) {
-            for (var j=0; j < clients.length; j++) {
-                if ( clients[j].socket )
-                    sockets.push( clients[j].socket );
+            if (clients) {
+                for (var j = 0; j < clients.length; j++) {
+                    if (clients[j].socket) {
+                        list.push(clients[j]);
+                    }
+                }
             }
         }
     }
 
-    return sockets;
+    return list;
 };

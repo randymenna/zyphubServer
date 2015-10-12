@@ -62,8 +62,9 @@ var UserSchema = new Schema({
 		}]
 	},
 
-	enterprise: {type: String },
+	enterprise: {type: String, default: 'ConversePoint'},
 	enterpriseId: {type: Schema.Types.ObjectId, ref: 'Enterprise'},
+	originalId: {type: String},
 
 	roles: {
 		type: [{
@@ -121,7 +122,19 @@ UserSchema.methods.validateSecret = function(secret) {
     return true;
 };
 
-
+UserSchema.set('toJSON',{
+	transform: function(doc, ret, options){
+		var retJson = {
+			enterpriseId: ret.enterpriseId,
+			email: ret.email,
+			token: ret.token,
+			profile: ret.profile,
+			originalId: ret.originalId,
+			public: ret.public
+		};
+		return retJson;
+	}
+});
 /**
  * Find possible not used username
  */

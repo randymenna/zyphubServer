@@ -9,6 +9,7 @@ var profileSchema = new Schema({
     _id:            {type: Schema.Types.ObjectId},
     user:           String,
     displayName:    String,
+    originalId:     String,
     avatar:         {type: String, default: 'default.png'},
     role:           {type: String, default: 'USER'},
     presence:       {type: String, default: 'OFFLINE'},

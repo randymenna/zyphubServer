@@ -9,9 +9,11 @@ var Schema = mongoose.Schema;
 var conversationSchema = new Schema({
     envelope: {
         origin: {type: Schema.Types.ObjectId, ref: 'Profiles'},
+        enterprise: {type: Schema.Types.ObjectId, ref: 'Enterprises'},
         members: [
             {type: Schema.Types.ObjectId, ref: 'Profiles'}
         ],
+        latestMember: {type: Schema.Types.ObjectId, ref: 'Profiles'},
         context: [String],
         pattern: String,
         priority: {type: Number, default: 1},
@@ -61,6 +63,22 @@ conversationSchema.pre('save', function (next) {
 
     this.time.modified = new Date();
     next();
+});
+
+conversationSchema.set('toJSON',{
+    transform: function(doc, ret, options){
+
+        delete ret.__v;
+        delete ret.envelope.meta;
+        if (!ret.escalation || (ret.escalation.id && !ret.escalation.id.length)) {
+            delete ret.escalation;
+        }
+        if ( !ret.envelope.tags || !ret.envelope.tags.length ) {
+            delete ret.envelope.tags;
+        }
+
+        return ret;
+    }
 });
 
 var _Conversation = mongoose.model('Conversation', conversationSchema);

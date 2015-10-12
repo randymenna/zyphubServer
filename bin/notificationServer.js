@@ -9,9 +9,9 @@ var logger                          = require('../src/util/logger');
 var RFC6455Server                   = require('../src/util/websocket/rfc6455Server');
 var CONSTANTS                       = require('../src/constants');
 
-var cpBus = new CPBus();
-
 logger.startLogger('notificationServer');
+
+var cpBus = new CPBus();
 
 cpBus.start().then(function (busConnection) {
 

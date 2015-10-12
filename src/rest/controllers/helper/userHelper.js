@@ -4,6 +4,9 @@
 var model                   = require('../../../models/models');
 var profileHelper           = require('./profileHelper');
 var config                  = require('config');
+var jwt                     = require('jwt-simple');
+var moment                  = require('moment');
+var config                  = require('config');
 
 exports.userHasOAuthProvider = function( user, provider ) {
     for(var i=0; i < user.credentials.oauth.length; i++) {
@@ -36,63 +39,6 @@ exports.validateOAuthId = function( user, provider, profile, providerData ) {
         }
     }
     return false;
-};
-
-exports.sanitizeForGraph = function( u ) {
-    if ( u ) {
-        u._id = undefined;
-        u.__v = undefined;
-        u.credentials = undefined;
-        u.roles = undefined;
-        u.created = undefined;
-        u.updated = undefined;
-        u.lastLogin = undefined;
-        u.resetPasswordToken = undefined;
-        u.resetPasswordExpires = undefined;
-        u.email = undefined;
-        u.public = undefined;
-    }
-
-    return u;
-};
-
-exports.sanitizeUser = function( u ) {
-    if ( u ) {
-        u._id = undefined;
-        u.__v = undefined;
-        u.credentials = undefined;
-        u.roles = undefined;
-        u.created = undefined;
-        u.updated = undefined;
-        u.lastLogin = undefined;
-        u.resetPasswordToken = undefined;
-        u.resetPasswordExpires = undefined;
-    }
-
-    return u;
-};
-
-exports.sanitize = function( user ) {
-
-
-    function clean( u ) {
-
-        delete u.__v;
-        delete u.token;
-        delete u.roles;
-        delete u.credentials;
-        return u;
-    }
-
-    if ( user instanceof Array )
-        for(var i=0; i < user.length; i++ ) {
-            user[i] = clean( user[i].toObject());
-        }
-    else
-    if (user)
-        user = clean(user.toObject());
-
-    return user;
 };
 
 exports.newUserFromOAuth = function( providerUserProfile, callback ) {
@@ -150,13 +96,23 @@ exports.newUserFromApiKey = function( body, callback ) {
     var fakeEmail = config.users.fakeEmail;
     var user = new model.User();
 
-    user.email = body.id + fakeEmail;
-    user.public.name = 'API Key User: ' + body.id;
-    user.public.firstName = 'API Key User';
+    var token = validate(body.key, config.jwt.apikeysecret);
+
+    if (body.id.indexOf('@') === -1){
+        user.email = body.id + '@' + body.enterprise + '.' + fakeEmail;
+    } else {
+        user.email = body.id;
+    }
+
+    user.public.name = body.enterprise + ': ' + body.id;
+    user.public.firstName = body.enterprise;
     user.public.lastName = body.id;
+    user.enterprise = token.aud;
+    user.enterpriseId = token.jti;
+    user.originalId = body.id;
 
     var profileInfo = {};
-    profileInfo.displayName = user.public.displayName;
+    profileInfo.originalId = user.originalId;
     profileInfo.userName = user.email;
     profileInfo.enterprise = body.enterprise;
     profileInfo.enterpriseId = body.enterpriseId;
@@ -169,4 +125,23 @@ exports.newUserFromApiKey = function( body, callback ) {
             callback(null,user);
         });
     });
+};
+
+var validate = function(token,secret) {
+    var decoded = null;
+
+    try {
+        decoded = jwt.decode( token, secret );
+        if ( decoded.exp ) {
+            var now = moment();
+            var expires = moment(decoded.expires);
+            if ( now.isAfter(expires) ) {
+                decoded = null;
+            }
+        }
+    }
+    catch( e ) {
+        console.log('validate(): %s',e);
+    }
+    return decoded;
 };

@@ -7,17 +7,31 @@ var model                   = require('../../../models/models');
 var mongoose                = require('mongoose');
 var ObjectId                = require('mongoose').Types.ObjectId;
 var TagHelper               = require('./tagHelper');
+var NotificationHelper      = require('../../../util/notificationHelper');
+var paperwork               = require('paperwork');
 
 var ConversationHelper = module.exports = function ConversationHelper () {
 
+    this._notificationHelper = new NotificationHelper();
+    this._notificationHelper.setConversationHelper(this);
+
+
     this.getOriginAllowableActions = function( pattern ){
-        var actions = { 'STANDARD' : [ 'CLOSE', 'REPLY', 'FORWARD' ] };
+        var actions = {
+            'STANDARD' : [ 'CLOSE', 'REPLY', 'FORWARD' ],
+            'FYI' : [ 'CLOSE', 'FORWARD' ],
+            'FCFS': [ 'CLOSE', 'FORWARD', 'REPLY']
+        };
 
         return actions[pattern];
     };
 
     this.getParticipantAllowableActions = function(pattern){
-        var actions = { 'STANDARD' : [ 'READ', 'LEAVE', 'REPLY', 'FORWARD', 'DELEGATE' ] };
+        var actions = {
+                'STANDARD' : [ 'READ', 'LEAVE', 'REPLY', 'FORWARD', 'DELEGATE' ],
+                'FYI' : [ 'READ', 'OK' ],
+                'FCFS': [ 'READ', 'ACCEPT', 'REJECT', 'REPLY']
+        };
 
         return actions[pattern];
     };
@@ -87,6 +101,7 @@ var ConversationHelper = module.exports = function ConversationHelper () {
     this.removeAllMembersFromConversation = function(context,callback) {
 
         // update the state
+        context.conversation.envelope.meta.originalMembers = context.conversation.envelope.members.slice(0);
         for (var i=0; i < context.conversation.state.members.length; i++ ) {
 
             context.conversation.state.members[i].state = 'REMOVED';
@@ -220,47 +235,74 @@ ConversationHelper.prototype.setSchedulerPublisher = function( schedulerPublishe
     self._schedulerPublisher = schedulerPublisher;
 };
 
-ConversationHelper.prototype.requestToModel = function( context ) {
-    var c = new model.Conversation();
+ConversationHelper.prototype.requestToNewModel = function( body, user, callback ) {
 
-    c.envelope.origin = context.origin;
-    c.envelope.members = context.members;
-    c.envelope.pattern = context.pattern;
-    if (!c.envelope.meta){
-        c.envelope.meta = {};
-    }
-    c.envelope.meta.enterprise = context.enterprise;
+    var apiTemplate = {
+        members: [String],
+        pattern: String,
+        priority: paperwork.optional(String, function(p){
+            var  i = parseInt(p);
+            return i > -1 && i < 3;
+        }),
+        content: {text:String},
+        ttl: paperwork.optional(String),
+        tags: paperwork.optional([String]),
+        escalation: paperwork.optional(String)
+    };
 
-    if ( context.tags ) {
-        c.envelope.tags = context.tags;
-    }
 
-    if ( context.ttl ) {
-        c.time.toLive = context.ttl;
-    }
-    c.content.message = context.content.text;
-    // TODO: fix this
-    c.escalation = context.escalation;
-    //c.actions = context.allowableActions;
+    // TODO: for now we validate the parameters here, but this needs to be moved to express
+    paperwork(apiTemplate, body, function (err, validated) {
+        if (err) {
+            // err is the list of incorrect fields
+            console.error(err);
+            callback(err, null);
+        } else {
+            // api parameters were validated
+            var context = {};
 
-    return c;
-};
+            // build the context, will be shared by all subsequent processes
+            //
+            context.origin                      = user.origin;
+            context.enterprise                  = user.enterprise;
+            context.enterpriseId                = user.enterpriseId;
+            context.members                     = JSON.parse(JSON.stringify(validated.members));
+            context.members.push(user.origin);
 
-ConversationHelper.prototype.decorateContext = function( context, body ) {
+            // create a new model and initialize it
+            var c = new model.Conversation();
 
-    context.originalMembers = JSON.parse(JSON.stringify(body.members));
-    context.members = JSON.parse(JSON.stringify(context.originalMembers));
-    context.members.push(context.origin);
+            c.envelope.origin                   = user.origin;
+            c.envelope.enterprise               = user.enterpriseId;
+            c.envelope.members                  = JSON.parse(JSON.stringify(context.members));
+            c.envelope.latestMember             = user.origin;
+            c.envelope.pattern                  = validated.pattern;
+            c.envelope.priority                 = validated.priority;
 
-    context.pattern = body.pattern;
-    context.ttl = body.ttl;
-    context.tags = body.tags;
-    context.escalation = body.escalation;
-    context.content = body.content;
+            if (!c.envelope.meta){
+                c.envelope.meta = {};
+            }
+            c.envelope.meta.enterprise          = user.enterprise;
+            c.envelope.meta.originalMembers     = JSON.parse(JSON.stringify(validated.members));
 
-    //context.allowableActions = self.AllowableActions[ context.pattern ];
+            c.state.startMemberCount           = validated.members.length;
 
-    return context;
+            if ( context.tags ) {
+                c.envelope.tags                 = validated.tags;
+            }
+
+            if ( context.ttl ) {
+                c.time.toLive                   = validated.ttl;
+            }
+            c.content.message                   = validated.content.text;
+            // TODO: this is not correct, escaltion is more complex
+            c.escalation                        = validated.escalation;
+
+            context.conversation =  c;
+
+            callback(null, context);
+        }
+    });
 };
 
 ConversationHelper.prototype.route = function( context, callback ) {
@@ -324,7 +366,7 @@ ConversationHelper.prototype.addProfileToConversations = function( profile, conv
 
                 if (context.conversations.length > 0) {
 
-                    model.Profile.findOneAndUpdate({'_id': profile._id},{$pushAll:{'inbox' : context.conversationIds}},function(err){
+                    model.Profile.findOneAndUpdate({'_id': profile._id},{$pushAll:{'inbox' : context.conversationIds}},{'new': true},function(err){
                         callback(err,context);
                     });
                 }
@@ -415,7 +457,7 @@ ConversationHelper.prototype.removeProfileFromConversations = function( profile,
 
                 if (context.conversations.length > 0) {
 
-                    model.Profile.findOneAndUpdate({'_id': context.profileId},{$pullAll:{'inbox' : context.conversationIds}},function(err){
+                    model.Profile.findOneAndUpdate({'_id': context.profileId},{$pullAll:{'inbox' : context.conversationIds}},{'new': true},function(err){
                         callback(err,context);
                     });
                 }
@@ -447,6 +489,7 @@ ConversationHelper.prototype.leaveConversation = function( context, callback ) {
                         }
                         else {
                             if ( conversation ) {
+                                conversation.envelope.latestMember = context.origin;
                                 context.conversation = conversation;
                                 callback(null, context);
                             }
@@ -507,6 +550,7 @@ ConversationHelper.prototype.acceptConversation = function( context, callback ) 
                         }
                         else {
                             if ( conversation ) {
+                                conversation.envelope.latestMember = context.origin;
                                 context.conversation = conversation;
                                 callback(null, context);
                             }
@@ -568,6 +612,7 @@ ConversationHelper.prototype.rejectConversation = function( context, callback ) 
                         }
                         else {
                             if ( conversation ) {
+                                conversation.envelope.latestMember = context.origin;
                                 context.conversation = conversation;
                                 callback(null, context);
                             }
@@ -622,6 +667,7 @@ ConversationHelper.prototype.okConversation = function( context, callback ) {
                         }
                         else {
                             if ( conversation ) {
+                                conversation.envelope.latestMember = context.origin;
                                 context.conversation = conversation;
                                 callback(null, context);
                             }
@@ -680,6 +726,7 @@ ConversationHelper.prototype.closeConversation = function( context, callback ) {
                         }
                         else {
                             if ( conversation ) {
+                                conversation.envelope.latestMember = context.origin;
                                 context.conversation = conversation;
                                 callback(null, context);
                             }
@@ -750,6 +797,7 @@ ConversationHelper.prototype.forwardConversation = function( context, callback )
                         }
                         else {
                             if ( conversation ) {
+                                conversation.envelope.latestMember = context.origin;
                                 context.conversation = conversation;
                                 callback(null, context);
                             }
@@ -809,6 +857,7 @@ ConversationHelper.prototype.delegateConversation = function( context, callback 
                         }
                         else {
                             if ( conversation ) {
+                                conversation.envelope.latestMember = context.origin;
                                 context.conversation = conversation;
                                 callback(null, context);
                             }
@@ -887,6 +936,7 @@ ConversationHelper.prototype.escalateConversation = function( context, callback 
                             }
                             else {
                                 if ( conversation ) {
+                                    conversation.envelope.latestMember = context.origin;
                                     context.conversation = conversation;
                                     callback(null, context);
                                 }
@@ -976,6 +1026,7 @@ ConversationHelper.prototype.replyToConversation = function( context, callback )
                         }
                         else {
                             if ( conversation ) {
+                                conversation.envelope.latestMember = context.origin;
                                 context.conversation = conversation;
                                 callback(null, context);
                             }
@@ -1014,44 +1065,6 @@ ConversationHelper.prototype.replyToConversation = function( context, callback )
     );
 };
 
-ConversationHelper.prototype.sanitize = function( conversation, user ) {
-
-    function clean( c ) {
-
-        delete c.__v;
-
-        if (!c.escalation.id.length) {
-            delete c.escalation;
-        }
-
-        delete c.envelope.meta;
-
-        if ( !c.envelope.tags || !c.envelope.tags.length ) {
-            delete c.envelope.tags;
-        }
-
-        if (c.envelope.origin._id.toHexString() === user) {
-            c.allowableActions = ConversationHelper.prototype.getOriginAllowableActions(c.envelope.pattern);
-        }
-        else {
-            c.allowableActions = ConversationHelper.prototype.getParticipantAllowableActions(c.envelope.pattern);
-        }
-
-        return c;
-    }
-
-    if ( conversation instanceof Array ) {
-        for (var i = 0; i < conversation.length; i++) {
-            conversation[i] = clean(conversation[i].toObject());
-        }
-    }
-    else {
-        conversation = clean(conversation.toObject());
-    }
-
-    return conversation;
-};
-
 ConversationHelper.prototype.readConversation = function( context, callback ) {
     var self = this;
 
@@ -1067,6 +1080,7 @@ ConversationHelper.prototype.readConversation = function( context, callback ) {
                         }
                         else {
                             if ( conversation ) {
+                                conversation.envelope.latestMember = context.origin;
                                 context.conversation = conversation;
                                 callback(null, context);
                             }
@@ -1108,6 +1122,7 @@ ConversationHelper.prototype.readConversation = function( context, callback ) {
 
 
 ConversationHelper.prototype.getConversationsInInbox = function( context, callback ) {
+    var self = this;
 
     for (var i=0; i < context.inbox.length; i++) {
         context.inbox[i] = context.inbox[i].toHexString();
@@ -1122,15 +1137,31 @@ ConversationHelper.prototype.getConversationsInInbox = function( context, callba
                 callback(err, null);
             }
             else {
-                context.conversations = ConversationHelper.prototype.sanitize(conversations, context.origin);
+                if ( conversations instanceof Array ) {
+                    for (var i = 0; i < conversations.length; i++) {
+                        conversations[i] = conversations[i].toJSON();
+                        conversations[i] = ConversationHelper.prototype.allowableActions(conversations[i], context.origin);
+                    }
+                }
+                else {
+                    conversations = conversations.toJSON();
+                    conversations = ConversationHelper.prototype.allowableActions(conversations, context.origin);
+                }
+
+                context.conversations = self._notificationHelper.convertConversationToNotification(conversations, context.origin);
+
                 callback(null, context);
             }
         });
 };
 
-ConversationHelper.prototype.setAllowableActions = function( context ) {
-    var self = this;
-
-    context.allowableActions = self.AllowableActions[ context.pattern ];
-    return context;
+ConversationHelper.prototype.allowableActions = function(c, user){
+        if (c.envelope.origin._id.toHexString() === user) {
+            c.allowableActions = ConversationHelper.prototype.getOriginAllowableActions(c.envelope.pattern);
+        }
+        else {
+            c.allowableActions = ConversationHelper.prototype.getParticipantAllowableActions(c.envelope.pattern);
+        }
+        return c;
 };
+

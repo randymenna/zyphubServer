@@ -6,6 +6,12 @@ var cpConstants                     = require('../constants/index');
 var _                               = require('lodash');
 
 var NotificationHelper = module.exports = function NotificationHelper() {
+    this._conversationHelper = null;
+};
+
+NotificationHelper.prototype.setConversationHelper = function(conversationHelper){
+    var self = this;
+    self._conversationHelper = conversationHelper;
 };
 
 NotificationHelper.prototype.createNotification = function(context) {
@@ -62,15 +68,19 @@ NotificationHelper.prototype.createNotification = function(context) {
 };
 
 NotificationHelper.prototype.buildNotification = function(context, type, build) {
-    var parts = build.split(' ');
+    var self = this;
+    var conversation = context.conversation.toObject();
+    return self.buildNotificationFromObject(conversation, context.origin, context.enterpriseId, type, build, context.origin);
+};
 
+// needed to use notifications in conversationController and didnt want to change all the other code which used buildNotification
+NotificationHelper.prototype.buildNotificationFromObject = function(conversation, origin, enterprise, type, build, user) {
+    var self = this;
+
+    var parts = build.split(' ');
     var notification = new NotificationMessage();
 
-    var conversation = context.conversation.toObject();
-
-    notification.setEnterprise(context.enterprise);
-    notification.setTypeAndOrigin( type, context.origin );
-    notification.setConversationId( conversation._id.toString() );
+    notification.setCommonParts(self._conversationHelper, conversation, type, origin, enterprise, user);
 
     for (var i=0; i < parts.length; i++) {
         switch(parts[i]) {
@@ -90,54 +100,54 @@ NotificationHelper.prototype.buildNotification = function(context, type, build) 
 
     switch (type) {
         case cpConstants.NOTIFICATION_TYPES.NEW:
-            notification.setRecipients(context, 'members');
+            notification.setRecipients(conversation, origin, 'members');
             break;
 
         case cpConstants.NOTIFICATION_TYPES.READ:
-            notification.setRecipients(context, 'owner');
+            notification.setRecipients(conversation, origin, 'owner');
             break;
 
         case cpConstants.NOTIFICATION_TYPES.REPLY:
-            notification.setRecipients(context, 'members');
+            notification.setRecipients(conversation, origin, 'members');
             break;
 
         case cpConstants.NOTIFICATION_TYPES.OK:
-            notification.setRecipients(context, 'owner');
-            notification.setTerminateConversation(context, 'origin');
+            notification.setRecipients(conversation, origin, 'owner');
+            notification.setTerminateConversation(conversation, origin, 'origin');
             break;
 
         case cpConstants.NOTIFICATION_TYPES.ACCEPT:
-            notification.setRecipients(context, 'owner');
-            notification.setTerminateConversation(context, 'members-not-origin-owner');
+            notification.setRecipients(conversation, origin, 'owner');
+            notification.setTerminateConversation(conversation, origin, 'members-not-origin-owner');
             break;
 
         case cpConstants.NOTIFICATION_TYPES.REJECT:
-            notification.setRecipients(context, 'owner');
-            notification.setTerminateConversation(context, 'origin');
+            notification.setRecipients(conversation, origin, 'owner');
+            notification.setTerminateConversation(conversation, origin, 'origin');
             break;
 
         case cpConstants.NOTIFICATION_TYPES.ESCALATE:
-            notification.setRecipients(context, 'members');
-            notification.setTerminateConversation(context, 'members-not-owner');
+            notification.setRecipients(conversation, origin, 'members');
+            notification.setTerminateConversation(conversation, origin, 'members-not-owner');
             break;
 
         case cpConstants.NOTIFICATION_TYPES.CLOSE:
-            notification.setRecipients(context, 'original-members');
-            notification.setTerminateConversation(context, 'original-members');
+            notification.setRecipients(conversation, origin, 'original-members');
+            notification.setTerminateConversation(conversation, origin, 'original-members');
             break;
 
         case cpConstants.NOTIFICATION_TYPES.LEAVE:
-            notification.setRecipients(context, 'members');
-            notification.setTerminateConversation(context, 'origin');
+            notification.setRecipients(conversation, origin, 'members');
+            notification.setTerminateConversation(conversation, origin, 'origin');
             break;
 
         case cpConstants.NOTIFICATION_TYPES.FORWARD:
-            notification.setRecipients(context, 'members');
+            notification.setRecipients(conversation, origin, 'members');
             break;
 
         case cpConstants.NOTIFICATION_TYPES.DELEGATE:
-            notification.setRecipients(context, 'members');
-            notification.setTerminateConversation(context, 'origin');
+            notification.setRecipients(conversation, origin, 'members');
+            notification.setTerminateConversation(conversation, origin, 'origin');
             break;
     }
 
@@ -293,6 +303,24 @@ NotificationHelper.prototype.handleDelegate = function(context,doneCallback) {
     }
 
     return notification;
+};
+
+NotificationHelper.prototype.convertConversationToNotification = function(conversations, user) {
+    var self = this;
+    var notifications;
+
+    if (conversations instanceof Array ) {
+        notifications = [];
+
+        for (var i = 0; i < conversations.length; i++) {
+            var notification = self.buildNotificationFromObject(conversations[i], conversations[i].envelope.origin, conversations[i].envelope.enterprise, 'NONE', 'state content envelope', user);
+            notifications.push(notification);
+        }
+    } else {
+        notifications = self.buildNotificationFromObject(conversations, conversations.envelope.origin, conversations.envelope.enterprise, 'NONE', 'state content envelope', user);
+    }
+
+    return notifications;
 };
 
 

@@ -13,6 +13,7 @@ var _notificationPublisher = null;
 var _auditTrailPublisher = null;
 var _conversationHelper = null;
 var _billingPublisher = null;
+var _notificationHelper = null;
 
 exports.setConversationPublisher = function( conversationPublisher ) {
     _conversationPublisher = conversationPublisher;
@@ -34,12 +35,23 @@ exports.setAuditTrailPublisher = function( auditTrailPublisher ) {
 
 exports.setConversationHelper = function( conversationHelper ) {
     _conversationHelper = conversationHelper;
-    if ( _schedulerPublisher )
+    if ( _schedulerPublisher ) {
         _conversationHelper.setSchedulerPublisher(_schedulerPublisher);
+    }
+    if (_notificationHelper) {
+        _notificationHelper.setConversationHelper(_conversationHelper);
+    }
 };
 
 exports.setBillingPublisher = function( billingPublisher ) {
     _billingPublisher = billingPublisher;
+};
+
+exports.setNotificationHelper = function( notificationHelper ) {
+    _notificationHelper = notificationHelper;
+    if (_conversationHelper){
+        _notificationHelper.setConversationHelper(_conversationHelper);
+    }
 };
 
 
@@ -79,7 +91,7 @@ exports.getConversations = function (req, res) {
         ],
 
         function (err, context) {
-            console.log('getConversations(): exiting: err=', err, 'context=', context);
+            console.log('getConversations(): exiting: err=', err, 'conversations=', context.conversations);
             if (!err) {
                 res.status(200).json(context.conversations);
             } else {
@@ -108,13 +120,16 @@ exports.getOneConversation = function(req, res) {
                 model.Conversation.findOne({_id: context.conversationId})
                     .populate('envelope.origin', 'displayName _id')
                     .populate('envelope.members', 'displayName _id')
-                    .populate('stats.members.member', 'displayName _id')
+                    .populate('state.members.member', 'displayName _id')
                     .exec(function( err, conversation){
                         if ( err ) {
                             callback(err, null);
                         }
                         else {
-                            context.conversation = _conversationHelper.sanitize(conversation, context.origin);
+                            conversation = conversation.toJSON();
+                            conversation = _conversationHelper.allowableActions(conversation, context.origin);
+                            context.conversation = _notificationHelper.convertConversationToNotification(conversation, context.origin);
+
                             callback(null, context);
                         }
                     });
@@ -137,34 +152,29 @@ exports.newConversation = function (req, res) {
     console.log('newConversation(): entered');
     async.waterfall(
         [
-            // create context for new message
-            function (callback) {
-                var context = {};
-                context.action = 'new';
-                context.origin = req.user.origin;
-                context.enterprise = req.user.enterprise;
-                context.enterpriseId = req.user.enterpriseId;
-
-                context = _conversationHelper.decorateContext(context, req.body);
-
-                callback(null, context);
-            },
-
             // create & save an unrouted message
-            function(context,callback) {
+            function(callback) {
 
-                var c = _conversationHelper.requestToModel( context );
+                // validate the api
+                _conversationHelper.requestToNewModel( req.body, req.user, function(err, context){
+                    if (err) {
+                        callback(Error(err), null);
+                    } else {
+                        context.action = 'new';
+                        context.conversationId = context.conversation._id;
 
-                context.conversationId = c._id;
-
-                c.save(function( err, conversation){
-                    if ( err ) {
-                        callback(err, null);
-                    }
-                    else {
-                        callback(null, context);
+                        context.conversation.save(function (err, conversation) {
+                            if (err) {
+                                callback(err, null);
+                            }
+                            else {
+                                context.conversation = conversation;
+                                callback(null, context);
+                            }
+                        });
                     }
                 });
+
             },
 
             // send it to the conversation router
@@ -172,11 +182,18 @@ exports.newConversation = function (req, res) {
 
                 //_conversationPublisher.publish('ConversationEngineQueue',context, function( error ){
                 var routingKey = parseInt(context.conversationId) % CONSTANTS.BUS.CONVERSATION_WORKERS;
-                var published = _conversationPublisher.publish(routingKey, context);
-                if ( !published )
+                var published = false;
+                try {
+                    published = _conversationPublisher.publish(routingKey, context);
+                } catch(err) {
+                    console.log('_conversationPubluisher.publish():',err);
+                }
+                if ( !published ) {
                     callback(Error('Publish Failed'), null);
-                else
+                }
+                else {
                     callback(null, context);
+                }
             },
 
             // billing event
@@ -194,7 +211,7 @@ exports.newConversation = function (req, res) {
         ],
 
         function (err, context) {
-            console.log('newConversation(): exiting: err=%s,result=%s', err, context);
+            console.log('newConversation(): exiting: err:',err);
             if (!err) {
                 res.status(200).json(context.conversationId);
             } else {
@@ -257,18 +274,12 @@ exports.updateConversation = function (req, res) {
 
                 var routingKey = parseInt(context.conversationId) % CONSTANTS.BUS.CONVERSATION_WORKERS;
                 var published = _conversationPublisher.publish(routingKey, context);
-                if ( !published )
+                if ( !published ) {
                     callback(Error('Publish Failed'), null);
-                else
+                }
+                else {
                     callback(null, context);
-                /*
-                _conversationPublisher.publish('ConversationEngineQueue',context, function( error ){
-                    if ( error )
-                        callback(Error('Publish Failed'), null);
-                    else
-                        callback(null, context);
-                });
-                */
+                }
             }
         ],
 

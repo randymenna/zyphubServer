@@ -116,7 +116,7 @@ function createExpressApplication() {
 
         // intercept OPTIONS method
         if (oneof && req.method === 'OPTIONS') {
-            res.send(200);
+            res.sendStatus(200);
         }
         else {
             next();
@@ -133,7 +133,7 @@ function createExpressApplication() {
     //
     app.use(function(req, res, next) {
         // Put rest call preprocessing here.
-        console.log('express interceptor');
+        console.log(req.url);
 
         // ignore token validation
         if ( req.url.indexOf('/') === 0) {

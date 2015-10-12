@@ -176,7 +176,7 @@ exports.update = function (req, res) {
                 callback(null, context);
             },
             function (context, callback) {
-                model.Group.findOneAndUpdate(context.search,context.update).exec(function( err, group){
+                model.Group.findOneAndUpdate(context.search,context.update,{'new': true}).exec(function( err, group){
                     if ( err ) {
                         callback(err, null);
                     }
@@ -263,7 +263,7 @@ exports.joinGroup = function (req, res) {
             // add member id to group members
             function (context, callback) {
 
-                model.Group.findOneAndUpdate({'_id': context.groupId},{$push:{'members' : { $each: context.profileIds}}},function(err,ret){
+                model.Group.findOneAndUpdate({'_id': context.groupId},{$push:{'members' : { $each: context.profileIds}}},{'new': true},function(err,ret){
                     context.group = ret;
                     callback(err,context);
                 });
@@ -375,7 +375,7 @@ exports.leaveGroup = function (req, res) {
             // remove member ids from group members array
             function (context, callback) {
 
-                model.Group.findOneAndUpdate({'_id': context.groupId},{$pullAll:{ 'members': context.profileIds}},function(err,group){
+                model.Group.findOneAndUpdate({'_id': context.groupId},{$pullAll:{ 'members': context.profileIds}},{'new': true},function(err,group){
                     if ( group ) {
                         context.group = groupHelper.santize(group.toObject());
                         callback(err, context);

@@ -60,7 +60,7 @@ exports.getOne = function (context, callback) {
 };
 
 exports.updateOne = function (context, callback) {
-    model.Context.findOneAndUpdate(context.search,context.update).exec(function( err, ctx){
+    model.Context.findOneAndUpdate(context.search,context.update,{'new': true}).exec(function( err, ctx){
         if ( err ) {
             callback(err, null);
         }

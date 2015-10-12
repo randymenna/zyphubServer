@@ -4,24 +4,36 @@ var model                   = require('../models/models');
 
 var ConversationMessageHandler = module.exports = function ConversationMessageHandler() {
 
-    this.setConversationHelper = function(conversationHelper) {
+    this.setConversationHelper = function( conversationHelper ) {
         this._conversationHelper = conversationHelper;
+        if (this._schedulerPublisher) {
+            this._conversationHelper.setSchedulerPublisher(this._schedulerPublisher);
+        }
+        if (this._notificationHelper) {
+            this._notificationHelper.setConversationHelper(this._conversationHelper);
+        }
     };
 
     this.setNotificationPublisher = function(notificationPublisher) {
         this._notificationPublisher = notificationPublisher;
     };
 
-    this.setNotificationHelper = function(notificationHelper) {
+    this.setNotificationHelper = function( notificationHelper ) {
         this._notificationHelper = notificationHelper;
+        if (this._conversationHelper){
+            this._notificationHelper.setConversationHelper(this._conversationHelper);
+        }
     };
 
     this.setAuditTrailPublisher = function(auditTrailPublisher) {
         this._auditTrailPublisher = auditTrailPublisher;
     };
 
-    this.setSchedulerPublisher = function(schedulerPublisher) {
+    this.setSchedulerPublisher = function( schedulerPublisher ) {
         this._schedulerPublisher = schedulerPublisher;
+        if ( this._conversationHelper ) {
+            this._conversationHelper.setSchedulerPublisher(schedulerPublisher);
+        }
     };
 
     this.setBillingPublisher = function(billingPublisher) {
@@ -67,6 +79,8 @@ ConversationMessageHandler.prototype.onMessage = function (msg, msgHandlerCallba
                 }
             },
 
+            // TODO: get rid of this
+
             // save to db
             function(context,callback) {
                 context.conversation.save(function( err, conversation){
@@ -92,13 +106,15 @@ ConversationMessageHandler.prototype.onMessage = function (msg, msgHandlerCallba
                 }
             },
 
+            // TODO: do the population in the individual handlers
+
             // get a populated model
             function(context,callback) {
 
                 model.Conversation.findOne({_id: context.conversation._id})
-                    .populate('envelope.origin', 'label _id')
-                    .populate('envelope.members', 'label _id')
-                    .populate('state.members.member', 'label')
+                    .populate('envelope.origin', 'displayName originalId _id')
+                    .populate('envelope.members', 'displayName originalId _id')
+                    .populate('state.members.member', 'displayName originalId _id')
                     .exec(function( err, conversation){
                         if ( err ) {
                             callback(err, null);
@@ -166,6 +182,7 @@ ConversationMessageHandler.prototype.handleNew = function(context,doneCallback) 
 
             // route the message
             function(context,callback) {
+                // adjust the context.members to expand groups and tags
                 self._conversationHelper.route(context,function(err,ctx){
                     callback(err,ctx);
                 });
@@ -174,33 +191,32 @@ ConversationMessageHandler.prototype.handleNew = function(context,doneCallback) 
             // set message state
             function(context,callback) {
 
-                var conversation = context.conversation;
-
-                var meta = {};
-                meta.originalMembers = context.originalMembers;
-                meta.groups = context.groups;
-                meta.tags = context.tags;
-
                 context.conversation.envelope.members = context.members;
-                context.conversation.envelope.meta = meta;
+                context.conversation.envelope.meta.groups = context.groups;
+                context.conversation.envelope.meta.tags = context.tags;
 
-                context.conversation.state.startMemberCount = context.conversation.envelope.members.length;
                 context.conversation.state.curMemberCount = context.conversation.envelope.members.length;
 
                 // if the message gets replayed we want to start fresh, so if it has any members in state at this point we want to get rid of them
                 var len = context.conversation.state.members.length;
-                for (var i=0; i < len; i++){
+                for (var i=len-1; i > -1; i--){
                     context.conversation.state.members.splice(i,1);
                 }
 
                 // now populate it correctly
                 for (var i=0; i< context.conversation.envelope.members.length; i++) {
                     var tmp = {
-                        state: 'UNOPENED'
+                        lastEvent: 'UNOPENED'
                     };
                     if (typeof context.conversation.envelope.members[i] === 'string' || context.conversation.envelope.members[i] instanceof String){
+                        if (context.conversation.envelope.members[i] === context.origin) {
+                           tmp.lastEvent = 'SENT' ;
+                        }
                         tmp.member = mongoose.Types.ObjectId(context.conversation.envelope.members[i]);
                     } else {
+                        if (context.conversation.envelope.members[i].toHexString() === context.origin) {
+                            tmp.lastEvent = 'SENT' ;
+                        }
                         tmp.member = context.conversation.envelope.members[i];
                     }
 
@@ -216,14 +232,8 @@ ConversationMessageHandler.prototype.handleNew = function(context,doneCallback) 
 
                 //TODO
                 if ( context.escalation ) {
-
+                    console.log('TODO: handle esclaction in NEW conversation');
                 }
-
-                callback(null, context);
-            },
-
-            // save the message
-            function (context, callback) {
 
                 context.conversation.save(function( err, conversation){
                     if ( err ) {
@@ -232,7 +242,7 @@ ConversationMessageHandler.prototype.handleNew = function(context,doneCallback) 
                     else {
                         callback(null, context);
                     }
-                })
+                });
             },
 
             // add a conversation to all the members in-boxes

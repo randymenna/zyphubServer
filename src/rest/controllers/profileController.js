@@ -183,30 +183,12 @@ exports.getConversations = function (req, res) {
 
             function(context,callback) {
 
-                conversationHelper.getConversationsInInbox( context.inbox, function( err, conversations){
-                    context.conversations = conversationHelper.sanitize( conversations );
-                    callback( err, context );
-                });
-                /*
-                model.Conversation.find({'_id': { $in: context.inbox }})
-                    .populate('envelope.origin', 'label _id')
-                    .populate('envelope.members', 'label _id')
-                    .populate('stats.members.member', 'label')
-                    .exec(function( err, conversations){
-                        if ( err ) {
-                            callback(err, null);
-                        }
-                        else {
-                            context.conversations = conversations;
-                            callback(null, context);
-                        }
-                    });
-                    */
+                conversationHelper.getConversationsInInbox( context, callback );
             }
         ],
 
         function (err, context) {
-            console.log('getConversations(): exiting: err=%s,result=%s', err, context);
+            console.log('getConversations(): exiting: err=%s,result=%s', err, context.conversations);
             if (!err) {
                 res.status(200).json(context.conversations);
             } else {
@@ -231,7 +213,7 @@ exports.update = function (req, res) {
                 callback(null, context);
             },
             function (context, callback) {
-                model.Profile.findOneAndUpdate(context.search,context.update).exec(function( err, profile){
+                model.Profile.findOneAndUpdate(context.search,context.update,{'new': true}).exec(function( err, profile){
                     if ( err ) {
                         callback(err, null);
                     }

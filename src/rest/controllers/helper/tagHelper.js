@@ -193,7 +193,7 @@ exports.getOne = function (context, callback) {
 };
 
 exports.updateOne = function (context, callback) {
-    model.Tag.findOneAndUpdate(context.search,context.update).exec(function( err, tag){
+    model.Tag.findOneAndUpdate(context.search,context.update,{'new': true}).exec(function( err, tag){
         if ( err ) {
             callback(err, null);
         }

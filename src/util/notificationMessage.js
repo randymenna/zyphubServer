@@ -16,6 +16,22 @@ NotificationMessage.prototype.setConversationId = function( id ) {
     this._notification.conversation = id;
 };
 
+NotificationMessage.prototype.setCommonParts = function(conversationHelper, conversation, type, origin, enterprise, user){
+    this._notification.id = conversation._id;
+    this._notification.type = type;
+    this._notification.header = {};
+    this._notification.header.origin = origin;
+    this._notification.header.enterprise = enterprise;
+    if (!conversation.allowableActions || !conversation.allowableActions.length) {
+        this._notification.header.allowableActionsOrigin = conversationHelper.getOriginAllowableActions(conversation.envelope.pattern);
+        this._notification.header.allowableActionsParticipant = conversationHelper.getParticipantAllowableActions(conversation.envelope.pattern);
+    } else {
+        this._notification.header.allowableActions = conversation.allowableActions;
+    }
+    this._notification.time = conversation.time;
+    this._notification.profileId = user;
+};
+
 NotificationMessage.prototype.setTypeAndOrigin = function( type, origin ) {
     this._notification.type = type;
     this._notification.origin = origin;
@@ -67,7 +83,7 @@ NotificationMessage.prototype.setState = function( state ) {
     }
 };
 
-NotificationMessage.prototype.setRecipients = function( context, build ) {
+NotificationMessage.prototype.setRecipients = function( conversation, origin, build ) {
     this._notification.recipients = [];
 
     var parts = build.split(' ');
@@ -75,32 +91,32 @@ NotificationMessage.prototype.setRecipients = function( context, build ) {
     for (var i=0; i < parts.length; i++) {
         switch(parts[i]) {
             case 'owner':
-                this._notification.recipients.push(context.conversation.envelope.origin._id.toString());
+                this._notification.recipients.push(conversation.envelope.origin._id.toString());
                 break;
 
             case 'origin':
-                this._notification.recipients.push(context.origin);
+                this._notification.recipients.push(origin);
                 break;
 
             case 'members':
-                this._notification.recipients = this._notification.recipients.concat(_.pluck( context.conversation.envelope.members, '_id' ));
+                this._notification.recipients = this._notification.recipients.concat(_.pluck( conversation.envelope.members, '_id' ));
                 for (var i=0; i < this._notification.recipients.length; i++){
                     this._notification.recipients[i] = this._notification.recipients[i].toString();
                 }
                 break;
 
             case 'original-members':
-                for (var i=0; i< context.conversation.envelope.meta.originalMembers.length; i++){
-                    this._notification.recipients.push(context.conversation.envelope.meta.originalMembers[i].toString());
+                for (var i=0; i< conversation.envelope.meta.originalMembers.length; i++){
+                    this._notification.recipients.push(conversation.envelope.meta.originalMembers[i].toString());
                 }
-                this._notification.recipients.push(context.conversation.envelope.origin._id.toString());
+                this._notification.recipients.push(conversation.envelope.origin._id.toString());
                 break;
         }
     }
 
 };
 
-NotificationMessage.prototype.setTerminateConversation = function( context, build ) {
+NotificationMessage.prototype.setTerminateConversation = function( conversation, origin, build ) {
     this._notification.terminateConversation = [];
 
     var parts = build.split(' ');
@@ -108,52 +124,52 @@ NotificationMessage.prototype.setTerminateConversation = function( context, buil
     for (var i=0; i < parts.length; i++) {
         switch(parts[i]) {
             case 'owner':
-                this._notification.terminateConversation.push(context.conversation.envelope.origin._id.toString());
+                this._notification.terminateConversation.push(conversation.envelope.origin._id.toString());
                 break;
 
             case 'origin':
-                this._notification.terminateConversation.push(context.origin);
+                this._notification.terminateConversation.push(origin);
                 break;
 
             case 'members':
-                this._notification.terminateConversation = this._notification.terminateConversation.concat(_.pluck( context.conversation.envelope.members, '_id' ));
+                this._notification.terminateConversation = this._notification.terminateConversation.concat(_.pluck( conversation.envelope.members, '_id' ));
                 for (var i=0; i < this._notification.terminateConversation.length; i++){
                     this._notification.terminateConversation[i] = this._notification.terminateConversation[i].toString();
                 }
                 break;
 
             case 'original-members':
-                for (var i=0; i< context.conversation.envelope.meta.originalMembers.length; i++){
-                    this._notification.terminateConversation.push(context.conversation.envelope.meta.originalMembers[i].toString());
+                for (var i=0; i< conversation.envelope.meta.originalMembers.length; i++){
+                    this._notification.terminateConversation.push(conversation.envelope.meta.originalMembers[i].toString());
                 }
-                this._notification.terminateConversation.push(context.conversation.envelope.origin._id.toString());
+                this._notification.terminateConversation.push(conversation.envelope.origin._id.toString());
                 break;
 
             case 'members-not-origin-owner':
-                var tmp = this._notification.terminateConversation.concat(_.pluck( context.conversation.envelope.members, '_id' ));
+                var tmp = this._notification.terminateConversation.concat(_.pluck( conversation.envelope.members, '_id' ));
 
                 for (var i=0; i < this._notification.terminateConversation.length; i++){
                     this._notification.terminateConversation[i] = this._notification.terminateConversation[i].toString();
                 }
 
-                var i = tmp.indexOf(context.conversation.envelope.origin._id.toString());
+                var i = tmp.indexOf(conversation.envelope.origin._id.toString());
                 if (i !== -1) {
                     tmp.splice(i,1);
                 }
-                i = tmp.indexOf(context.origin);
+                i = tmp.indexOf(origin);
                 if (i !== -1) {
                     tmp.splice(i,1);
                 }
                 this._notification.terminateConversation = this._notification.terminateConversation.concat(tmp);
 
             case 'members-not-owner':
-                var tmp = this._notification.terminateConversation.concat(_.pluck( context.conversation.envelope.members, '_id' ));
+                var tmp = this._notification.terminateConversation.concat(_.pluck( conversation.envelope.members, '_id' ));
 
                 for (var i=0; i < this._notification.terminateConversation.length; i++){
                     this._notification.terminateConversation[i] = this._notification.terminateConversation[i].toString();
                 }
 
-                var i = tmp.indexOf(context.conversation.envelope.origin._id.toString());
+                var i = tmp.indexOf(conversation.envelope.origin._id.toString());
                 if (i !== -1) {
                     tmp.splice(i,1);
                 }

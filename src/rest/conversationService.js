@@ -8,6 +8,7 @@ var CPBus                           = require('../bus/index');
 var ConversationHelper              = require('./controllers/helper/conversationHelper');
 var passport                        = require('passport');
 var async                           = require('async');
+var NotificationHelper              = require('../util/notificationHelper');
 
 var cpBus = new CPBus();
 
@@ -69,6 +70,11 @@ module.exports = function() {
                         ConversationController.setBillingPublisher(billingPublisher);
                         callback();
                     });
+                },
+                function(callback) {
+                    ConversationController.setNotificationHelper(new NotificationHelper());
+                    console.log('conversationService: set notification helper');
+                    callback();
                 }
             ],
             function() {

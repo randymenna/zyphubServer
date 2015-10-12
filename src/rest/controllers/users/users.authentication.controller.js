@@ -65,8 +65,11 @@ exports.signup = function(req, res) {
 
 exports.authByKey = function(req, res, next){
 
-    passport.authenticate('conversepoint', {session: false}, function(err, user, info) {
+    passport.authenticate('apiKey', {session: false}, function(err, user, info) {
         if (err) {
+            res.status(400).send(err);
+        } else
+        if (info){
             res.status(400).send(info);
         } else
         if (!user) {
@@ -88,7 +91,7 @@ exports.authByKey = function(req, res, next){
                                     res.status(400).json(err);
                                 }
                                 else {
-                                    res.json(userHelper.sanitizeForGraph(u));
+                                    res.status(200).json(u.toJSON());
                                 }
                             });
 
@@ -107,7 +110,7 @@ exports.authByKey = function(req, res, next){
                 user.token = authHelper.createToken(user.profile[0], req.body, config.jwt.secret, {expiresInMinutes: config.jwt.ttl});
 
                 user.save(function (err, u) {
-                    res.json(userHelper.sanitizeForGraph(u));
+                    res.json(u.toJSON());
                 });
             }
         }
@@ -119,7 +122,7 @@ exports.authByKey = function(req, res, next){
  */
 exports.signin = function(req, res, next) {
 
-    if ( req.body.provider === 'local' ) {
+    if ( req.body.provider === 'local' || !req.body.provider ) {
         passport.authenticate('local', {session: false}, function (err, user, info) {
             if (err) {
                 res.status(400).send(info);
@@ -139,7 +142,7 @@ exports.signin = function(req, res, next) {
                                 user.token = authHelper.createToken(user.profile[0], req.body, config.jwt.secret, {expiresInMinutes: config.jwt.ttl});
 
                                 user.save(function (err, u) {
-                                    res.json(userHelper.sanitizeUser(u));
+                                    res.status(200).json(u.toJSON());
                                 });
 
                             }
@@ -157,7 +160,7 @@ exports.signin = function(req, res, next) {
                     user.token = authHelper.createToken(user.profile[0], req.body, config.jwt.secret, {expiresInMinutes: config.jwt.ttl});
 
                     user.save(function (err, u) {
-                        res.json(userHelper.sanitizeUser(u));
+                        res.status(200).json(u.toJSON());
                     });
                 }
             }
@@ -174,7 +177,7 @@ exports.signin = function(req, res, next) {
                 user.token = authHelper.createToken(user.profile[0], req.body, config.jwt.secret, {expiresInMinutes: config.jwt.ttl});
 
                 user.save(function (err, u) {
-                    res.json(userHelper.sanitizeUser(u));
+                    res.json(u.toJSON());
                 });
             }
         })(req, res, next);
@@ -195,7 +198,7 @@ exports.signin = function(req, res, next) {
                 user.token = authHelper.createToken(user.profile[0], req.body, config.jwt.secret, {expiresInMinutes: config.jwt.ttl});
 
                 user.save(function (err, u) {
-                    res.json(userHelper.sanitizeUser(u));
+                    res.json(u.toJSON());
                 });
             }
         })(req, res, next);
@@ -240,7 +243,7 @@ exports.oauthCallback = function(strategy) {
 
 							user.save(function (err, u) {
 
-								res.status(200).json(userHelper.sanitizeUser(u));
+								res.status(200).json(u.toJSON());
 							});
 						}
 					});

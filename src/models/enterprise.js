@@ -22,6 +22,18 @@ EnterpriseSchema.pre('save', function (next) {
     next();
 });
 
+EnterpriseSchema.set('toJSON',{
+    transform: function(doc, ret, options){
+        var retJson = {
+            apiKey: ret.apiKey,
+            name: ret.name,
+            contact: ret.contact,
+            id: ret._id
+        };
+        return retJson;
+    }
+});
+
 var _Enterprise = mongoose.model('Enterprise', EnterpriseSchema);
 
 module.exports = {

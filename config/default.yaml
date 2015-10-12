@@ -12,9 +12,9 @@ jwt:
 mongo:
   host: 'localhost'
   port: 27017
-  dbName: 'cp'
+  dbName: 'conversepoint-test'
   agenda: 'agenda'
-  url: 'mongodb://cpadmin:cpadmin@ds047802.mongolab.com:47802/cp'
+  url: 'mongodb://cptest-admin:c0nv3r$3@ds029524-a0.mongolab.com:29524,ds029524-a1.mongolab.com:29524/conversepoint-test?replicaSet=rs-ds029524'
 
 socketio:
   origin: 'localhost:*'
@@ -80,7 +80,7 @@ webhook:
   enterprise: 'graph.fm'
 
 users:
-  fakeEmail: '@apikey.fak'
+  fakeEmail: '.fake'
 
 logs:
   directory: 'logs'

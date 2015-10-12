@@ -6,6 +6,7 @@
  */
 var config = require('config');
 var	CPStrategy = require('../custom/passport-conversepoint');
+var	LocalStrategy = require('passport-local').Strategy;
 var User = require('mongoose').model('User');
 var jwt  = require('jwt-simple');
 var moment = require('moment');
@@ -35,17 +36,23 @@ module.exports = function(passport) {
         return decoded;
     };
 
-
+/*
     passport.use(new CPStrategy({
             passReqToCallback: true
 		},
+		*/
+    passport.use('apiKey', new LocalStrategy({
+            usernameField: 'id',
+            passwordField: 'key',
+            passReqToCallback: true
+        },
 		function(req, id, key, done) {
 
             var token = validate(key, config.jwt.apikeysecret);
 
             if (!token){
                 var msg = { message: 'Invalid ConversePoint API Key' };
-                return done(null, null, msg);
+                return done(msg, null, msg);
             }
             else {
                 User.findOne({
@@ -63,9 +70,7 @@ module.exports = function(passport) {
                         return done(err);
                     }
                     if (!user) {
-                        return done(null, false, {
-                            message: 'Unknown user'
-                        });
+                        return done(null, null, null);
                     }
 
                     return done(null, user);
