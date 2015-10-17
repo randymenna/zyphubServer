@@ -29,11 +29,11 @@ cpBus.start().then(function(busConnection){
 
                 mongoose.connect(config.mongo.url, {auto_reconnect: true},function(err){
                     if (err){
-                        console.log('webhookServer(): mongoose error: ', err);
+                        console.log('conversationRouter(): mongoose error: ', err);
                         callback(err, null);
                     }
                     else {
-                        console.log('webhookServer(): connected',config.mongo.url);
+                        console.log('conversationRouter(): connected',config.mongo.url);
                         callback(null,context);
                     }
                 });
@@ -94,7 +94,7 @@ cpBus.start().then(function(busConnection){
 
                 try {
                     var messageDrivenBean = new MessageDrivenBean(busConnection, CONSTANTS.BUS.DIRECT, CONSTANTS.BUS.CONVERSATION_ROUTER, conversationHandler, CONSTANTS.BUS.CONVERSATION_WORKERS);
-                    cpBus.setBeanRestart(messageDrivenBean.start.bind(messageDrivenBean));
+                    //cpBus.setBeanRestart(messageDrivenBean.start.bind(messageDrivenBean));
                     messageDrivenBean.start();
                 } catch(exception){
                     console.log('conversationRouter(): mdb.exception', exception);

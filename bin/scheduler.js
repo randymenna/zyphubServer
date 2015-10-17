@@ -77,7 +77,7 @@ cpBus.start.then(function(busConnection){
 
                 try {
                     var messageDrivenBean = new MessageDrivenBean(busConnection, CONSTANTS.BUS.DIRECT, CONSTANTS.BUS.SCHEDULER, schedulerHandler, CONSTANTS.BUS.SCHEDULE_WORKERS);
-                    cpBus.setBeanRestart(messageDrivenBean.start.bind(messageDrivenBean));
+                    //cpBus.setBeanRestart(messageDrivenBean.start.bind(messageDrivenBean));
                     messageDrivenBean.start();
                 } catch(exception){
                     console.log('Scheduler: mdb.exception', exception);

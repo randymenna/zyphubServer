@@ -82,6 +82,8 @@ NotificationHelper.prototype.buildNotificationFromObject = function(conversation
 
     notification.setCommonParts(self._conversationHelper, conversation, type, origin, enterprise, user);
 
+    notification.setAllowableActions(self._conversationHelper, conversation);
+
     for (var i=0; i < parts.length; i++) {
         switch(parts[i]) {
             case 'content':
@@ -104,7 +106,7 @@ NotificationHelper.prototype.buildNotificationFromObject = function(conversation
             break;
 
         case cpConstants.NOTIFICATION_TYPES.READ:
-            notification.setRecipients(conversation, origin, 'owner');
+            notification.setRecipients(conversation, origin, 'owner origin');
             break;
 
         case cpConstants.NOTIFICATION_TYPES.REPLY:
@@ -112,17 +114,17 @@ NotificationHelper.prototype.buildNotificationFromObject = function(conversation
             break;
 
         case cpConstants.NOTIFICATION_TYPES.OK:
-            notification.setRecipients(conversation, origin, 'owner');
+            notification.setRecipients(conversation, origin, 'owner origin');
             notification.setTerminateConversation(conversation, origin, 'origin');
             break;
 
         case cpConstants.NOTIFICATION_TYPES.ACCEPT:
-            notification.setRecipients(conversation, origin, 'owner');
+            notification.setRecipients(conversation, origin, 'all-members');
             notification.setTerminateConversation(conversation, origin, 'members-not-origin-owner');
             break;
 
         case cpConstants.NOTIFICATION_TYPES.REJECT:
-            notification.setRecipients(conversation, origin, 'owner');
+            notification.setRecipients(conversation, origin, 'owner origin');
             notification.setTerminateConversation(conversation, origin, 'origin');
             break;
 
@@ -132,12 +134,12 @@ NotificationHelper.prototype.buildNotificationFromObject = function(conversation
             break;
 
         case cpConstants.NOTIFICATION_TYPES.CLOSE:
-            notification.setRecipients(conversation, origin, 'original-members');
-            notification.setTerminateConversation(conversation, origin, 'original-members');
+            notification.setRecipients(conversation, origin, 'all-members');
+            notification.setTerminateConversation(conversation, origin, 'all-members');
             break;
 
         case cpConstants.NOTIFICATION_TYPES.LEAVE:
-            notification.setRecipients(conversation, origin, 'members');
+            notification.setRecipients(conversation, origin, 'all-members');
             notification.setTerminateConversation(conversation, origin, 'origin');
             break;
 
@@ -146,7 +148,7 @@ NotificationHelper.prototype.buildNotificationFromObject = function(conversation
             break;
 
         case cpConstants.NOTIFICATION_TYPES.DELEGATE:
-            notification.setRecipients(conversation, origin, 'members');
+            notification.setRecipients(conversation, origin, 'members origin');
             notification.setTerminateConversation(conversation, origin, 'origin');
             break;
     }
@@ -174,7 +176,7 @@ NotificationHelper.prototype.handleRead = function(context) {
     // send to: owner
     // send: state
     if (context.conversation) {
-        notification = self.buildNotification(context, cpConstants.NOTIFICATION_TYPES.REPLY, 'state');
+        notification = self.buildNotification(context, cpConstants.NOTIFICATION_TYPES.READ, 'state');
     }
 
     return notification;

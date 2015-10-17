@@ -15,27 +15,6 @@ var ConversationHelper = module.exports = function ConversationHelper () {
     this._notificationHelper = new NotificationHelper();
     this._notificationHelper.setConversationHelper(this);
 
-
-    this.getOriginAllowableActions = function( pattern ){
-        var actions = {
-            'STANDARD' : [ 'CLOSE', 'REPLY', 'FORWARD' ],
-            'FYI' : [ 'CLOSE', 'FORWARD' ],
-            'FCFS': [ 'CLOSE', 'FORWARD', 'REPLY']
-        };
-
-        return actions[pattern];
-    };
-
-    this.getParticipantAllowableActions = function(pattern){
-        var actions = {
-                'STANDARD' : [ 'READ', 'LEAVE', 'REPLY', 'FORWARD', 'DELEGATE' ],
-                'FYI' : [ 'READ', 'OK' ],
-                'FCFS': [ 'READ', 'ACCEPT', 'REJECT', 'REPLY']
-        };
-
-        return actions[pattern];
-    };
-
     this._conversationPublisher = null;
 
     this.removeFromArray = function( id, list ) {
@@ -45,6 +24,17 @@ var ConversationHelper = module.exports = function ConversationHelper () {
                 break;
             }
         }
+    };
+
+    this.getCurrentState = function( profileId, conversation ) {
+        var state = 'error';
+        for (var i=0; i < conversation.state.members.length; i++ ) {
+            if ( conversation.state.members[i].member.toHexString() === profileId ) {
+                state = conversation.state.members[i].lastEvent;
+                break;
+            }
+        }
+        return state;
     };
 
     this.updateLastEvent = function( profileId, state , conversation) {
@@ -57,12 +47,13 @@ var ConversationHelper = module.exports = function ConversationHelper () {
        }
     };
 
-    this.removeAllMembersWhoDontHaveLastEventFromConversation = function( state, conversation ) {
+    this.removeAllMembersWhoDontHaveLastEventFromConversationExceptingOwner = function( state, conversation ) {
 
         // update the state
+        var owner = new ObjectId(conversation.envelope.origin.id).toHexString();
         for (var i=0; i < conversation.state.members.length; i++ ) {
 
-            if ( conversation.state.members[i].lastEvent !== state ) {
+            if ( conversation.state.members[i].member.toHexString() !== owner && conversation.state.members[i].lastEvent !== state ) {
                 conversation.state.members[i].lastEvent = 'REMOVED';
                 conversation.envelope.members.pull(new ObjectId(conversation.state.members[i].member));
                 --conversation.state.curMemberCount;
@@ -210,22 +201,65 @@ var ConversationHelper = module.exports = function ConversationHelper () {
     };
 };
 
-ConversationHelper.prototype.getOriginAllowableActions = function( pattern ){
+ConversationHelper.prototype.isAccepted = function(c) {
+    var accepted = false;
+    for(var i=0; i < c.state.members.length; i++){
+        if (c.state.members[i].lastEvent === 'ACCEPTED'){
+            accepted = true;
+            break;
+        }
+    }
+    return accepted;
+};
+
+ConversationHelper.prototype.getOriginAllowableActions = function( c ){
+    var self = this;
+
     var actions = {
         'STANDARD' : [ 'CLOSE', 'REPLY', 'FORWARD' ],
-        'FYI': [ 'CLOSE', 'FORWARD' ],
-        'FCFS': [ 'CLOSE', 'REPLY', 'FORWARD']
+        'FYI' : [ 'CLOSE', 'FORWARD' ],
+        'FCFS': [ 'CLOSE', 'FORWARD', 'REPLY'],
+        'FCFS_ACCEPTED': ['REPLY','CLOSE']
     };
+
+    var pattern = null;
+
+    switch (c.envelope.pattern) {
+        case 'STANDARD':
+        case 'FYI':
+            pattern = c.envelope.pattern;
+            break;
+
+        case 'FCFS':
+            pattern = self.isAccepted(c) ? 'FCFS_ACCEPTED' : 'FCFS';
+            break;
+    }
 
     return actions[pattern];
 };
 
-ConversationHelper.prototype.getParticipantAllowableActions = function(pattern){
+ConversationHelper.prototype.getParticipantAllowableActions = function( c ){
+    var self = this;
+
     var actions = {
         'STANDARD' : [ 'READ', 'LEAVE', 'REPLY', 'FORWARD', 'DELEGATE' ],
-        'FYI': [ 'OK' ],
-        'FCFS': [ 'ACCEPT', 'REJECT', 'DELEGATE', 'REPLY', 'FORWARD']
+        'FYI' : [ 'READ', 'OK' ],
+        'FCFS': [ 'READ', 'ACCEPT', 'REJECT', 'REPLY'],
+        'FCFS_ACCEPTED': ['REPLY']
     };
+
+    var pattern = null;
+
+    switch (c.envelope.pattern) {
+        case 'STANDARD':
+        case 'FYI':
+            pattern = c.envelope.pattern;
+            break;
+
+        case 'FCFS':
+            pattern = self.isAccepted(c) ? 'FCFS_ACCEPTED' : 'FCFS';
+            break;
+    }
 
     return actions[pattern];
 };
@@ -301,6 +335,48 @@ ConversationHelper.prototype.requestToNewModel = function( body, user, callback 
             context.conversation =  c;
 
             callback(null, context);
+        }
+    });
+};
+
+ConversationHelper.prototype.validateUpdateParams = function( action, body, callback ) {
+
+    var apiTemplate = {
+        reply: paperwork.optional({
+            content: String
+        }),
+        forward: paperwork.optional([String]),
+        delegate: paperwork.optional([String])
+    };
+
+    // TODO: for now we validate the parameters here, but this needs to be moved to express
+    paperwork(apiTemplate, body, function (err, validated) {
+        if (err) {
+            // err is the list of incorrect fields
+            console.error(err);
+            callback(err, null);
+        } else {
+            action = action.toUpperCase();
+
+            // api parameters were validated
+            var error = 'Required parameter is missing';
+            if (action === 'REPLY' && !body.reply) {
+                callback(error, null);
+            }
+            else
+            if (action === 'FORWARD' && !body.forward) {
+                callback(error, null);
+            }
+            else
+            if (action === 'DELEGATE' && !body.delegate) {
+                callback(error, null);
+            } else {
+                var context = {
+                    action: action,
+                    body: body
+                };
+                callback(null, context);
+            }
         }
     });
 };
@@ -565,15 +641,15 @@ ConversationHelper.prototype.acceptConversation = function( context, callback ) 
             function(context,callback) {
 
                 // bump accepts
-                if ( context.conversation.state.maxAccepts === context.conversation.state.accepts ) {
-                    callback( new mongoose.Error('Max Accepts Reached'), null );
+                if ( context.conversation.state.accepts + 1 > context.conversation.state.maxAccepts ) {
+                    callback( new Error('Max Accepts Reached'), null );
                 }
 
                 ++context.conversation.state.accepts;
                 self.updateLastEvent( context.origin, 'ACCEPTED', context.conversation);
 
                 if ( context.conversation.state.accepts === context.conversation.state.maxAccepts ) {
-                    self.removeAllMembersWhoDontHaveLastEventFromConversation( 'ACCEPTED', context.conversation );
+                    self.removeAllMembersWhoDontHaveLastEventFromConversationExceptingOwner( 'ACCEPTED', context.conversation );
                 }
 
                 context.conversation.save(function( err, conversation ){
@@ -592,7 +668,11 @@ ConversationHelper.prototype.acceptConversation = function( context, callback ) 
 
         function (err, context) {
             console.log('acceptConversation(): exit: error %s', err);
-            callback( err, context.conversation );
+            if (!err) {
+                callback(err, context.conversation);
+            } else {
+                callback(err, context);
+            }
         }
     );
 };
@@ -782,7 +862,7 @@ ConversationHelper.prototype.forwardConversation = function( context, callback )
         [
             function (callback) {
 
-                if ( !context.forward.isArray ) {
+                if ( context.forward && !context.forward.isArray ) {
                     context.newMembers = [];
                     context.newMembers.push(context.forward);
                 }
@@ -989,14 +1069,11 @@ ConversationHelper.prototype.escalateConversation = function( context, callback 
 
                     context.action = 'escalationStep';
 
-                    self._schedulerPublisher.publish('SchedulerQueue', context, function (error) {
-                        if (error) {
-                            callback(Error('Scheduler Publish Failed: setEscalation'), null);
-                        }
-                        else {
-                            callback(null, context);
-                        }
-
+                    var published = self._schedulerPublisher.publish('SchedulerQueue', context);
+                    published.then(function() {
+                        callback(null, context);
+                    }).catch(function(err){
+                        callback(Error('Publish Failed: ' + err), null);
                     });
                 }
                 else {
@@ -1092,7 +1169,9 @@ ConversationHelper.prototype.readConversation = function( context, callback ) {
             },
 
             function(context,callback) {
-                self.updateLastEvent(context.origin, 'READ', context.conversation);
+                if (self.getCurrentState(context.origin, context.conversation) === 'UNOPENED') {
+                    self.updateLastEvent(context.origin, 'READ', context.conversation);
+                }
                 callback(null,context);
             },
 
@@ -1157,10 +1236,10 @@ ConversationHelper.prototype.getConversationsInInbox = function( context, callba
 
 ConversationHelper.prototype.allowableActions = function(c, user){
         if (c.envelope.origin._id.toHexString() === user) {
-            c.allowableActions = ConversationHelper.prototype.getOriginAllowableActions(c.envelope.pattern);
+            c.allowableActions = ConversationHelper.prototype.getOriginAllowableActions(c);
         }
         else {
-            c.allowableActions = ConversationHelper.prototype.getParticipantAllowableActions(c.envelope.pattern);
+            c.allowableActions = ConversationHelper.prototype.getParticipantAllowableActions(c);
         }
         return c;
 };

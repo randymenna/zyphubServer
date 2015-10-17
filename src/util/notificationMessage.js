@@ -20,16 +20,14 @@ NotificationMessage.prototype.setCommonParts = function(conversationHelper, conv
     this._notification.id = conversation._id;
     this._notification.type = type;
     this._notification.header = {};
-    this._notification.header.origin = origin;
-    this._notification.header.enterprise = enterprise;
-    if (!conversation.allowableActions || !conversation.allowableActions.length) {
-        this._notification.header.allowableActionsOrigin = conversationHelper.getOriginAllowableActions(conversation.envelope.pattern);
-        this._notification.header.allowableActionsParticipant = conversationHelper.getParticipantAllowableActions(conversation.envelope.pattern);
-    } else {
-        this._notification.header.allowableActions = conversation.allowableActions;
-    }
+    this._notification.header.owner = conversation.envelope.origin._id;
     this._notification.time = conversation.time;
-    this._notification.profileId = user;
+};
+
+NotificationMessage.prototype.setAllowableActions = function( conversationHelper, conversation ) {
+    this._notification.allowableActions = conversation.allowableActions;
+    this._notification.allowableActionsOrigin = conversationHelper.getOriginAllowableActions(conversation);
+    this._notification.allowableActionsParticipant = conversationHelper.getParticipantAllowableActions(conversation);
 };
 
 NotificationMessage.prototype.setTypeAndOrigin = function( type, origin ) {
@@ -111,6 +109,12 @@ NotificationMessage.prototype.setRecipients = function( conversation, origin, bu
                 }
                 this._notification.recipients.push(conversation.envelope.origin._id.toString());
                 break;
+
+            case 'all-members':
+                for (var i=0; i< conversation.state.members.length; i++){
+                    this._notification.recipients.push(conversation.state.members[i].member.toString());
+                }
+                break;
         }
     }
 
@@ -146,34 +150,21 @@ NotificationMessage.prototype.setTerminateConversation = function( conversation,
                 break;
 
             case 'members-not-origin-owner':
-                var tmp = this._notification.terminateConversation.concat(_.pluck( conversation.envelope.members, '_id' ));
-
-                for (var i=0; i < this._notification.terminateConversation.length; i++){
-                    this._notification.terminateConversation[i] = this._notification.terminateConversation[i].toString();
+                var owner = conversation.envelope.origin._id.toString();
+                for(var i=0; i < conversation.state.members.length; i++) {
+                    if (conversation.state.members[i].member !== owner && conversation.state.members[i].member !== origin) {
+                        this._notification.terminateConversation.push(conversation.state.members[i].member);
+                    }
                 }
-
-                var i = tmp.indexOf(conversation.envelope.origin._id.toString());
-                if (i !== -1) {
-                    tmp.splice(i,1);
-                }
-                i = tmp.indexOf(origin);
-                if (i !== -1) {
-                    tmp.splice(i,1);
-                }
-                this._notification.terminateConversation = this._notification.terminateConversation.concat(tmp);
+                break;
 
             case 'members-not-owner':
-                var tmp = this._notification.terminateConversation.concat(_.pluck( conversation.envelope.members, '_id' ));
-
-                for (var i=0; i < this._notification.terminateConversation.length; i++){
-                    this._notification.terminateConversation[i] = this._notification.terminateConversation[i].toString();
+                var owner = conversation.envelope.origin._id.toString();
+                for(var i=0; i < conversation.state.members.length; i++) {
+                    if (conversation.state.members[i].member !== owner) {
+                        this._notification.terminateConversation.push(conversation.state.members[i].member);
+                    }
                 }
-
-                var i = tmp.indexOf(conversation.envelope.origin._id.toString());
-                if (i !== -1) {
-                    tmp.splice(i,1);
-                }
-                this._notification.terminateConversation = this._notification.terminateConversation.concat(tmp);
                 break;
         }
     }

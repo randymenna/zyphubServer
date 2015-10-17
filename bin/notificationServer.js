@@ -30,7 +30,7 @@ cpBus.start().then(function (busConnection) {
 
     try {
         var messageDrivenBean = new MessageDrivenBean(busConnection, CONSTANTS.BUS.FANOUT, CONSTANTS.BUS.NOTIFIER, notificationHandler, CONSTANTS.BUS.NOTIFICATION_WORKERS);
-        cpBus.setBeanRestart(messageDrivenBean.start.bind(messageDrivenBean));
+        //cpBus.setBeanRestart(messageDrivenBean.start.bind(messageDrivenBean));
         messageDrivenBean.start();
     } catch(exception){
         console.log('webhookRouter(): mdb.exception', exception);

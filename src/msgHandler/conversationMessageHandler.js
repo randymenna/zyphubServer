@@ -98,12 +98,11 @@ ConversationMessageHandler.prototype.onMessage = function (msg, msgHandlerCallba
 
                 var routingKey = 0;
                 var published = self._auditTrailPublisher.publish(routingKey, context);
-                if ( !published ) {
-                    callback(Error('AuditQueue Publish Failed'), null);
-                }
-                else {
+                published.then(function() {
                     callback(null, context);
-                }
+                }).catch(function(err){
+                    callback(Error('Publish Failed: ' + err), null);
+                });
             },
 
             // TODO: do the population in the individual handlers
@@ -136,12 +135,11 @@ ConversationMessageHandler.prototype.onMessage = function (msg, msgHandlerCallba
 
                 var routingKey = 0;
                 var published = self._notificationPublisher.publish(routingKey, notification);
-                if ( !published ) {
-                    callback(Error('NotificationQueue Publish Failed'), null);
-                }
-                else {
+                published.then(function() {
                     callback(null, context);
-                }
+                }).catch(function(err){
+                    callback(Error('Publish Failed: ' + err), null);
+                });
             }
         ],
 
@@ -264,12 +262,11 @@ ConversationMessageHandler.prototype.handleNew = function(context,doneCallback) 
 
                     var routingKey = 0;
                     var published = self._schedulerPublisher.publish(routingKey, context);
-                    if ( !published ) {
-                        callback(Error('Scheduler Publish Failed'), null);
-                    }
-                    else {
+                    published.then(function() {
                         callback(null, context);
-                    }
+                    }).catch(function(err){
+                        callback(Error('Publish Failed: ' + err), null);
+                    });
                 }
                 else {
                     callback(null, context);
@@ -285,12 +282,11 @@ ConversationMessageHandler.prototype.handleNew = function(context,doneCallback) 
                     context.action = 'setEscalation';
                     var routingKey = 0;
                     var published = self._schedulerPublisher.publish(routingKey, context);
-                    if ( !published ) {
-                        callback(Error('Scheduler Publish Failed'), null);
-                    }
-                    else {
+                    published.then(function() {
                         callback(null, context);
-                    }
+                    }).catch(function(err){
+                        callback(Error('Publish Failed: ' + err), null);
+                    });
                 }
                 else {
                     callback(null, context);
@@ -313,12 +309,11 @@ ConversationMessageHandler.prototype.handleNew = function(context,doneCallback) 
 
                             var routingKey = 0;
                             var published = self._schedulerPublisher.publish(routingKey, context);
-                            if ( !published ) {
-                                callback(Error('Scheduler Publish Failed'), null);
-                            }
-                            else {
+                            published.then(function() {
                                 callback(null, context);
-                            }
+                            }).catch(function(err){
+                                callback(Error('Publish Failed: ' + err), null);
+                            });
                         }
                         callback(null, context);
                     }

@@ -34,28 +34,38 @@ NotificationMessageHandler.prototype.onMessage = function ( msg, msgHandlerCallb
                         var recipient = recipients[i];
 
                         var note = JSON.parse(JSON.stringify(notification));
-                        note.profileId = recipient.profileId;
+                        note.intendedRecipient = recipient.profileId;
 
-                        if (note.envelope) {
-                            if (note.envelope.origin === recipient.profileId) {
+                      //if (!note.allowableActions) {
+                            if (note.header.owner === note.intendedRecipient) {
                                 // origin
-                                if (!note.header.allowableActions) {
-                                    note.header.allowableActions = note.header.allowableActionsOrigin.slice();
-                                    note.header.allowableActionsOrigin = undefined;
-                                    note.header.allowableActionsParticipant = undefined;
-                                }
+                                note.allowableActions = note.allowableActionsOrigin.slice();
                             }
                             else {
                                 // participant
-                                if (!note.header.allowableActions) {
-                                    note.header.allowableActions = note.header.allowableActionsParticipant.slice();
-                                    note.header.allowableActionsOrigin = undefined;
-                                    note.header.allowableActionsParticipant = undefined;
+                                note.allowableActions = note.allowableActionsParticipant.slice();
+                            }
+                       // }
+                        if (note.terminateConversation) {
+                            if (note.terminateConversation.indexOf(note.intendedRecipient) !== -1){
+                                if (note.state) {
+                                    note.state.open = false;
+                                } else {
+                                    note.state = {};
+                                    note.state.open = false;
                                 }
                             }
                         }
+
+                        // clean up
+                        note.header = undefined;
+                        note.allowableActionsOrigin = undefined;
+                        note.allowableActionsParticipant = undefined;
+                        note.recipients = undefined;
+                        note.terminateConversation = undefined;
+
                         recipient.socket.send(JSON.stringify(note));
-                        console.log('NotificationMessageHandler(): sent to profile: ',recipient.profileId);
+                        console.log('NotificationMessageHandler(): sent to profile: ',note.type, note.intendedRecipient);
                     }
 
                     callback(null,'done');

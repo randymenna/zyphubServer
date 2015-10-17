@@ -1,5 +1,6 @@
 
-var amqp = require('amqplib/callback_api');
+//var amqp = require('amqplib/callback_api');
+var amqp = require('amqp-connection-manager');
 var config  = require('config');
 var q       = require('q');
 
@@ -34,7 +35,9 @@ CPBus.prototype.start = function () {
 
     console.log('CPBus.start() entered');
 
-    amqp.connect(config.cloudamqp.url + '?heartbeat=60', function(err, conn) {
+    /*
+    amqp.connect(config.cloudamqp.url + '?heartbeat=25&frameMax=0x1000', function(err, conn) {
+
         if (err) {
             console.error('[AMQP]', err.message);
             return setTimeout(self.amqpReconnectConnect, 1000);
@@ -68,6 +71,16 @@ CPBus.prototype.start = function () {
 
         deferred.resolve(conn);
     });
+    */
+    _connection = amqp.connect(config.cloudamqp.url + '?frameMax=0x1000',{json:true, heartbeatIntervalInSeconds: 60});
+    _connection.on('connect', function() {
+        console.log('Connected!');
+        deferred.resolve(_connection);
+    });
+    _connection.on('disconnect', function(params) {
+        console.log('Disconnected.', params.err.stack);
+    });
+
 
     return deferred.promise;
 };

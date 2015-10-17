@@ -51,13 +51,14 @@ ScheduleHelper.prototype.handleTTL = function( job, done ) {
 
     console.log('handleTTL() in: ' + context.conversationId);
 
-    ConversationPublisher.publish('ConversationEngineQueue',context, function( error ){
-        if ( error )
-            console.log('handleTTL() out: Publish Failed ' + context.conversationId);
-        else
-            console.log('handleTTL() out' + context.conversationId);
+    var published = ConversationPublisher.publish('ConversationEngineQueue',context);
+    published.then(function() {
+        console.log('handleTTL() out' + context.conversationId);
+        done(null, context);
+    }).catch(function(err){
+        console.log('handleTTL() out: Publish Failed ' + context.conversationId);
+        done(Error('Publish Failed: ' + err), null);
     });
-
 };
 
 ScheduleHelper.prototype.handleEscalation = function( job, done ) {
@@ -66,16 +67,17 @@ ScheduleHelper.prototype.handleEscalation = function( job, done ) {
     context.conversationId = job.attrs.data.conversationId;
     context.escalation = [];
     context.escalation.push(job.attrs.data.escalationId);
-    context;
     context.origin = CONSTANTS.SYSTEM_GUID;
 
     console.log('handleEscalation() in: ' + context.conversationId + ', ' + context.escalationId);
 
-    ConversationPublisher.publish('ConversationEngineQueue',context, function( error ){
-        if ( error )
-            console.log('handleEscalation() out: Publish Failed ' + context.conversationId);
-        else
-            console.log('handleEscalation() out' + context.conversationId);
+    var published = ConversationPublisher.publish('ConversationEngineQueue',context);
+    published.then(function() {
+        console.log('handleEscalation() out' + context.conversationId);
+        done(null, context);
+    }).catch(function(err){
+        console.log('handleEscalation() out: Publish Failed ' + context.conversationId);
+        done(Error('Publish Failed: ' + err), null);
     });
 };
 

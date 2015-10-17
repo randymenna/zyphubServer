@@ -44,7 +44,7 @@ cpBus.start().then(function(busConnection){
 
                 try {
                     var messageDrivenBean = new MessageDrivenBean(busConnection, CONSTANTS.BUS.DIRECT, CONSTANTS.BUS.AUDITTRAIL, auditHandler, CONSTANTS.BUS.AUDIT_WORKERS);
-                    cpBus.setBeanRestart(messageDrivenBean.start.bind(messageDrivenBean));
+                    //cpBus.setBeanRestart(messageDrivenBean.start.bind(messageDrivenBean));
                     messageDrivenBean.start();
                 } catch(exception){
                     console.log('Auditor: mdb.exception', exception);

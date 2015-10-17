@@ -44,7 +44,7 @@ cpBus.start().then(function(busConnection){
 
                 try {
                     var messageDrivenBean = new MessageDrivenBean(busConnection, CONSTANTS.BUS.DIRECT, CONSTANTS.BUS.BILLING, billingHandler, CONSTANTS.BUS.BILLING_WORKERS);
-                    cpBus.setBeanRestart(messageDrivenBean.start.bind(messageDrivenBean));
+                    //cpBus.setBeanRestart(messageDrivenBean.start.bind(messageDrivenBean));
                     messageDrivenBean.start();
                 } catch(exception){
                     console.log('billingEngine: mdb.exception', exception);
