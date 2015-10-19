@@ -334,7 +334,7 @@ ConversationMessageHandler.prototype.handleNew = function(context,doneCallback) 
 
 ConversationMessageHandler.prototype.handleReply = function(context,doneCallback) {
     var self = this;
-    self._conversationHelper.repyToConversation( context, function( err, ret ){
+    self._conversationHelper.replyToConversation( context, function( err, ret ){
 
         doneCallback(err,context);
     });

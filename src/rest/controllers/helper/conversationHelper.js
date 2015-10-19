@@ -102,8 +102,8 @@ var ConversationHelper = module.exports = function ConversationHelper () {
         callback(null,context);
     };
 
-    this.addConversationToNewMembersInboxes = function( context, callback ) {
-        model.Profile.update({'_id': { $in: context.toProfiles }},{$push: {inbox: context.conversation._id }}, {multi:true}, function(err){
+    this.addConversationToNewMembersInboxes = function( context, newMembers, callback ) {
+        model.Profile.update({'_id': { $in: newMembers }},{$push: {inbox: context.conversation._id }}, {multi:true}, function(err){
             if ( err ) {
                 callback(err, null);
             }
@@ -113,10 +113,10 @@ var ConversationHelper = module.exports = function ConversationHelper () {
         });
     };
 
-    this.addNewMembersToConversation = function( context, callback ) {
-        for (var i=0; i < context.toProfiles.length; i++) {
-            context.conversation.envelope.members.push( context.toProfiles[i] );
-            context.conversation.state.members.push( {member: context.toProfiles[i], state: 'UNOPENED'} );
+    this.addNewMembersToConversation = function( context, newMembers, callback ) {
+        for (var i=0; i < newMembers.length; i++) {
+            context.conversation.envelope.members.push( newMembers[i] );
+            context.conversation.state.members.push( {member: newMembers[i], state: 'UNOPENED'} );
             ++context.conversation.state.curMemberCount;
         }
         callback(null, context);
@@ -342,9 +342,7 @@ ConversationHelper.prototype.requestToNewModel = function( body, user, callback 
 ConversationHelper.prototype.validateUpdateParams = function( action, body, callback ) {
 
     var apiTemplate = {
-        reply: paperwork.optional({
-            content: String
-        }),
+        reply: paperwork.optional(String),
         forward: paperwork.optional([String]),
         delegate: paperwork.optional([String])
     };
@@ -889,11 +887,11 @@ ConversationHelper.prototype.forwardConversation = function( context, callback )
             },
 
             function(context,callback) {
-                self.addConversationToNewMembersInboxes(context, callback);
+                self.addConversationToNewMembersInboxes(context, context.body.forward, callback);
             },
 
             function(context,callback) {
-                self.addNewMembersToConversation(context, callback);
+                self.addNewMembersToConversation(context, context.body.forward, callback);
             },
 
             // save Conversation
@@ -965,12 +963,12 @@ ConversationHelper.prototype.delegateConversation = function( context, callback 
 
             // add conversation to new members inbox
             function(context,callback) {
-                self.addConversationToNewMembersInboxes(context, callback);
+                self.addConversationToNewMembersInboxes(context, context.body.delegate, callback);
             },
 
             // add new member to conversation
             function(context,callback) {
-                self.addNewMembersToConversation(context, callback);
+                self.addNewMembersToConversation(context, context.body.delegate, callback);
             },
 
             // save Conversation
@@ -1040,11 +1038,11 @@ ConversationHelper.prototype.escalateConversation = function( context, callback 
             },
 
             function(context,callback) {
-                self.addConversationToNewMembersInboxes(context, callback);
+                self.addConversationToNewMembersInboxes(context, context.body.escalate, callback);
             },
 
             function(context,callback) {
-                self.addNewMembersToConversation(context, callback);
+                self.addNewMembersToConversation(context, context.body.escalate, callback);
             },
 
             // save Conversation
@@ -1091,6 +1089,7 @@ ConversationHelper.prototype.escalateConversation = function( context, callback 
 };
 
 ConversationHelper.prototype.replyToConversation = function( context, callback ) {
+    var self = this;
 
     console.log('replyToConversation(): entered');
     async.waterfall(
@@ -1112,6 +1111,11 @@ ConversationHelper.prototype.replyToConversation = function( context, callback )
                             }
                         }
                     });
+            },
+
+            function(context,callback) {
+                self.updateLastEvent(context.origin, 'REPLY', context.conversation);
+                callback(null,context);
             },
 
             // save Conversation

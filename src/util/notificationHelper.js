@@ -148,7 +148,7 @@ NotificationHelper.prototype.buildNotificationFromObject = function(conversation
             break;
 
         case cpConstants.NOTIFICATION_TYPES.DELEGATE:
-            notification.setRecipients(conversation, origin, 'members origin');
+            notification.setRecipients(conversation, origin, 'all-members');
             notification.setTerminateConversation(conversation, origin, 'origin');
             break;
     }
@@ -301,7 +301,7 @@ NotificationHelper.prototype.handleDelegate = function(context,doneCallback) {
     // send to: origin, members
     // send: state envelope
     if (context.conversation) {
-        notification = self.buildNotification(context, cpConstants.NOTIFICATION_TYPES.DELEGATE, 'state envelope');
+        notification = self.buildNotification(context, cpConstants.NOTIFICATION_TYPES.DELEGATE, 'state envelope content');
     }
 
     return notification;
