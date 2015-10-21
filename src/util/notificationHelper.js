@@ -203,7 +203,7 @@ NotificationHelper.prototype.handleOk = function(context,doneCallback) {
     // send to: origin, conversation.origin
     // send: state
     if (context.conversation) {
-        notification = self.buildNotification(context, cpConstants.NOTIFICATION_TYPES.OK, 'state');
+        notification = self.buildNotification(context, cpConstants.NOTIFICATION_TYPES.OK, 'state envelope');
     }
 
     return notification;

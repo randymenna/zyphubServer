@@ -116,7 +116,7 @@ var ConversationHelper = module.exports = function ConversationHelper () {
     this.addNewMembersToConversation = function( context, newMembers, callback ) {
         for (var i=0; i < newMembers.length; i++) {
             context.conversation.envelope.members.push( newMembers[i] );
-            context.conversation.state.members.push( {member: newMembers[i], state: 'UNOPENED'} );
+            context.conversation.state.members.push( {member: newMembers[i], state: 'UNREAD'} );
             ++context.conversation.state.curMemberCount;
         }
         callback(null, context);
@@ -412,7 +412,7 @@ ConversationHelper.prototype.addProfileToConversations = function( profile, conv
                 for (var i=0; i < conversations.length; i++) {
                     context.conversationIds.push(conversations[i]._id.toHexString());
                     conversations[i].envelope.members.push( context.profileId );
-                    conversations[i].state.members.push( {member: context.profileId, state: 'UNOPENED'} );
+                    conversations[i].state.members.push( {member: context.profileId, state: 'UNREAD'} );
                     ++conversations[i].state.curMemberCount;
 
                     functions.push((function (doc) {
@@ -1173,7 +1173,7 @@ ConversationHelper.prototype.readConversation = function( context, callback ) {
             },
 
             function(context,callback) {
-                if (self.getCurrentState(context.origin, context.conversation) === 'UNOPENED') {
+                if (self.getCurrentState(context.origin, context.conversation) === 'UNREAD') {
                     self.updateLastEvent(context.origin, 'READ', context.conversation);
                 }
                 callback(null,context);

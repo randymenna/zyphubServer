@@ -204,7 +204,7 @@ ConversationMessageHandler.prototype.handleNew = function(context,doneCallback) 
                 // now populate it correctly
                 for (var i=0; i< context.conversation.envelope.members.length; i++) {
                     var tmp = {
-                        lastEvent: 'UNOPENED'
+                        lastEvent: 'UNREAD'
                     };
                     if (typeof context.conversation.envelope.members[i] === 'string' || context.conversation.envelope.members[i] instanceof String){
                         if (context.conversation.envelope.members[i] === context.origin) {

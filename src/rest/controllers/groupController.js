@@ -285,7 +285,7 @@ exports.joinGroup = function (req, res) {
 
                             for (var j=0; j < context.profileIds.length; j++) {
                                 conversations[i].envelope.members.push( context.profileIds[j] );
-                                conversations[i].state.members.push( {member: context.profileIds[j], state: 'UNOPENED'} );
+                                conversations[i].state.members.push( {member: context.profileIds[j], state: 'UNREAD'} );
                                 ++conversations[i].state.curMemberCount;
                             }
 

@@ -91,7 +91,7 @@ exports.getConversations = function (req, res) {
         ],
 
         function (err, context) {
-            console.log('getConversations(): exiting: err=', err, 'conversations=', JSON.stringify(context.conversations));
+            console.log('getConversations(): exiting: err=', err);
             if (!err) {
                 res.status(200).json(context.conversations);
             } else {

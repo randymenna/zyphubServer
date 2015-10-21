@@ -157,6 +157,7 @@ function createExpressApplication() {
     app.use('/auth', require('../src/rest/authService'));
     app.use('/v1/webhook', require('../src/rest/webHookService'));
     app.use('/v1/admin', require('../src/rest/adminService'));
+    app.use(express.static('demo-client'));
 
     return app;
 }
