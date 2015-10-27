@@ -11,5 +11,5 @@ qp = qp ? JSON.parse('{"' + qp.replace(/&/g, '","').replace(/=/g,'":"') + '"}',
     return key===""?value:decodeURIComponent(value) }
   ):{};
 window.opener.onOAuthComplete(qp);
-window.close()
+window.close();
 </script>
