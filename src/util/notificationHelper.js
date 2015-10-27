@@ -273,7 +273,7 @@ NotificationHelper.prototype.handleLeave = function(context,doneCallback) {
     // send to: origin, members
     // send: state
     if (context.conversation) {
-        notification = self.buildNotification(context, cpConstants.NOTIFICATION_TYPES.LEAVE, 'state');
+        notification = self.buildNotification(context, cpConstants.NOTIFICATION_TYPES.LEAVE, 'state envelope');
     }
 
     return notification;
@@ -316,6 +316,7 @@ NotificationHelper.prototype.convertConversationToNotification = function(conver
 
         for (var i = 0; i < conversations.length; i++) {
             var notification = self.buildNotificationFromObject(conversations[i], conversations[i].envelope.origin, conversations[i].envelope.enterprise, 'NONE', 'state content envelope', user);
+
             notifications.push(notification);
         }
     } else {

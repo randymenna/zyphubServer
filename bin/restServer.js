@@ -6,37 +6,12 @@ var fs                      = require('fs');
 var mongoose                = require('mongoose');
 var passport                = require('passport');
 var logger                  = require('../src/util/logger');
+var path                    = require('path');
+var cors                    = require('cors');
 
 logger.startLogger('restServer');
 
 require('../src/auth/passport')(passport);
-/*
-mongoDbClient.init(function(error) {
-    if ( error === null ) {
-        var app = createExpressApplication();
-        if (config.restServer.isUnSecurePortEnabled) {
-
-            //mongoose.connect(config.mongo.host, config.mongo.dbName, config.mongo.port, {auto_reconnect: true});
-            mongoose.connect(config.mongo.url, {auto_reconnect: true},function(err){
-                if (err){
-                    console.log('rest server(): mongoose error: ', err);
-                }
-                else {
-                    console.log('restServer(): mongoose connected:',config.mongo.url);
-                    runRestServer(app);
-                }
-            });
-        }
-        else
-        if (config.restServer.isSecurePortEnabled) {
-            runSecureRestServer(app);
-        }
-    }
-    else {
-        console.log(error);
-    }
-});
-*/
 
 mongoose.connect(config.mongo.url, {auto_reconnect: true},function(err){
     if (err){
@@ -123,10 +98,12 @@ function createExpressApplication() {
         }
     };
 
+    app.use(cors());
+
     app.use(bodyParser.json())
         .use(bodyParser.urlencoded({extended:true}))
         .use(checkContentType)
-        .use(allowCrossDomain)
+        //.use(allowCrossDomain)
         .use(passport.initialize());
 
     // IMPORTANT - this function must come before any routes
@@ -142,9 +119,8 @@ function createExpressApplication() {
         }
     });
 
-    // the API Spec
-    app.use('/apiDoc', express.static(__dirname + '/cp-api-swager.json'));
-    // Routes
+
+    // API's
 
     app.use('/v1/profiles', require('../src/rest/profileService'));
     app.use('/v1/groups', require('../src/rest/groupService'));
@@ -157,6 +133,12 @@ function createExpressApplication() {
     app.use('/auth', require('../src/rest/authService'));
     app.use('/v1/webhook', require('../src/rest/webHookService'));
     app.use('/v1/admin', require('../src/rest/adminService'));
+
+    // the API Spec
+    console.log('current dir: ',__dirname);
+    app.use('/docs', express.static(path.join(__dirname, '..', 'api-docs')));
+
+    // the client
     app.use(express.static('demo-client'));
 
     return app;

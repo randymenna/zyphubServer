@@ -17,7 +17,7 @@ var timeFormatFn = function() {
     return moment().toISOString();
 };
 
-var dirName = path.join(__dirname,'..',config.logs.directory);
+var dirName = path.join(__dirname,'..','..',config.logs.directory);
 
 if (!fs.existsSync(dirName)){
     fs.mkdirSync(dirName);
@@ -47,7 +47,7 @@ module.exports.startLogger = function(serviceName) {
     });
 
     logger.log('info','winston logging started');
-    logger.log('debug','log directory',dirName);
+    logger.log('info','log directory',dirName);
 
     logger.extend(console);
     log = logger.log;

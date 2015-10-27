@@ -17,7 +17,7 @@ var NotificationMessageHandler = module.exports = function NotificationMessageHa
 
 NotificationMessageHandler.prototype.onMessage = function ( msg, msgHandlerCallback ) {
 
-    console.log('NotificationMessageHandler(): entered: handleMessage:' + JSON.stringify(msg));
+    console.log('NotificationMessageHandler(): entered: handleMessage'/*,JSON.stringify(msg)*/);
 
     async.waterfall(
         [
@@ -32,6 +32,7 @@ NotificationMessageHandler.prototype.onMessage = function ( msg, msgHandlerCallb
                 if (recipients.length) {
                     for (var i=0; i < recipients.length; i++) {
                         var recipient = recipients[i];
+                        console.log('notifying',recipient.profileId);
 
                         var note = JSON.parse(JSON.stringify(notification));
                         note.intendedRecipient = recipient.profileId;

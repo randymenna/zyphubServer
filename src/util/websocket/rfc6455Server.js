@@ -26,7 +26,9 @@ RFC6455Server.prototype.startUnsecureServer = function () {
     //app.use(express.static(__dirname + '/public'));
 
     var server = http.createServer(app);
-    server.listen(19691);
+    server.listen(19691,function(){
+        console.log('listening: 19691');
+    });
 
     var wss = new WebSocketServer({ server: server });
 
@@ -46,12 +48,13 @@ RFC6455Server.prototype.startUnsecureServer = function () {
                 clientMap.addClient( token.pid, ws );
                 ws.send('ok');
             } else {
+                console.log('Notification server connection: %s', token.pid);
                 ws.send('fail');
             }
         });
 
         ws.on('close', function(data){
-            console.log(data);
+            console.log('websocket close', data);
             clientMap.removeClient(ws);
         });
 

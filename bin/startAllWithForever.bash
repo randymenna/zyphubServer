@@ -11,11 +11,9 @@ echo 'Atrium Environment is set to: ' $nodeEnv ;
 echo '=======================================';
 
 atriumExecutables=(
-                    auditEngine.js
                     conversationRouter.js
-                    webhookServer.js
                     restServer.js
-                    scheduler.js
+                    notificationServer.js
                     )
 
 for atriumExecutable in  '${atriumExecutables[@]}'

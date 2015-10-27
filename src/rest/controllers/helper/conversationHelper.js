@@ -1232,6 +1232,7 @@ ConversationHelper.prototype.getConversationsInInbox = function( context, callba
                 }
 
                 context.conversations = self._notificationHelper.convertConversationToNotification(conversations, context.origin);
+                context.conversations = ConversationHelper.prototype.removeNotificationMeta(context.conversations);
 
                 callback(null, context);
             }
@@ -1248,3 +1249,18 @@ ConversationHelper.prototype.allowableActions = function(c, user){
         return c;
 };
 
+ConversationHelper.prototype.removeNotificationMeta = function(c){
+    if (c instanceof Array){
+        for (var i = 0; i < c.length; i++) {
+            c[i].allowableActionsOrigin = undefined;
+            c[i].allowableActionsParticipant = undefined;
+            c[i].type = undefined;
+        }
+    }
+    else {
+        c.allowableActionsOrigin = undefined;
+        c.allowableActionsParticipant = undefined;
+        c.type = undefined;
+    }
+    return c;
+};
